@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Unités{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="display-6 mb-3">
+                <i class="fas fa-building text-primary me-2"></i>
+                Liste des Unités
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for zone in zones %}
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {{ zone.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom de l'Unité</th>
+                                    <th>Adresse</th>
+                                    <th>Contact</th>
+                                    <th>Nombre de Centres</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in units if unit.zone_id == zone.id %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-building text-primary me-2"></i>
+                                        {{ unit.name }}
+                                    </td>
+                                    <td>{{ unit.address }}</td>
+                                    <td>{{ unit.contact_info }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ unit.centers|length }} centres
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--ona-primary), var(--ona-secondary));
+    padding: 1rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.display-6 {
+    font-weight: 600;
+    color: var(--ona-primary);
+}
+</style>
+{% endblock %}

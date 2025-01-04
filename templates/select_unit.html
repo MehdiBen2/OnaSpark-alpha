@@ -6,27 +6,46 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h3 class="card-title text-center mb-4">Sélectionnez votre Unité</h3>
-                    <form method="POST" action="{{ url_for('select_unit') }}">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-building fa-3x text-primary mb-3"></i>
+                        <h3 class="card-title">Sélectionnez votre Unité</h3>
+                        <p class="text-muted">Choisissez votre zone et unité de travail</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('select_unit') }}" class="needs-validation" novalidate>
                         <div class="mb-4">
-                            <label for="zone" class="form-label">Zone</label>
-                            <select class="form-select" id="zone" name="zone" required onchange="updateUnits()">
+                            <label for="zone" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Zone
+                            </label>
+                            <select class="form-select form-select-lg" id="zone" name="zone" required onchange="updateUnits()">
                                 <option value="">Sélectionnez une zone</option>
                                 {% for zone in zones %}
                                 <option value="{{ zone.id }}">{{ zone.name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner une zone
+                            </div>
                         </div>
+                        
                         <div class="mb-4">
-                            <label for="unit_id" class="form-label">Unité</label>
-                            <select class="form-select" id="unit_id" name="unit_id" required disabled>
+                            <label for="unit_id" class="form-label">
+                                <i class="fas fa-city me-2"></i>Unité
+                            </label>
+                            <select class="form-select form-select-lg" id="unit_id" name="unit_id" required disabled>
                                 <option value="">Sélectionnez d'abord une zone</option>
                             </select>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner une unité
+                            </div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Confirmer</button>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>Confirmer
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -35,13 +54,84 @@
     </div>
 </div>
 
+<style>
+.card {
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.form-select {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: var(--ona-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--ona-primary-rgb), 0.25);
+}
+
+.form-select:disabled {
+    background-color: #f8fafc;
+}
+
+.btn-primary {
+    border-radius: 10px;
+    padding: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--ona-primary-rgb), 0.15);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.text-muted {
+    color: #718096 !important;
+}
+
+.fa-3x {
+    background: linear-gradient(135deg, var(--ona-primary), var(--ona-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+</style>
+
 <script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
 function updateUnits() {
     const zoneSelect = document.getElementById('zone');
     const unitSelect = document.getElementById('unit_id');
     const selectedZone = zoneSelect.value;
 
     if (selectedZone) {
+        unitSelect.disabled = true; // Disable while loading
         fetch(`/api/units/${selectedZone}`)
             .then(response => response.json())
             .then(units => {
@@ -50,6 +140,11 @@ function updateUnits() {
                     unitSelect.innerHTML += `<option value="${unit.id}">${unit.name}</option>`;
                 });
                 unitSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error fetching units:', error);
+                unitSelect.innerHTML = '<option value="">Erreur de chargement des unités</option>';
+                unitSelect.disabled = true;
             });
     } else {
         unitSelect.innerHTML = '<option value="">Sélectionnez d\'abord une zone</option>';

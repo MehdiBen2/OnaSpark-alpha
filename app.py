@@ -71,10 +71,42 @@ def init_db_command():
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
+class UserRole:
+    ADMIN = 'Admin'
+    DG = 'DG'
+    ZONE_EMPLOYER = 'Zone Employer'
+    UNIT_OFFICER = 'Unit Officer'
+    REGULAR_USER = 'Regular User'
+
+    @classmethod
+    def requires_unit_selection(cls, role):
+        return role not in [cls.ADMIN, cls.DG, cls.ZONE_EMPLOYER]
+
+    @classmethod
+    def get_permissions(cls, role):
+        permissions = {
+            cls.ADMIN: {
+                'can_view_all_incidents': True,
+                'can_view_all_units': True,
+                'can_view_zone_incidents': True,
+            },
+            cls.DG: {
+                'can_view_all_incidents': True,
+                'can_view_all_units': True,
+                'can_view_zone_incidents': True,
+            },
+            cls.ZONE_EMPLOYER: {
+                'can_view_zone_incidents': True,
+            },
+            cls.UNIT_OFFICER: {},
+            cls.REGULAR_USER: {},
+        }
+        return permissions.get(role, {})
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role not in ['Admin', 'administrateur']:
+        if not current_user.is_authenticated or current_user.role not in [UserRole.ADMIN, UserRole.DG]:
             flash('Vous devez être administrateur pour accéder à cette page.', 'danger')
             return redirect(url_for(INCIDENT_LIST))
         return f(*args, **kwargs)
@@ -84,12 +116,21 @@ def unit_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for(AUTH_LOGIN))
-        # Skip unit requirement check for admin users
-        if current_user.role in ['Admin', 'administrateur']:
+            return redirect(url_for('login'))
+            
+        # Zone employers don't need a unit
+        if current_user.role == 'Employeur Zone':
             return f(*args, **kwargs)
-        if not hasattr(current_user, 'unit_id') or current_user.unit_id is None:
-            return redirect(url_for(SELECT_UNIT))
+            
+        # Admin and DG don't need a unit
+        if current_user.role in ['Admin', 'Employeur DG']:
+            return f(*args, **kwargs)
+            
+        # All other roles need a unit
+        if current_user.unit_id is None:
+            flash("Vous devez sélectionner une unité pour accéder à cette page.", "warning")
+            return redirect(url_for('select_unit'))
+            
         return f(*args, **kwargs)
     return decorated_function
 
@@ -164,13 +205,13 @@ def index():
 @login_required
 def main_dashboard():
     # Get recent incidents (last 5)
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
     else:
         recent_incidents = Incident.query.filter_by(author=current_user).order_by(Incident.date_incident.desc()).limit(5).all()
     
     # Get statistics
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
         pending_incidents = Incident.query.filter_by(status='En cours').count()
@@ -192,17 +233,48 @@ def main_dashboard():
 def dashboard():
     random_phrase = random.choice(WATER_PHRASES)
     
-    # Get statistics
-    if current_user.role == 'Admin':
+    # Get statistics based on user role and permissions
+    permissions = UserRole.get_permissions(current_user.role)
+    
+    if permissions.get('can_view_all_incidents', False):
+        # Admin and DG see everything
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
         pending_incidents = Incident.query.filter_by(status='En cours').count()
         recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
+        
+        total_users = User.query.count()
+        total_units = Unit.query.count()
+        total_zones = Zone.query.count()
+        total_centers = Center.query.count()
+        
+    elif permissions.get('can_view_zone_incidents', False):
+        # Zone employer sees all incidents in their zone
+        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        unit_ids = [unit.id for unit in zone_units]
+        
+        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
+        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
+        pending_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='En cours').count()
+        recent_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).limit(5).all()
+        
+        # Zone statistics
+        total_users = User.query.filter_by(zone_id=current_user.zone_id).count()
+        total_units = len(zone_units)
+        total_zones = 1  # Their own zone
+        total_centers = Center.query.join(Unit).filter(Unit.zone_id == current_user.zone_id).count()
+        
     else:
+        # Unit employers and regular users see their unit's incidents
         total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
         resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
         pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
         recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
+        
+        total_users = None
+        total_units = None
+        total_zones = None
+        total_centers = None
     
     return render_template('main_dashboard.html',
                          phrase=random_phrase,
@@ -210,7 +282,12 @@ def dashboard():
                          total_incidents=total_incidents,
                          resolved_incidents=resolved_incidents,
                          pending_incidents=pending_incidents,
-                         recent_incidents=recent_incidents)
+                         recent_incidents=recent_incidents,
+                         total_users=total_users,
+                         total_units=total_units,
+                         total_zones=total_zones,
+                         total_centers=total_centers,
+                         permissions=permissions)
 
 @app.route('/services')
 @login_required
@@ -222,7 +299,7 @@ def services():
 @login_required
 @unit_required
 def listes_dashboard():
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
     else:
@@ -369,6 +446,28 @@ def download_water_quality_pdf():
                      as_attachment=True, 
                      download_name='Rapport_Qualite_Eau.pdf')
 
+@app.route('/units')
+@login_required
+def list_units():
+    # Admin and DG see all units
+    if current_user.role in ['Admin', 'Employeur DG']:
+        units = Unit.query.all()
+        zones = Zone.query.all()
+    # Zone employers see units in their zone
+    elif current_user.role == 'Employeur Zone':
+        units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        zones = [Zone.query.get(current_user.zone_id)]
+    # Others only see their unit
+    else:
+        if current_user.unit_id:
+            units = [Unit.query.get(current_user.unit_id)]
+            zones = [Zone.query.get(current_user.zone_id)] if current_user.zone_id else []
+        else:
+            units = []
+            zones = []
+    
+    return render_template('list_units.html', units=units, zones=zones)
+
 @app.route('/zones')
 @login_required
 def list_zones():
@@ -379,7 +478,7 @@ def list_zones():
 @login_required
 def list_centers():
     # If user is admin, show all centers
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         centers = Center.query.all()
         zones = Zone.query.all()
     # If user is Unit Officer, show only centers in their unit
@@ -394,7 +493,7 @@ def list_centers():
 @app.route('/zones/create', methods=['POST'])
 @login_required
 def create_zone():
-    if current_user.role != 'Admin':
+    if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
@@ -419,7 +518,7 @@ def create_zone():
 @app.route('/zones/edit/<int:id>', methods=['POST'])
 @login_required
 def edit_zone(id):
-    if current_user.role != 'Admin':
+    if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
@@ -442,7 +541,7 @@ def edit_zone(id):
 @app.route('/zones/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_zone(id):
-    if current_user.role != 'Admin':
+    if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
@@ -469,13 +568,13 @@ def delete_zone(id):
 @app.route('/centers/create', methods=['POST'])
 @login_required
 def create_center():
-    if current_user.role not in ['Admin', 'Unit Officer']:
+    if current_user.role not in [UserRole.ADMIN, UserRole.UNIT_OFFICER]:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
     try:
         # If Unit Officer, use their unit_id
-        unit_id = current_user.unit_id if current_user.role == 'Unit Officer' else request.form['unit_id']
+        unit_id = current_user.unit_id if current_user.role == UserRole.UNIT_OFFICER else request.form['unit_id']
         
         center = Center(
             name=request.form['name'],
@@ -500,7 +599,7 @@ def edit_center(id):
     center = Center.query.get_or_404(id)
     
     # Check permissions
-    if current_user.role == 'Unit Officer' and center.unit_id != current_user.unit_id:
+    if current_user.role == UserRole.UNIT_OFFICER and center.unit_id != current_user.unit_id:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
@@ -510,7 +609,7 @@ def edit_center(id):
         center.address = request.form['address']
         center.phone = request.form['phone']
         center.email = request.form['email']
-        if current_user.role == 'Admin':
+        if current_user.role == UserRole.ADMIN:
             center.unit_id = request.form['unit_id']
         db.session.commit()
         flash('Centre mis à jour avec succès.', 'success')
@@ -526,7 +625,7 @@ def delete_center(id):
     center = Center.query.get_or_404(id)
     
     # Check permissions
-    if current_user.role == 'Unit Officer' and center.unit_id != current_user.unit_id:
+    if current_user.role == UserRole.UNIT_OFFICER and center.unit_id != current_user.unit_id:
         flash('Accès non autorisé.', 'danger')
         return redirect(url_for(MAIN_DASHBOARD))
     
@@ -543,27 +642,53 @@ def delete_center(id):
 @app.route('/select-unit', methods=['GET', 'POST'])
 @login_required
 def select_unit():
-    if request.method == 'POST':
-        unit_id = request.form.get('unit_id')
-        if unit_id:
-            current_user.unit_id = unit_id
-            db.session.commit()
-            flash('Votre unité a été mise à jour avec succès.', 'success')
-            return redirect(url_for(DASHBOARD))
+    # Zone employers, Admin, and DG don't need to select a unit
+    if current_user.role in ['Employeur Zone', 'Admin', 'Employeur DG']:
+        return redirect(url_for('dashboard'))
     
-    zones = Zone.query.all()
+    if request.method == 'POST':
+        zone_id = request.form.get('zone')
+        unit_id = request.form.get('unit_id')
+        
+        if not zone_id or not unit_id:
+            flash("Veuillez sélectionner une zone et une unité.", "warning")
+            return redirect(url_for('select_unit'))
+            
+        # Verify the unit belongs to the selected zone
+        unit = Unit.query.get(unit_id)
+        if not unit or str(unit.zone_id) != zone_id:
+            flash("Unité invalide sélectionnée.", "danger")
+            return redirect(url_for('select_unit'))
+            
+        # Update user's unit
+        current_user.unit_id = unit_id
+        db.session.commit()
+        
+        flash(f"Vous êtes maintenant connecté à l'unité: {unit.name}", "success")
+        return redirect(url_for('dashboard'))
+        
+    # GET request - show selection form
+    if current_user.role == 'Admin':
+        zones = Zone.query.all()
+    elif current_user.zone_id:
+        zones = [Zone.query.get(current_user.zone_id)]
+    else:
+        zones = []
+        
     return render_template('select_unit.html', zones=zones)
 
 @app.route('/api/units/<int:zone_id>')
 @login_required
 def get_zone_units(zone_id):
-    """Get all units for a specific zone."""
-    try:
-        units = Unit.query.filter_by(zone_id=zone_id).all()
-        return jsonify([{'id': unit.id, 'name': unit.name} for unit in units])
-    except Exception as e:
-        app.logger.error(f"Error fetching units for zone {zone_id}: {str(e)}")
-        return jsonify({'error': 'Error fetching units'}), 500
+    permissions = UserRole.get_permissions(current_user.role)
+    
+    # Check if user has access to this zone
+    if not permissions.get('can_view_all_units', False):
+        if current_user.zone_id != zone_id:
+            return jsonify([])
+            
+    units = Unit.query.filter_by(zone_id=zone_id).all()
+    return jsonify([{'id': unit.id, 'name': unit.name} for unit in units])
 
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist
@@ -572,7 +697,7 @@ if __name__ == '__main__':
         if not admin_user:
             admin_user = User(
                 username='admin',
-                role='Admin'
+                role=UserRole.ADMIN
             )
             admin_user.set_password('admin')
             db.session.add(admin_user)

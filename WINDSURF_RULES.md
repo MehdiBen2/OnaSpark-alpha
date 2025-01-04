@@ -94,21 +94,8 @@
 - Keep inline comments clear and concise
 - Update documentation with each significant change
 
-## 9. Version Control
 
-### 9.1 Git Best Practices
-- Use meaningful commit messages
-- Create feature branches for new developments
-- Squash and merge commits
-- Use pull requests for code reviews
 
-## 10. Multilingual Support
-
-### 10.1 Internationalization
-- Use translation files for multilingual support
-- Implement language toggle functionality
-- Support both French and Arabic languages
-- Use consistent translation methods
 
 ---
 

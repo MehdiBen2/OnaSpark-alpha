@@ -4,23 +4,20 @@
 
 {% block extra_css %}
 <style>
-    @keyframes slideToCenter {
-        0% {
-            opacity: 0;
-            transform: translateX(-100%);
-        }
-        100% {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    :root {
+        --ona-gradient: linear-gradient(135deg, var(--ona-primary), var(--ona-secondary));
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        --card-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.1);
+        --card-radius: 15px;
+        --transition-speed: 0.3s;
     }
 
-    @keyframes subtleSlideUp {
-        0% {
+    @keyframes fadeInSlide {
+        from {
             opacity: 0;
             transform: translateY(20px);
         }
-        100% {
+        to {
             opacity: 1;
             transform: translateY(0);
         }
@@ -30,31 +27,26 @@
         background-color: #f8f9fa;
         min-height: calc(100vh - 56px);
         padding-bottom: 2rem;
+        contain: content;
     }
 
     .dashboard-header {
         color: white;
-        background: linear-gradient(135deg, 
-            #1a4fab 0%, 
-            #2d62c9 25%, 
-            #137fbd 50%, 
-            #0e9ac7 75%, 
-            #00b4d8 100%);
+        background: var(--ona-gradient);
         padding: 2.5rem 0;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--card-shadow);
         position: relative;
         overflow: hidden;
+        contain: layout style paint;
     }
 
+    /* Optimized SVG pattern */
     .dashboard-header::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10c2 0 2-2 2-2s0-2-2-2-2 2-2 2 0 2 2 2zm20 20c2 0 2-2 2-2s0-2-2-2-2 2-2 2 0 2 2 2z' fill='%23fff' fill-opacity='.05'/%3E%3C/svg%3E");
         opacity: 0.1;
     }
 
@@ -62,22 +54,7 @@
         text-align: center;
         position: relative;
         z-index: 1;
-    }
-
-    .header-content h3 {
-        font-size: 2.2rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-
-    .header-content h4 {
-        font-size: 1.5rem;
-        font-weight: 400;
-        opacity: 0.9;
-        margin-top: 0.5rem;
-        letter-spacing: 0.3px;
+        animation: fadeInSlide 0.6s ease-out forwards;
     }
 
     .ona-logo {
@@ -85,80 +62,161 @@
         height: auto;
         margin: 1rem 0;
         filter: brightness(0) invert(1);
-        animation: subtleSlideUp 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
-    }
-
-    @keyframes fadeInScale {
-        0% {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    .header-content > * {
-        animation: fadeInScale 0.6s ease-out forwards;
+        will-change: transform;
     }
 
     .dashboard-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 1.5rem;
         margin-bottom: 2rem;
     }
 
     .stat-card {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-left: 5px solid;
-        height: 100%;
+        border-radius: var(--card-radius);
+        padding: 1.8rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--ona-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    .stat-card.primary { border-color: var(--ona-primary); }
-    .stat-card.secondary { border-color: var(--ona-secondary); }
-    .stat-card.success { border-color: #198754; }
-    .stat-card.warning { border-color: #ffc107; }
+    .stat-card:hover::before {
+        opacity: 1;
+    }
 
     .stat-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.8;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-icon i {
+        background: linear-gradient(135deg, var(--ona-primary), var(--ona-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
 
     .stat-number {
         font-size: 2.5rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        color: #2d3748;
+        line-height: 1;
+        margin: 0.5rem 0;
     }
 
     .stat-label {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 500;
-        color: #6c757d;
+        color: #718096;
         margin-bottom: 0.5rem;
     }
 
     .stat-trend {
-        font-size: 0.9rem;
-        color: #6c757d;
+        font-size: 0.875rem;
+        color: #48bb78;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: #f0fff4;
+        border-radius: 20px;
+        width: fit-content;
+    }
+
+    .stat-trend i {
+        font-size: 0.75rem;
+    }
+
+    .stat-trend.up {
+        color: #48bb78;
+        background: #f0fff4;
+    }
+
+    .stat-trend.operational {
+        color: #4299e1;
+        background: #ebf8ff;
+    }
+
+    .collapsible-section {
+        background: white;
+        border-radius: var(--card-radius);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        contain: content;
+    }
+
+    .collapsible-header {
+        background: var(--ona-gradient);
+        color: white;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: background var(--transition-speed) ease;
+        will-change: transform;
+    }
+
+    .collapsible-content {
+        padding: 1.5rem;
+        display: none;
+        transform-origin: top;
+        will-change: transform, opacity;
+    }
+
+    .collapsible-content.active {
+        display: block;
+        animation: fadeInSlide var(--transition-speed) ease-out;
+    }
+
+    /* Optimized background image loading */
+    .spark-bg {
+        content: '';
+        position: fixed;
+        bottom: 5vh;
+        right: 5vh;
+        width: 350px;
+        height: 350px;
+        background-image: url('/static/images/sparkbg.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        opacity: 0.9;
+        pointer-events: none;
+        z-index: auto;
+        loading: lazy;
     }
 
     .action-card {
         background: white;
-        border-radius: 15px;
+        border-radius: var(--card-radius);
         padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--card-shadow);
         height: 100%;
     }
 
@@ -177,7 +235,7 @@
         border-radius: 10px;
         color: white;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all var(--transition-speed) ease;
         position: relative;
         overflow: hidden;
         z-index: 1;
@@ -191,7 +249,7 @@
         width: 0;
         height: 100%;
         background: rgba(255, 255, 255, 0.1);
-        transition: width 0.3s ease;
+        transition: width var(--transition-speed) ease;
         z-index: -1;
     }
 
@@ -219,10 +277,10 @@
 
     .incident-card {
         background: white;
-        border-radius: 15px;
+        border-radius: var(--card-radius);
         padding: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease;
+        box-shadow: var(--card-shadow);
+        transition: transform var(--transition-speed) ease;
         margin-bottom: 1rem;
     }
 
@@ -247,22 +305,118 @@
         color: #664d03;
     }
 
-    /* Spark background image in bottom right */
-    body::after {
-        content: '';
-        position: fixed;
-        bottom: 5vh;  
-        right: 5vh;   
-        width: 350px;   
-        height: 350px;  
-        background-image: url('/static/images/sparkbg.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: bottom right;
-        opacity: 0.9;
-        pointer-events: none;
-        z-index:  auto;
-        
+    @keyframes gradientFlow {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @keyframes textShimmer {
+        0% {
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        50% {
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        100% {
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .welcome-bar {
+        background: linear-gradient(
+            270deg,
+            var(--ona-primary),
+            var(--ona-secondary),
+            #137fbd,
+            #0e9ac7,
+            var(--ona-accent),
+            var(--ona-primary)
+        );
+        background-size: 300% 300%;
+        animation: gradientFlow 15s ease infinite;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        border-radius: var(--card-radius);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .welcome-message {
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        color: white;
+        animation: textShimmer 3s ease-in-out infinite;
+        font-weight: 500;
+    }
+
+    .welcome-message i {
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.9);
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    }
+
+    .datetime-display {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .datetime-display > div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .datetime-display > div:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .datetime-display i {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .datetime-display span {
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 768px) {
+        .welcome-bar {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .datetime-display {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
     }
 </style>
 {% endblock %}
@@ -279,6 +433,22 @@
                     {% if current_user.assigned_unit %}
                         <h4>{{ current_user.assigned_unit.name }}</h4>
                     {% endif %}
+                    <div class="welcome-bar">
+                        <div class="welcome-message">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Bienvenue, {{ current_user.nickname if current_user.nickname else current_user.username }}</span>
+                        </div>
+                        <div class="datetime-display">
+                            <div>
+                                <i class="fas fa-calendar-alt"></i>
+                                <span id="current-date"></span>
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                <span id="current-time"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -287,39 +457,85 @@
         <div class="row g-4">
             <!-- Quick Actions Column -->
             <div class="col-lg-4">
-                <div class="action-card">
-                    <h4><i class="fas fa-bolt me-2"></i>Actions Rapides</h4>
-                    <div class="action-buttons">
-                        <a href="{{ url_for('rapports') }}" class="action-btn primary">
-                            <i class="fas fa-file-alt me-1"></i>Nouveau Rapport
-                        </a>
-                        <a href="{{ url_for('incidents.incident_list') }}" class="action-btn secondary">
-                            <i class="fas fa-list me-1"></i>Liste des Incidents
-                        </a>
-                        {% if current_user.role == 'Admin' %}
-                        <a href="{{ url_for('list_zones') }}" class="action-btn info">
-                            <i class="fas fa-map-marker-alt me-1"></i>Liste des Zones
-                        </a>
-                        <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
-                            <i class="fas fa-building me-1"></i>Gestion des Unités
-                        </a>
-                        <a href="{{ url_for('list_centers') }}" class="action-btn success">
-                            <i class="fas fa-building me-1"></i>Liste des Centres
-                        </a>
-                        <a href="{{ url_for('users.manage_users') }}" class="action-btn danger">
-                            <i class="fas fa-users me-1"></i>Gestion des Utilisateurs
-                        </a>
-                        <a href="https://webmail.ona-dz.com/owa/" class="action-btn info" target="_blank">
-                            <i class="fas fa-envelope me-1"></i>Webmail ONA
-                        </a>
-                        <a href="https://apex.ona-dz.com/ords/r/dpmg/dpmg-workforce/login?session=29000178296122" class="action-btn warning" target="_blank">
-                            <i class="fas fa-car me-1"></i>Gestion du Parc Roulant
-                        </a>
-                        {% else %}
-                        <a href="{{ url_for('list_centers') }}" class="action-btn success">
-                            <i class="fas fa-building me-1"></i>Liste des Centres
-                        </a>
-                        {% endif %}
+                <!-- Administration Section -->
+                {% if current_user.role == 'Admin' %}
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <span><i class="fas fa-cogs me-2"></i>Administration</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="action-group">
+                            <a href="{{ url_for('users.manage_users') }}" class="action-btn danger">
+                                <i class="fas fa-users"></i>Gestion des Utilisateurs
+                            </a>
+                            <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
+                                <i class="fas fa-building"></i>Gestion des Unités
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Zone Management Section -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <span><i class="fas fa-map-marked-alt me-2"></i>Gestion des Zones</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="action-group">
+                            {% if current_user.role == 'Admin' %}
+                            <a href="{{ url_for('gestion_zones') }}" class="action-btn info">
+                                <i class="fas fa-map-marker-alt"></i>Gestion des Zones
+                            </a>
+                            {% endif %}
+
+                            {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
+                            <a href="{{ url_for('list_units') }}" class="action-btn primary">
+                                <i class="fas fa-building"></i>Liste des Unités
+                            </a>
+                            <a href="{{ url_for('list_centers') }}" class="action-btn success">
+                                <i class="fas fa-hospital"></i>Liste des Centres
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incident Management Section -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <span><i class="fas fa-exclamation-triangle me-2"></i>Gestion des Incidents</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="action-group">
+                            <a href="{{ url_for('rapports') }}" class="action-btn primary">
+                                <i class="fas fa-file-alt"></i>Nouveau Rapport
+                            </a>
+                            <a href="{{ url_for('incidents.incident_list') }}" class="action-btn secondary">
+                                <i class="fas fa-list"></i>Liste des Incidents
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Tools Section -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <span><i class="fas fa-external-link-alt me-2"></i>Outils Externes</span>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="action-group">
+                            <a href="https://webmail.ona-dz.com/owa/" class="action-btn info" target="_blank">
+                                <i class="fas fa-envelope"></i>Webmail ONA
+                            </a>
+                            <a href="https://apex.ona-dz.com/ords/r/dpmg/dpmg-workforce/login?session=29000178296122" class="action-btn warning" target="_blank">
+                                <i class="fas fa-car"></i>Gestion du Parc Roulant
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -329,83 +545,88 @@
                 {% if current_user.role == 'Admin' %}
                 <!-- Admin Stats -->
                 <div class="dashboard-cards">
-                    <div class="stat-card primary">
-                        <div class="stat-icon text-primary">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-users"></i>
                         </div>
                         <div class="stat-number">{{ total_users }}</div>
                         <div class="stat-label">Utilisateurs Total</div>
-                        <div class="stat-trend">
-                            <i class="fas fa-arrow-up"></i> Actif
+                        <div class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Actif</span>
                         </div>
                     </div>
 
-                    <div class="stat-card secondary">
-                        <div class="stat-icon text-secondary">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-building"></i>
                         </div>
                         <div class="stat-number">{{ total_units }}</div>
                         <div class="stat-label">Unités Total</div>
-                        <div class="stat-trend">
-                            <i class="fas fa-check"></i> Opérationnel
+                        <div class="stat-trend operational">
+                            <i class="fas fa-check"></i>
+                            <span>Opérationnel</span>
                         </div>
                     </div>
 
-                    <div class="stat-card success">
-                        <div class="stat-icon text-success">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-map-marker-alt"></i>
                         </div>
                         <div class="stat-number">{{ total_zones }}</div>
                         <div class="stat-label">Zones Total</div>
-                        <div class="stat-trend">
-                            <i class="fas fa-check"></i> Actif
+                        <div class="stat-trend up">
+                            <i class="fas fa-check"></i>
+                            <span>Actif</span>
                         </div>
                     </div>
 
-                    <div class="stat-card warning">
-                        <div class="stat-icon text-warning">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-city"></i>
                         </div>
                         <div class="stat-number">{{ total_centers }}</div>
                         <div class="stat-label">Centres Total</div>
-                        <div class="stat-trend">
-                            <i class="fas fa-check"></i> Opérationnel
+                        <div class="stat-trend operational">
+                            <i class="fas fa-check"></i>
+                            <span>Opérationnel</span>
                         </div>
                     </div>
                 </div>
                 {% else %}
                 <!-- User Incidents -->
                 <div class="dashboard-cards">
-                    <div class="stat-card primary">
-                        <div class="stat-icon text-primary">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-clipboard-list"></i>
                         </div>
                         <div class="stat-number">{{ total_incidents }}</div>
                         <div class="stat-label">Total des Incidents</div>
                         <div class="stat-trend">
-                            Total à ce jour
+                            <span>Total à ce jour</span>
                         </div>
                     </div>
 
-                    <div class="stat-card success">
-                        <div class="stat-icon text-success">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-number">{{ resolved_incidents }}</div>
                         <div class="stat-label">Incidents Résolus</div>
-                        <div class="stat-trend">
-                            Taux: {{ "{:.1f}".format(resolved_incidents / total_incidents * 100 if total_incidents > 0 else 0) }}%
+                        <div class="stat-trend up">
+                            <i class="fas fa-chart-line"></i>
+                            <span>{{ "{:.1f}".format(resolved_incidents / total_incidents * 100 if total_incidents > 0 else 0) }}%</span>
                         </div>
                     </div>
 
-                    <div class="stat-card warning">
-                        <div class="stat-icon text-warning">
+                    <div class="stat-card">
+                        <div class="stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-number">{{ pending_incidents }}</div>
                         <div class="stat-label">Incidents en Cours</div>
                         <div class="stat-trend">
-                            En attente de résolution
+                            <span>En attente</span>
                         </div>
                     </div>
                 </div>
@@ -414,4 +635,80 @@
         </div>
     </div>
 </div>
+
+<div class="spark-bg"></div>
+
+<script>
+(function() {
+    // Cache DOM queries
+    const container = document.querySelector('.dashboard-wrapper');
+    
+    // Event delegation for collapsible sections
+    container.addEventListener('click', function(e) {
+        const header = e.target.closest('.collapsible-header');
+        if (!header) return;
+        
+        const content = header.nextElementSibling;
+        const isActive = header.classList.contains('active');
+        
+        // Use more efficient querySelectorAll with specific parent
+        const allHeaders = container.querySelectorAll('.collapsible-header');
+        const allContents = container.querySelectorAll('.collapsible-content');
+        
+        // Remove active class efficiently
+        allHeaders.forEach(h => h.classList.remove('active'));
+        allContents.forEach(c => c.classList.remove('active'));
+        
+        if (!isActive) {
+            requestAnimationFrame(() => {
+                header.classList.add('active');
+                content.classList.add('active');
+            });
+        }
+    });
+
+    // Initialize first section
+    const firstHeader = container.querySelector('.collapsible-header');
+    const firstContent = container.querySelector('.collapsible-content');
+    if (firstHeader && firstContent) {
+        firstHeader.classList.add('active');
+        firstContent.classList.add('active');
+    }
+})();
+
+// Format date in French
+function formatDateInFrench(date) {
+    const months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day} ${month} ${year}`;
+}
+
+// Update date and time
+function updateDateTime() {
+    const now = new Date();
+    const dateElement = document.getElementById('current-date');
+    const timeElement = document.getElementById('current-time');
+    
+    if (dateElement) {
+        dateElement.textContent = formatDateInFrench(now);
+    }
+    
+    if (timeElement) {
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeElement.textContent = `${hours}:${minutes}`;
+    }
+}
+
+// Update immediately and then every minute
+updateDateTime();
+setInterval(updateDateTime, 60000);
+</script>
 {% endblock %}

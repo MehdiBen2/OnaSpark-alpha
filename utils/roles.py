@@ -19,11 +19,114 @@ class UserRole:
 
     # Role descriptions
     ROLE_DESCRIPTIONS = {
-        ADMIN: 'Accès administrateur complet avec capacité d\'assigner des rôles et des permissions aux utilisateurs',
-        EMPLOYEUR_DG: 'Accès global à toutes les données à travers toutes les zones et unités',
-        EMPLOYEUR_ZONE: 'Accès et gestion des données pour une zone spécifique uniquement',
-        EMPLOYEUR_UNITE: 'Accès et gestion des données pour une unité spécifique dans une zone',
-        UTILISATEUR: 'Accès restreint à une zone et une unité spécifiques'
+        ADMIN: 'Accès complet au système',
+        EMPLOYEUR_DG: 'Gestion globale de l\'organisation',
+        EMPLOYEUR_ZONE: 'Supervision et consultation des unités de la zone',
+        EMPLOYEUR_UNITE: 'Gestion d\'une unité spécifique',
+        UTILISATEUR: 'Accès limité aux fonctionnalités de base'
+    }
+
+    # Role permissions
+    PERMISSIONS = {
+        ADMIN: {
+            'can_create_users': True,
+            'can_edit_users': True,
+            'can_delete_users': True,
+            'can_create_zones': True,
+            'can_edit_zones': True,
+            'can_delete_zones': True,
+            'can_create_units': True,
+            'can_edit_units': True,
+            'can_delete_units': True,
+            'can_create_centers': True,
+            'can_edit_centers': True,
+            'can_delete_centers': True,
+            'can_manage_incidents': True,
+            'requires_unit_selection': False,
+            'can_view_all_zones': True,
+            'can_view_all_units': True,
+            'can_view_all_centers': True,
+            'can_view_all_incidents': True
+        },
+        EMPLOYEUR_DG: {
+            'can_create_users': True,
+            'can_edit_users': True,
+            'can_delete_users': False,
+            'can_create_zones': True,
+            'can_edit_zones': True,
+            'can_delete_zones': False,
+            'can_create_units': True,
+            'can_edit_units': True,
+            'can_delete_units': False,
+            'can_create_centers': True,
+            'can_edit_centers': True,
+            'can_delete_centers': False,
+            'can_manage_incidents': True,
+            'requires_unit_selection': False,
+            'can_view_all_zones': True,
+            'can_view_all_units': True,
+            'can_view_all_centers': True,
+            'can_view_all_incidents': True
+        },
+        EMPLOYEUR_ZONE: {
+            'can_create_users': False,
+            'can_edit_users': False,
+            'can_delete_users': False,
+            'can_create_zones': False,
+            'can_edit_zones': False,
+            'can_delete_zones': False,
+            'can_create_units': False,
+            'can_edit_units': False,
+            'can_delete_units': False,
+            'can_create_centers': False,
+            'can_edit_centers': False,
+            'can_delete_centers': False,
+            'can_manage_incidents': False,
+            'requires_unit_selection': False,
+            'can_view_all_zones': False,
+            'can_view_zone_units': True,
+            'can_view_zone_centers': True,
+            'can_view_zone_incidents': True,
+            'can_view_zone_users': True
+        },
+        EMPLOYEUR_UNITE: {
+            'can_create_users': False,
+            'can_edit_users': False,
+            'can_delete_users': False,
+            'can_create_zones': False,
+            'can_edit_zones': False,
+            'can_delete_zones': False,
+            'can_create_units': False,
+            'can_edit_units': False,
+            'can_delete_units': False,
+            'can_create_centers': True,
+            'can_edit_centers': True,
+            'can_delete_centers': False,
+            'can_manage_incidents': True,
+            'requires_unit_selection': True,
+            'can_view_unit_centers': True,
+            'can_view_unit_incidents': True,
+            'can_view_unit_users': True
+        },
+        UTILISATEUR: {
+            'can_create_users': False,
+            'can_edit_users': False,
+            'can_delete_users': False,
+            'can_create_zones': False,
+            'can_edit_zones': False,
+            'can_delete_zones': False,
+            'can_create_units': False,
+            'can_edit_units': False,
+            'can_delete_units': False,
+            'can_create_centers': False,
+            'can_edit_centers': False,
+            'can_delete_centers': False,
+            'can_create_incidents': True,
+            'can_edit_own_incidents': True,
+            'can_delete_own_incidents': False,
+            'requires_unit_selection': True,
+            'can_view_unit_incidents': True
+        }
     }
 
     # Role requirements for zone and unit
@@ -70,6 +173,15 @@ class UserRole:
     def get_role_display_name(role):
         """Get the display name for a role"""
         return UserRole.ROLE_NAMES.get(role, role)
+
+    @staticmethod
+    def get_permissions(role):
+        return UserRole.PERMISSIONS.get(role, UserRole.PERMISSIONS[UserRole.UTILISATEUR])
+
+    @staticmethod
+    def requires_unit_selection(role):
+        """Return True if the role requires unit selection."""
+        return role not in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG, UserRole.EMPLOYEUR_ZONE]
 
     @staticmethod
     def assign_role_and_permissions(user_id, role, zone_id=None, unit_id=None):
