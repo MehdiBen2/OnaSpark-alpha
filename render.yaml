@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: onaspark
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash ./scripts/init.sh
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: FLASK_ENV
+        value: production
+      - key: SQLALCHEMY_DATABASE_URI
+        value: sqlite:///instance/onaspark.db
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        sync: false  # Allow Render to set the port
