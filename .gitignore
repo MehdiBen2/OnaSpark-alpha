@@ -45,3 +45,11 @@ Thumbs.db
 
 # Heroku
 .heroku/
+
+# Azure
+*.azurecredentials
+.azure/
+azure_credentials.json
+
+# Azure Pipelines
+*.tmp
