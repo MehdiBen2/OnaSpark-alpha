@@ -1,0 +1,107 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Documentation Technique</h1>
+</div>
+
+<div class="row">
+    <!-- Technical Documents -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Documents Techniques</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                        Guide Technique de Réutilisation
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                        Spécifications des Équipements
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                        Procédures d'Exploitation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forms and Templates -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Formulaires et Modèles</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-word text-primary me-2"></i>
+                        Formulaire de Demande
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-excel text-success me-2"></i>
+                        Modèle de Rapport Mensuel
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-file-word text-primary me-2"></i>
+                        Checklist de Contrôle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Tutorials -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Tutoriels Vidéo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Introduction au Système</h6>
+                                <p class="card-text">Durée: 15 min</p>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-play me-2"></i>Regarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Maintenance Préventive</h6>
+                                <p class="card-text">Durée: 20 min</p>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-play me-2"></i>Regarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Procédures d'Urgence</h6>
+                                <p class="card-text">Durée: 10 min</p>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-play me-2"></i>Regarder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

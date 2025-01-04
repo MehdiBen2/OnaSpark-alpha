@@ -1,0 +1,306 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<!-- Hero Section -->
+<div class="hero-section text-white position-relative">
+    <div class="hero-overlay"></div>
+    <div class="container-fluid px-4">
+        <div class="row align-items-center hero-content">
+            <div class="col-lg-3 col-md-4 text-center text-md-start">
+                <img src="{{ url_for('static', filename='images/ona_logoFull.png') }}" alt="ONA Logo" class="ona-logo">
+            </div>
+            <div class="col-lg-9 col-md-8">
+                <h1 class="display-4 fw-bold mb-2">Réutilisation des Eaux Usées Traitées</h1>
+                <p class="lead mb-3">Une approche innovante pour la gestion durable des ressources hydriques en Algérie</p>
+                <a href="#learn-more" class="btn btn-light btn-lg px-4 animate-hover">En savoir plus</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container-fluid px-4 pt-4" id="learn-more">
+    <!-- Overview Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="feature-icon bg-primary bg-gradient rounded-circle me-3">
+                            <i class="fas fa-water text-white p-3"></i>
+                        </div>
+                        <h2 class="h3 mb-0">Aperçu du Programme</h2>
+                    </div>
+                    <p class="lead text-muted">La réutilisation des eaux usées traitées s'inscrit dans le cadre de la stratégie nationale de gestion intégrée des ressources hydriques. Cette initiative vise à optimiser l'utilisation de l'eau tout en préservant les ressources naturelles.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Features Grid -->
+    <div class="row g-4 mb-5">
+        <!-- Objectifs -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-success bg-gradient rounded-circle mb-3">
+                        <i class="fas fa-bullseye text-white p-3"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Objectifs Stratégiques</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Optimisation des ressources hydriques</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Réduction de l'impact environnemental</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Développement de l'agriculture durable</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Innovation dans le traitement des eaux</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avantages -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-warning bg-gradient rounded-circle mb-3">
+                        <i class="fas fa-star text-white p-3"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Avantages</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-star text-warning me-2"></i>Économie d'eau potable</li>
+                        <li class="mb-2"><i class="fas fa-star text-warning me-2"></i>Réduction des coûts opérationnels</li>
+                        <li class="mb-2"><i class="fas fa-star text-warning me-2"></i>Protection de l'environnement</li>
+                        <li class="mb-2"><i class="fas fa-star text-warning me-2"></i>Amélioration de la sécurité alimentaire</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paramètres de Qualité -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body p-4">
+                    <div class="feature-icon bg-info bg-gradient rounded-circle mb-3">
+                        <i class="fas fa-flask text-white p-3"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Paramètres de Qualité</h3>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-vial text-info me-2"></i>Contrôle microbiologique</li>
+                        <li class="mb-2"><i class="fas fa-vial text-info me-2"></i>Analyse physico-chimique</li>
+                        <li class="mb-2"><i class="fas fa-vial text-info me-2"></i>Surveillance des éléments toxiques</li>
+                        <li class="mb-2"><i class="fas fa-vial text-info me-2"></i>Évaluation de la salinité</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="h4 mb-4">Applications et Utilisations</h3>
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="application-card text-center p-3">
+                                <i class="fas fa-seedling fa-2x text-success mb-3"></i>
+                                <h4 class="h5">Agriculture</h4>
+                                <p class="small text-muted">Irrigation des cultures et développement agricole durable</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="application-card text-center p-3">
+                                <i class="fas fa-golf-ball fa-2x text-primary mb-3"></i>
+                                <h4 class="h5">Espaces Verts</h4>
+                                <p class="small text-muted">Entretien des parcs et terrains de golf</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="application-card text-center p-3">
+                                <i class="fas fa-industry fa-2x text-secondary mb-3"></i>
+                                <h4 class="h5">Industrie</h4>
+                                <p class="small text-muted">Processus industriels et refroidissement</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="application-card text-center p-3">
+                                <i class="fas fa-tree fa-2x text-success mb-3"></i>
+                                <h4 class="h5">Foresterie</h4>
+                                <p class="small text-muted">Reboisement et restauration écologique</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #1976d2, #64b5f6);
+    position: relative;
+    margin: -24px -16px 2rem -16px;
+    padding: 2rem 0;
+    min-height: 40vh;
+    overflow: hidden;
+    border-radius: 0 0 35PX 35PX;
+}
+
+.hero-content {
+    min-height: 40vh;
+    display: flex;
+    align-items: center;
+}
+
+.ona-logo {
+    width: 280px;
+    max-width: 100%;
+    filter: brightness(0) invert(1);
+    transition: transform 0.3s ease;
+}
+
+.ona-logo:hover {
+    transform: scale(1.05);
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("{{ url_for('static', filename='images/water-pattern.png') }}") repeat;
+    opacity: 0.1;
+    animation: moveBackground 20s linear infinite;
+    border-radius: 0 0 20% 20%;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.hover-card {
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.application-card {
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+.application-card:hover {
+    background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.animate-hover {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.animate-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.animate-hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(255,255,255,0.2) 50%,
+        transparent 100%
+    );
+    transition: left 0.5s ease;
+}
+
+.animate-hover:hover::after {
+    left: 100%;
+}
+
+@keyframes moveBackground {
+    from { background-position: 0 0; }
+    to { background-position: 100% 100%; }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        margin: -16px -8px 2rem -8px;
+        padding: 1.5rem 0;
+    }
+    
+    .ona-logo {
+        width: 200px;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-content {
+        text-align: center;
+        min-height: auto;
+    }
+    
+    .hero-overlay {
+        border-radius: 0;
+    }
+}
+
+/* Add smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Add modern card styling */
+.card {
+    border-radius: 15px !important;
+    border: 1px solid rgba(0,0,0,0.125) !important;
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+}
+
+.card-body {
+    border-radius: 15px;
+}
+
+/* Add modern list styling */
+.list-unstyled li {
+    padding: 8px 0;
+    transition: transform 0.2s ease;
+}
+
+.list-unstyled li:hover {
+    transform: translateX(5px);
+}
+
+/* Add modern icon styling */
+.fas {
+    transition: transform 0.3s ease;
+}
+
+.hover-card:hover .fas,
+.application-card:hover .fas {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

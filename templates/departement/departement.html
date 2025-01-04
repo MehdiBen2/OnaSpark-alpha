@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Départements{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-2">Départements ONA</h1>
+                <p class="lead text-white-50">Gestion intégrée des services et opérations</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-white">Accueil</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Départements</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-n5">
+    <div class="row g-4">
+        <!-- Moyens Généraux -->
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-primary">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>Moyens Généraux</h3>
+                        <p>Gestion des ressources matérielles et logistiques de l'organisation</p>
+                        <div class="features">
+                            <span><i class="fas fa-building"></i> Infrastructure</span>
+                            <span><i class="fas fa-truck"></i> Transport</span>
+                            <span><i class="fas fa-warehouse"></i> Stock</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="#" class="btn btn-primary">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exploitation et Maintenance -->
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-success">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>Exploitation et Maintenance</h3>
+                        <p>Supervision des opérations et maintenance des installations</p>
+                        <div class="features">
+                            <span><i class="fas fa-clipboard-check"></i> Rapports</span>
+                            <span><i class="fas fa-wrench"></i> Maintenance</span>
+                            <span><i class="fas fa-chart-line"></i> Performance</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="{{ url_for('exploitation') }}" class="btn btn-success">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REUSE -->
+<div class="col-md-6 col-lg-4">
+    <div class="department-card">
+      <div class="card-content">
+        <!-- Icon wrapper with a 'recycle'-style icon and a new color (e.g., bg-success) -->
+        <div class="icon-wrapper bg-success">
+          <i class="fas fa-recycle"></i>
+        </div>
+  
+        <div class="info-wrapper">
+          <h3>REUSE</h3>
+          <!-- Updated subtitle to match water reuse context -->
+          <p>Réutilisation de l’eau après épuration</p>
+  
+          <!-- Features that highlight your main reuse concepts -->
+          <div class="features">
+            <span><i class="fas fa-file-contract"></i> Réglementations</span>
+            <span><i class="fas fa-tint"></i> Qualité de l’eau</span>
+            <span><i class="fas fa-info-circle"></i> Informations</span>
+          </div>
+        </div>
+  
+        <div class="action-wrapper">
+          <!-- Adjust button color to match your chosen theme -->
+          <a href="{{ url_for('reuse') }}" class="btn btn-success">
+            <span>Accéder</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+        <!-- Finance -->
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-info">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>Finance</h3>
+                        <p>Gestion financière et comptable de l'organisation</p>
+                        <div class="features">
+                            <span><i class="fas fa-calculator"></i> Comptabilité</span>
+                            <span><i class="fas fa-money-bill-wave"></i> Budget</span>
+                            <span><i class="fas fa-file-invoice-dollar"></i> Factures</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="#" class="btn btn-info">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DRH -->
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-warning">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>DRH</h3>
+                        <p>Gestion des ressources humaines et développement du personnel</p>
+                        <div class="features">
+                            <span><i class="fas fa-user-tie"></i> Personnel</span>
+                            <span><i class="fas fa-graduation-cap"></i> Formation</span>
+                            <span><i class="fas fa-clipboard-list"></i> Évaluation</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="#" class="btn btn-warning">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HSE -->
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-danger">
+                        <i class="fas fa-hard-hat"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>HSE</h3>
+                        <p>Hygiène, Sécurité et Environnement pour un milieu de travail sûr</p>
+                        <div class="features">
+                            <span><i class="fas fa-shield-alt"></i> Sécurité</span>
+                            <span><i class="fas fa-leaf"></i> Environnement</span>
+                            <span><i class="fas fa-medkit"></i> Santé</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="#" class="btn btn-danger">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+        padding: 2.5rem 0 5rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .department-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .department-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .icon-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+        top: 0;
+        left: 0;
+    }
+
+    .info-wrapper {
+        flex: 1;
+    }
+
+    .info-wrapper h3 {
+        color: var(--ona-dark);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-wrapper p {
+        color: #6c757d;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        font-size: 0.9rem;
+    }
+
+    .features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .features span {
+        background: rgba(0, 0, 0, 0.05);
+        padding: 0.35rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        color: var(--ona-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .features span i {
+        font-size: 0.75rem;
+    }
+
+    .action-wrapper {
+        margin-top: auto;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn:hover i {
+        transform: translateX(5px);
+    }
+
+    .bg-primary { background: linear-gradient(135deg, #356ee7 0%, #4a7ff5 100%); }
+    .bg-success { background: linear-gradient(135deg, #28a745 0%, #34ce57 100%); }
+    .bg-info { background: linear-gradient(135deg, #17a2b8 0%, #1fc8e3 100%); }
+    .bg-warning { background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%); }
+    .bg-danger { background: linear-gradient(135deg, #dc3545 0%, #e4606d 100%); }
+
+    /* Gray out all department cards except exploitation */
+    .department-card {
+        opacity: 0.5;
+        filter: grayscale(100%);
+        transition: all 0.3s ease;
+    }
+
+    /* Keep exploitation card normal */
+    .department-card:has(.icon-wrapper.bg-success) {
+        opacity: 1;
+        filter: none;
+    }
+
+    /* Disable hover effects on grayed out cards */
+    .department-card:not(:has(.icon-wrapper.bg-success)):hover {
+        transform: none;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 0 4rem;
+        }
+        
+        .breadcrumb {
+            justify-content: flex-start !important;
+            margin-top: 1rem;
+        }
+
+        .features {
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .features span {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

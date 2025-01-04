@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}ONA - Créer un Utilisateur{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-user-plus me-2 text-primary"></i>
+                    <span class="gradient-text">Créer un Utilisateur</span>
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main_dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('users.manage_users') }}">Gestion des Utilisateurs</a></li>
+                        <li class="breadcrumb-item active">Créer</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="glass-card">
+                <form method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="invalid-feedback">
+                            Veuillez entrer un nom d'utilisateur.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="invalid-feedback">
+                            Veuillez entrer un mot de passe.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select class="form-select" id="role" name="role" required onchange="handleRoleChange()">
+                            <option value="">Sélectionnez un rôle</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Employeur de Zone">Employeur de Zone</option>
+                            <option value="Employeur de l'unité">Employeur de l'unité</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Veuillez sélectionner un rôle.
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="zoneSelect" style="display: none;">
+                        <label for="zone_id" class="form-label">Zone</label>
+                        <select class="form-select" id="zone_id" name="zone_id">
+                            <option value="">Sélectionnez une zone</option>
+                            {% for zone in zones %}
+                            <option value="{{ zone.id }}">{{ zone.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Veuillez sélectionner une zone.
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="unitSelect" style="display: none;">
+                        <label for="unit_id" class="form-label">Unité</label>
+                        <select class="form-select" id="unit_id" name="unit_id">
+                            <option value="">Sélectionnez une unité</option>
+                            {% for unit in units %}
+                            <option value="{{ unit.id }}" data-zone="{{ unit.zone_id }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Veuillez sélectionner une unité.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('users.manage_users') }}" class="btn btn-secondary me-md-2">Annuler</a>
+                        <button type="submit" class="btn btn-primary">Créer l'utilisateur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1rem;
+    padding: 2rem;
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #1976D2, #2196F3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
+
+<script>
+function handleRoleChange() {
+    const role = document.getElementById('role').value;
+    const zoneSelect = document.getElementById('zoneSelect');
+    const unitSelect = document.getElementById('unitSelect');
+    const zoneInput = document.getElementById('zone_id');
+    const unitInput = document.getElementById('unit_id');
+
+    // Reset required attributes
+    zoneInput.required = false;
+    unitInput.required = false;
+
+    // Hide both selects initially
+    zoneSelect.style.display = 'none';
+    unitSelect.style.display = 'none';
+
+    if (role === 'Employeur de Zone') {
+        zoneSelect.style.display = 'block';
+        zoneInput.required = true;
+    } else if (role === 'Employeur de l\'unité') {
+        unitSelect.style.display = 'block';
+        unitInput.required = true;
+    }
+}
+
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<div class="container-fluid pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-info bg-opacity-25 text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tint me-2"></i>
+                        Évaluation de la Qualité de l'Eau
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="waterQualityForm" method="POST" action="{{ url_for('assess_water_quality_route') }}">
+                        {% for param_type, metadata in parameter_metadata.items() %}
+                        <!-- {{ metadata.title }} -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-{{ metadata.color }} bg-opacity-25 text-dark">
+                                <h6 class="mb-0"><i class="fas fa-{{ metadata.icon }} me-2"></i>{{ metadata.title }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for param_id, param in metadata.parameters.items() %}
+                                    <div class="col-md-{{ 12 // metadata.parameters|length }} mb-3">
+                                        <label for="{{ param_id }}" class="form-label">{{ param.name }}{% if param.unit %} ({{ param.unit }}){% endif %}</label>
+                                        <input type="number" 
+                                               class="form-control" 
+                                               id="{{ param_id }}" 
+                                               name="{{ param_id }}"
+                                               step="{{ param.step }}"
+                                               min="{{ param.min }}"
+                                               required>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-info bg-opacity-75 text-dark">
+                            <i class="fas fa-check-circle me-2"></i>Évaluer la Qualité
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom JavaScript -->
+<script>
+document.getElementById('waterQualityForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Évaluation en cours...';
+    submitButton.disabled = true;
+
+    try {
+        // Create FormData from form
+        const formData = new FormData(this);
+        
+        // Convert FormData to URLSearchParams for proper submission
+        const params = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            // Convert to float and check if it's a valid number
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+                params.append(key, numValue);
+            }
+        }
+
+        // Make the request
+        const response = await fetch("{{ url_for('assess_water_quality_route') }}", {
+            method: 'POST',
+            body: params,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Create URL with parameters
+        const url = new URL("{{ url_for('water_quality_results_route', _external=True) }}");
+        for (const [key, value] of params.entries()) {
+            url.searchParams.append(key, value);
+        }
+        
+        // Redirect to results page
+        window.location.href = url.toString();
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Une erreur est survenue lors de l\'évaluation. Veuillez réessayer.');
+        
+        // Restore button state
+        submitButton.innerHTML = originalButtonText;
+        submitButton.disabled = false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<div class="container-fluid py-4">
+    <!-- General Classification Card -->
+    <div class="card mb-4 classification-card">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="classification-icon me-3">
+                    <i class="fas fa-{{ rating_info.icon }}"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted mb-1">Classification Générale</h6>
+                    <h4 class="mb-0">{{ rating_info.title }}</h4>
+                    <p class="text-muted mb-0">{{ rating_info.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parameter Values Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0"><i class="fas fa-list-alt me-2"></i>Paramètres Analysés</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for param_type, metadata in parameter_metadata.items() %}
+                <!-- {{ metadata.title }} -->
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-{{ metadata.color }}">
+                        <i class="fas fa-{{ metadata.icon }} me-2"></i>{{ metadata.title }}
+                    </h6>
+                    <ul class="list-group">
+                        {% for param_id, param in metadata.parameters.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ param.name }}
+                            <span class="badge bg-secondary">{{ parameters[param_id] }} {{ param.unit }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="row">
+        <!-- Allowed Crops -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-seedling me-2"></i>Cultures Autorisées</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if allowed_crops %}
+                            {% for crop in allowed_crops %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-seedling text-success me-2"></i>{{ crop }}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-muted">
+                                <i class="fas fa-info-circle me-2"></i>Aucune culture autorisée avec ces paramètres
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restrictions -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Restrictions</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% if restrictions %}
+                            {% for restriction in restrictions %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-exclamation-circle text-warning me-2"></i>{{ restriction }}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-muted">
+                                <i class="fas fa-info-circle me-2"></i>Aucune restriction particulière
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Violations -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h6 class="mb-0"><i class="fas fa-times-circle me-2"></i>Paramètres Hors Normes</h6>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                {% if violations %}
+                    {% for violation in violations %}
+                        <li class="list-group-item text-danger">
+                            <i class="fas fa-times-circle me-2"></i>{{ violation }}
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item text-success">
+                        <i class="fas fa-check-circle me-2"></i>Tous les paramètres sont conformes aux normes
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{{ url_for('water_quality_route') }}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Retour à l'évaluation
+        </a>
+        <a href="{{ url_for('download_water_quality_pdf', **parameters) }}" class="btn btn-primary">
+            <i class="fas fa-file-pdf me-2"></i>Télécharger PDF
+        </a>
+    </div>
+</div>
+
+<style>
+.classification-card {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.classification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.classification-icon {
+    background: #1976d2;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.classification-card h6 {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.classification-card h4 {
+    color: #1565c0;
+    font-weight: 600;
+}
+
+.classification-card p {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

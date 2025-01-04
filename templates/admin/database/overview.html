@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Database Management</h2>
+    
+    <div class="row">
+        {% for table in tables %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ table.name }}</h5>
+                    <a href="{{ url_for('database_admin.view_table', table_name=table.name) }}" class="btn btn-primary btn-sm">View/Edit</a>
+                </div>
+                <div class="card-body">
+                    <h6>Columns:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Nullable</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for column in table.columns %}
+                            <tr>
+                                <td>{{ column.name }}</td>
+                                <td>{{ column.type }}</td>
+                                <td>{{ 'Yes' if column.nullable else 'No' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

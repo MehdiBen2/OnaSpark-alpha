@@ -1,0 +1,97 @@
+ARRÊTÉ INTERMINISTÉRIEL DU 8 SAFAR 1433
+Correspondant au 2 janvier 2012
+Fixant les spécifications des eaux usées épurées utilisées à des fins d’irrigation
+
+Le ministre des Ressources en eau,
+Le ministre de l’Agriculture et du Développement rural,
+Le ministre de la Santé, de la Population et de la Réforme hospitalière,
+
+Vu le décret présidentiel n° 10-149 du 14 Joumada Ethania 1431 correspondant au 28 mai 2010 portant nomination des membres du Gouvernement ;
+Vu le décret exécutif n° 05-464 du 4 Dhou El Kaada 1426 correspondant au 6 décembre 2005, relatif à l’organisation et au fonctionnement de la normalisation ;
+Vu le décret exécutif n° 07-149 du 3 Joumada El Oula 1428 correspondant au 20 mai 2007 fixant les modalités de concession d’utilisation des eaux usées épurées à des fins d’irrigation, ainsi que le cahier des charges-type y afférent ;
+Arrêtent :
+
+Article 1er
+En application des dispositions de l’article 2 du décret exécutif n° 07-149 du 3 Joumada El Oula 1428 correspondant au 20 mai 2007 susvisé, le présent arrêté a pour objet de fixer les spécifications des eaux usées épurées utilisées à des fins d’irrigation, conformément à l’annexe ci-jointe.
+
+Article 2
+Le présent arrêté sera publié au Journal officiel de la République algérienne démocratique et populaire.
+
+Fait à Alger, le 8 Safar 1433 correspondant au 2 janvier 2012.
+
+Le ministre de la Santé, de la Population
+et de la Réforme hospitalière
+Djamel OULD ABBES
+
+Le ministre de l’Agriculture
+et du Développement rural
+Rachid BENAISSA
+
+Le ministre
+des Ressources en eau
+Abdelmalek SELLAL
+
+Remarque : Un passage concernant la date du 23 Chaâbane 1432 correspondant au 25 juillet 2011 est présent dans le texte d’origine, mais il semble s’agir d’un fragment répété ou partiellement inséré (Article 6) sans contexte clair. Il n’est pas relié aux articles numérotés 1er et 2 ci-dessus. Veuillez confirmer cette information avant publication définitive.
+
+ANNEXE
+SPÉCIFICATIONS DES EAUX USÉES ÉPURÉES UTILISÉES À DES FINS D’IRRIGATION
+
+1. Paramètres microbiologiques
+Groupes de cultures	Coliformes fécaux (CFU / 100 ml) <br> (moyenne géométrique)	Nématodes intestinaux (œufs / L) <br> (moyenne arithmétique)
+Irrigation non restrictive : cultures de produits pouvant être consommés crus, légumes consommés uniquement cuits, légumes destinés à la conserverie ou à la transformation non alimentaire, arbres fruitiers (1), cultures et arbustes fourragers (2), cultures céréalières, cultures industrielles (3), arbres forestiers, plantes florales et ornementales (4).	< 1 000
+(Seuil recommandé : 100 ou 250 selon la catégorie)	Absence
+(Seuil recommandé : < 0,1 ou < 1)
+Cultures du groupe précédent utilisant l’irrigation localisée (5)(6)	< 1 000
+(Seuil recommandé : 100 ou 250)	Absence
+(Seuil recommandé : < 0,1 ou < 1)
+Notes
+Arbres fruitiers : l’irrigation doit cesser deux semaines avant la cueillette. Aucun fruit tombé ne doit être ramassé. L’irrigation par aspersion est à éviter.
+Cultures fourragères : le pâturage direct est interdit. Il est recommandé de cesser l’irrigation au moins une semaine avant la coupe.
+Cultures industrielles et arbres forestiers : des paramètres plus permissifs peuvent être adoptés, sous réserve des dispositions réglementaires.
+Parcs et espaces verts fréquentés par le public : une norme plus stricte (par exemple < 200 coliformes fécaux / 100 ml) peut être justifiée.
+Irrigation localisée : exige une technique limitant le contact de l’eau usée épurée avec les fruits et légumes.
+Population et ouvriers : conditionnée par la maîtrise de l’irrigation localisée et le respect des règles d’hygiène (absence de population autour de la zone, etc.).
+2. Paramètres physico-chimiques
+2.1 Paramètres physiques
+pH : 6.5 ≤ pH ≤ 8.5
+MES (Matières en suspension) : ≤ 30 mg/L
+CE (Conductivité électrique) : ≤ 3 dS/m
+Remarque : Concernant l’infiltration, la relation entre le SAR (Sodium Adsorption Ratio) et la CE est à prendre en compte comme suit :
+
+SAR 0 – 3 : CE = 0,2 dS/m
+SAR 3 – 6 : CE = 0,3 dS/m
+SAR 6 – 12 : CE = 0,5 dS/m
+SAR 12 – 20 : CE = 1,3 dS/m
+SAR 20 – 40 : CE = 3 dS/m
+2.2 Paramètres chimiques
+DBO5 : 30 mg/L
+DCO : 90 mg/L
+Chlorure (Cl-) : 10 meq/L
+Azote (NO3 – N) : 30 mg/L
+Bicarbonates (HCO3) : 8,5 meq/L
+2.3 Éléments toxiques (pour sols fins, neutres ou alcalins)
+Élément	Unité	Concentration maximale admissible
+Aluminium (Al)	mg/L	5.0
+Arsenic (As)	mg/L	0.5
+Béryllium (Be)	mg/L	0.5
+Bore (B)	mg/L	2.0
+Cadmium (Cd)	mg/L	0.05
+Chrome (Cr)	mg/L	1.0
+Cobalt (Co)	mg/L	0.05
+Cuivre (Cu)	mg/L	0.5
+Cyanures (CN-)	mg/L	0.1
+Fer (Fe)	mg/L	5.0
+Fluor (F-)	mg/L	5.0
+Lithium (Li)	mg/L	2.5
+Manganèse (Mn)	mg/L	0.2
+Mercure (Hg)	mg/L	0.002
+Molybdène (Mo)	mg/L	0.01
+Nickel (Ni)	mg/L	0.05
+Plomb (Pb)	mg/L	0.5
+Phénols	mg/L	0.5
+Sélénium (Se)	mg/L	0.02
+Vanadium (V)	mg/L	0.1
+Zinc (Zn)	mg/L	2.0
+Observations générales
+Les seuils indiqués correspondent à des valeurs maximales recommandées pour protéger la santé humaine, le bétail et l’environnement.
+L’utilisation des eaux usées épurées doit toujours être encadrée par des contrôles réguliers et des pratiques agricoles adaptées (ex. mesures d’hygiène, interruption d’irrigation avant récolte, etc.).

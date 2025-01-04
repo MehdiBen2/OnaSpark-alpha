@@ -1,0 +1,87 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Méthodes de Réutilisation</h1>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Processus de Traitement</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <h5 class="mb-1">Prétraitement</h5>
+                        <p class="mb-1">Élimination des débris et matières grossières.</p>
+                    </div>
+                    <div class="list-group-item">
+                        <h5 class="mb-1">Traitement Primaire</h5>
+                        <p class="mb-1">Séparation des matières en suspension.</p>
+                    </div>
+                    <div class="list-group-item">
+                        <h5 class="mb-1">Traitement Secondaire</h5>
+                        <p class="mb-1">Élimination de la pollution organique.</p>
+                    </div>
+                    <div class="list-group-item">
+                        <h5 class="mb-1">Traitement Tertiaire</h5>
+                        <p class="mb-1">Affinage et désinfection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Applications</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-tree text-success me-2"></i>
+                        Irrigation Agricole
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-industry text-success me-2"></i>
+                        Usage Industriel
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-leaf text-success me-2"></i>
+                        Espaces Verts
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Technologies</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-filter text-primary me-2"></i>
+                        Filtration Membranaire
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-radiation text-primary me-2"></i>
+                        Désinfection UV
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-vials text-primary me-2"></i>
+                        Traitement Biologique
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

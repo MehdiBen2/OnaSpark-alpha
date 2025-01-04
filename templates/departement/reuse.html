@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REUSE Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f;
+            color: #ffffff;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c2c3a;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .sidebar a:hover {
+            background-color: #38384d;
+            color: #00bcd4;
+        }
+
+        .sidebar a.active {
+            background-color: #4a4a61;
+            color: #00bcd4;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 18px;
+            color: #bbbbbb;
+        }
+
+        .card {
+            background-color: #2c2c3a;
+            border: 1px solid #38384d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 24px;
+            color: #00bcd4;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 16px;
+            color: #bbbbbb;
+        }
+
+        .card a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #00bcd4;
+            text-decoration: none;
+        }
+
+        .card a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="#" class="active">Introduction</a>
+        <a href="#">Water Regulations</a>
+        <a href="#">Reuse Methods</a>
+        <a href="#">Case Studies</a>
+        <a href="#">API Keys</a>
+        <a href="#">Webhooks</a>
+        <a href="#">Fees</a>
+        <a href="#">FAQ</a>
+    </div>
+
+    <div class="content">
+        <div class="header">
+            <h1>REUSE Documentation</h1>
+            <p>Welcome to the documentation for REUSE, focused on water reuse after treatment.</p>
+        </div>
+
+        <div class="card">
+            <h2>Start The Integration</h2>
+            <p>A guide that helps you integrate reuse concepts into your project, including quality control and compliance requirements.</p>
+            <a href="#">Learn More</a>
+        </div>
+
+        <div class="card">
+            <h2>API Reference</h2>
+            <p>Checkout the API reference for a complete list of endpoints for water reuse management.</p>
+            <a href="#">Explore API</a>
+        </div>
+    </div>
+</body>
+</html>

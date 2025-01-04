@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Sélection de l'Unité{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Sélectionnez votre Unité</h3>
+                    <form method="POST" action="{{ url_for('select_unit') }}">
+                        <div class="mb-4">
+                            <label for="zone" class="form-label">Zone</label>
+                            <select class="form-select" id="zone" name="zone" required onchange="updateUnits()">
+                                <option value="">Sélectionnez une zone</option>
+                                {% for zone in zones %}
+                                <option value="{{ zone.id }}">{{ zone.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="unit_id" class="form-label">Unité</label>
+                            <select class="form-select" id="unit_id" name="unit_id" required disabled>
+                                <option value="">Sélectionnez d'abord une zone</option>
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Confirmer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateUnits() {
+    const zoneSelect = document.getElementById('zone');
+    const unitSelect = document.getElementById('unit_id');
+    const selectedZone = zoneSelect.value;
+
+    if (selectedZone) {
+        fetch(`/api/units/${selectedZone}`)
+            .then(response => response.json())
+            .then(units => {
+                unitSelect.innerHTML = '<option value="">Sélectionnez une unité</option>';
+                units.forEach(unit => {
+                    unitSelect.innerHTML += `<option value="${unit.id}">${unit.name}</option>`;
+                });
+                unitSelect.disabled = false;
+            });
+    } else {
+        unitSelect.innerHTML = '<option value="">Sélectionnez d\'abord une zone</option>';
+        unitSelect.disabled = true;
+    }
+}
+</script>
+{% endblock %}

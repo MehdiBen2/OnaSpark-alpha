@@ -1,0 +1,227 @@
+/* User Management Styles */
+
+/* Card Styles */
+.glass-card {
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+/* Text Styles */
+.gradient-text {
+    background: linear-gradient(45deg, #1976D2, #2196F3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Table Styles */
+.table th {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.5em 1em;
+}
+
+/* Panel Styles */
+.sliding-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1050;
+}
+
+.sliding-panel.open {
+    visibility: visible;
+    opacity: 1;
+}
+
+.panel-content {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sliding-panel.open .panel-content {
+    right: 0;
+}
+
+.panel-header {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    z-index: 2;
+}
+
+.panel-body {
+    padding: 1.5rem;
+    flex: 1;
+    background: #ffffff;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+.input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 0.375rem;
+    min-width: 200px;
+}
+
+.input-group-text {
+    background-color: white;
+    border-right: none;
+    color: #6c757d;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem);
+}
+
+.form-control, .form-select {
+    border-left: none;
+    padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem);
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+/* Button Styles */
+.btn {
+    padding: clamp(0.375rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1.5rem);
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.btn-lg {
+    padding: clamp(0.5rem, 2vw, 1rem) clamp(1rem, 2.5vw, 2rem);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Toast Styles */
+.toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1060;
+    max-width: calc(100% - 2rem);
+}
+
+/* Responsive Styles */
+@media (min-width: 576px) {
+    .panel-content {
+        width: 90%;
+        right: -90%;
+    }
+    .toast-container {
+        max-width: 320px;
+    }
+}
+
+@media (min-width: 768px) {
+    .panel-content {
+        width: 75%;
+        right: -75%;
+    }
+}
+
+@media (min-width: 992px) {
+    .panel-content {
+        width: 50%;
+        right: -50%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .panel-content {
+        width: 500px;
+        right: -500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .glass-card {
+        padding: 1rem;
+    }
+    .table {
+        font-size: 0.875rem;
+    }
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.5em;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+    }
+    .pagination {
+        margin-bottom: 1rem !important;
+    }
+    .breadcrumb {
+        font-size: 0.875rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    .input-group-text,
+    .form-control,
+    .form-select,
+    .btn {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 576px) {
+    .glass-card {
+        padding: 0.75rem;
+    }
+    .card-body {
+        padding: 0.75rem;
+    }
+    .table {
+        font-size: 0.8125rem;
+    }
+    .pagination .page-link {
+        padding: 0.375rem 0.75rem;
+    }
+    h2 {
+        font-size: 1.25rem;
+    }
+    .btn-primary {
+        width: 100%;
+    }
+}

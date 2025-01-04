@@ -1,0 +1,746 @@
+{% extends "departement/reuse/base_reuse.html" %}
+
+{% block reuse_content %}
+<style>
+.decree-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.custom-accordion .accordion-item {
+    border: none;
+    background: none;
+    margin-bottom: 1rem;
+}
+
+.custom-accordion .accordion-button {
+    border-radius: 10px;
+    background: linear-gradient(to right, rgba(33, 150, 243, 0.05), rgba(33, 150, 243, 0.01));
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.custom-accordion .accordion-button:not(.collapsed) {
+    background: linear-gradient(to right, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05));
+    color: #2196f3;
+    box-shadow: none;
+}
+
+.card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.decree-content {
+    font-size: 0.95rem;
+}
+
+.decree-header {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 1.5rem;
+}
+
+.article {
+    margin-bottom: 1.5rem;
+}
+
+.article h6 {
+    color: var(--ona-primary);
+    font-weight: 600;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(53, 110, 231, 0.1);
+    color: var(--ona-primary);
+}
+
+.accordion-button:focus {
+    border-color: var(--ona-primary);
+    box-shadow: 0 0 0 0.25rem rgba(53, 110, 231, 0.25);
+}
+
+.card-header {
+    font-weight: 500;
+}
+
+.list-group-item i {
+    width: 20px;
+}
+
+.alert {
+    border-left: 4px solid;
+}
+
+.alert-info {
+    border-left-color: var(--ona-primary);
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-primary {
+    background-color: var(--ona-primary) !important;
+}
+</style>
+
+<div class="container-fluid pt-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="decree-icon rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-gavel text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold">Décret Exécutif N° 07-149</h5>
+                            <p class="text-muted small mb-0">Du 3 Joumada El Oula 1428 (20 Mai 2007)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="decree-content">
+                        <div class="decree-header mb-4">
+                            <h4 class="text-center mb-3">DÉCRET EXÉCUTIF N° 07-149 DU 3 JOUMADA EL OULA 1428 (20 MAI 2007)</h4>
+                            <p class="text-center text-muted">Fixant les modalités de concession d'utilisation des eaux usées épurées à des fins d'irrigation ainsi que le cahier des charges-type y afférent.</p>
+                        </div>
+
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Article 1er</h6>
+                            <p class="mb-0">En application des dispositions des articles 76 et 78 de la loi n° 05-12 du 28 Joumada Ethania 1426 correspondant au 4 août 2005 susvisée, le présent décret a pour objet de fixer les modalités de concession d'utilisation des eaux usées épurées à des fins d'irrigation ainsi que le cahier des charges-type y afférent.</p>
+                        </div>
+
+                        <div class="accordion custom-accordion" id="decreeAccordion">
+                            <!-- Dispositions préliminaires -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#chapter1">
+                                        <i class="fas fa-book me-2"></i>
+                                        CHAPITRE I - Dispositions préliminaires
+                                    </button>
+                                </h2>
+                                <div id="chapter1" class="accordion-collapse collapse show" data-bs-parent="#decreeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="article">
+                                            <h6>Article 2</h6>
+                                            <p>Au sens du présent décret, on entend par « eau usée épurée destinée à l'irrigation » toute eau usée dont la qualité, après un traitement approprié dans une station d'épuration ou de lagunage, est conforme aux spécifications fixées par arrêté conjoint des ministres chargés des ressources en eau, de la santé et de l'agriculture.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                <!-- Concession d'utilisation -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chapter2">
+                                            <i class="fas fa-file-contract me-2"></i>
+                                            CHAPITRE II - Concession d'utilisation des eaux usées épurées
+                                        </button>
+                                    </h2>
+                                    <div id="chapter2" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+                                        <div class="accordion-body">
+                                            <div class="article">
+                                                <h6>Article 3</h6>
+                                                <p>L'utilisation des eaux usées épurées à des fins d'irrigation est soumise au régime de la concession. La concession peut être octroyée à toute personne morale ou physique, de droit public ou privé, qui se propose de distribuer, à des usagers, des eaux usées épurées à des fins d'irrigation.</p>
+                                            </div>
+    
+                                            <div class="article">
+                                                <h6>Article 4</h6>
+                                                <p>L'utilisation des eaux usées épurées à des fins d'irrigation doit être conforme aux clauses du cahier des charges-type annexé au présent décret, auquel doit souscrire tout concessionnaire.</p>
+                                            </div>
+    
+                                            <div class="article">
+                                                <h6>Article 5</h6>
+                                                <p>Le dossier de demande de concession est adressé par le demandeur, en double exemplaire, au wali territorialement compétent. La wilaya compétente est celle sur le territoire de laquelle se situent les parcelles destinées à être irriguées par les eaux usées épurées.</p>
+                                            </div>
+    
+                                            <div class="article">
+                                                <h6>Article 6</h6>
+                                                <p>La demande de concession doit comporter les noms, prénoms et adresses pour les personnes physiques, ou la raison sociale et l'adresse du siège social pour les personnes morales. Elle doit être accompagnée d'un mémoire technique comprenant notamment :</p>
+                                                <ul class="list-unstyled ms-4">
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Description de la station d'épuration ou de lagunage</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Plans des ouvrages de stockage et de distribution</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Fiche d'analyse des eaux usées épurées</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Localisation et superficie des terres</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Accord écrit de l'organisme gestionnaire</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Engagement des agriculteurs</li>
+                                                    <li><i class="fas fa-check-circle text-success me-2"></i>Plan de situation des installations</li>
+                                                </ul>
+                                            </div>
+    
+                                            <div class="article">
+                                                <h6>Articles 7-13</h6>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-subtitle mb-2 text-muted">Procédure administrative</h6>
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-tasks text-primary me-2"></i>
+                                                                Étude technique par les services de l'hydraulique
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-file-signature text-primary me-2"></i>
+                                                                Octroi par arrêté du wali
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                                                Possibilité de modification ou révocation
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!-- Prévention des risques -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chapter3">
+                                        <i class="fas fa-shield-alt me-2"></i>
+                                        CHAPITRE III - Prévention des risques
+                                    </button>
+                                </h2>
+                                <div id="chapter3" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="alert alert-warning bg-opacity-10 border-0 position-relative overflow-hidden">
+                                            <div class="alert-icon position-absolute top-50 end-0 translate-middle-y me-4 opacity-25">
+                                                <i class="fas fa-exclamation-triangle fa-3x text-warning"></i>
+                                            </div>
+                                            <h6 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Restrictions importantes</h6>
+                                            <p class="mb-0">Veuillez noter les restrictions spécifiques concernant l'utilisation des eaux usées épurées.</p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-danger text-white">
+                                                        <h6 class="mb-0"><i class="fas fa-ban me-2"></i>Interdictions</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                                                Cultures maraîchères consommables crues (Art. 14)
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                                                Pâturage direct sur parcelles irriguées (Art. 19)
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                                                Irrigation par aspersion des arbres fruitiers (Art. 18)
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-times-circle text-danger me-2"></i>
+                                                                Raccordement avec l'eau potable (Art. 22)
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-warning text-dark">
+                                                        <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Précautions</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-ruler text-warning me-2"></i>
+                                                                Distance minimale de 100m des habitations (Art. 20)
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-clock text-warning me-2"></i>
+                                                                Arrêt 2 semaines avant récolte (Art. 17)
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-sign-out-alt text-warning me-2"></i>
+                                                                Signalisation obligatoire (Art. 23)
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-gradient bg-opacity-10 border-0">
+                                                <h6 class="mb-0 fw-bold"><i class="fas fa-water me-2"></i>Protection des ressources en eau</h6>
+                                            </div>
+                                            <div class="card-body bg-light bg-opacity-50">
+                                                <div class="article">
+                                                    <h6 class="text-primary">Articles 24-25</h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item bg-transparent border-0 ps-0">
+                                                            <i class="fas fa-tint text-primary me-2"></i>
+                                                            Surveillance de la qualité des puits à proximité
+                                                        </li>
+                                                        <li class="list-group-item bg-transparent border-0 ps-0">
+                                                            <i class="fas fa-hand-paper text-primary me-2"></i>
+                                                            Restrictions sur l'exploitation des puits dans les zones irriguées
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Contrôles Sanitaires -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chapter4">
+                                        <i class="fas fa-microscope me-2"></i>
+                                        CHAPITRE IV - Contrôles Sanitaires
+                                    </button>
+                                </h2>
+                                <div id="chapter4" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="article">
+                                            <h6>Article 26</h6>
+                                            <p>Lors de la mise en œuvre de la concession, les dispositions nécessaires doivent être prises pour :</p>
+                                            <ul class="list-group mb-3">
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-shield-virus text-primary me-2"></i>
+                                                    Prévenir les risques de contamination des eaux souterraines
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-wind text-primary me-2"></i>
+                                                    Éviter la stagnation d'eau et les mauvaises odeurs
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-seedling text-primary me-2"></i>
+                                                    Prévenir les risques de contamination des produits agricoles
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-info text-white">
+                                                        <h6 class="mb-0"><i class="fas fa-vial me-2"></i>Contrôles Réguliers</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="card-text">Article 27 - Les contrôles sont effectués par :</p>
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-user-tie text-info me-2"></i>
+                                                                Le concessionnaire
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-hard-hat text-info me-2"></i>
+                                                                L'exploitant agricole
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-industry text-info me-2"></i>
+                                                                Le gestionnaire de la station
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-building text-info me-2"></i>
+                                                                Les directions de wilaya
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card h-100">
+                                                    <div class="card-header bg-success text-white">
+                                                        <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Responsabilités des Services</h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-tint text-success me-2"></i>
+                                                                <strong>Hydraulique (Art. 28)</strong>: Suivi qualité eau et ouvrages
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-user-md text-success me-2"></i>
+                                                                <strong>Santé (Art. 29)</strong>: Contrôle santé du personnel
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-leaf text-success me-2"></i>
+                                                                <strong>Agriculture (Art. 30)</strong>: Contrôle phytosanitaire
+                                                            </li>
+                                                            <li class="list-group-item">
+                                                                <i class="fas fa-shopping-basket text-success me-2"></i>
+                                                                <strong>Commerce (Art. 31)</strong>: Contrôle des produits
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Dispositions Financières -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chapter5">
+                                        <i class="fas fa-coins me-2"></i>
+                                        CHAPITRE V - Dispositions Financières
+                                    </button>
+                                </h2>
+                                <div id="chapter5" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+                                    <div class="accordion-body">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="article">
+                                                    <h6>Articles 32-34</h6>
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item">
+                                                            <i class="fas fa-file-invoice-dollar text-warning me-2"></i>
+                                                            Redevances fixées par la loi de finances
+                                                        </li>
+                                                        <li class="list-group-item">
+                                                            <i class="fas fa-calculator text-warning me-2"></i>
+                                                            Tarifs conformes à la réglementation
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            <!-- Cahier des Charges -->
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header">
+                                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#annexe">
+                                                                    <i class="fas fa-file-contract me-2"></i>
+                                                                    ANNEXE - Cahier des Charges-Type
+                                                                </button>
+                                                            </h2>
+                                                            <div id="annexe" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+                                                                <div class="accordion-body">
+                                                                    <div class="row">
+                                                                        <div class="col-12 mb-4">
+                                                                            <div class="card">
+                                                                                <div class="card-header bg-primary text-white">
+                                                                                    <h6 class="mb-0"><i class="fas fa-book me-2"></i>Étendue de la Concession</h6>
+                                                                                </div>
+                                                                                <div class="card-body">
+                                                                                    <ul class="list-group list-group-flush">
+                                                                                        <li class="list-group-item">
+                                                                                            <i class="fas fa-clock text-primary me-2"></i>
+                                                                                            Durée : 10 ans renouvelable
+                                                                                        </li>
+                                                                                        <li class="list-group-item">
+                                                                                            <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                                                                                            Zones d'irrigation définies par plan annexé
+                                                                                        </li>
+                                                                                    </ul>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                            
+                                                                        <div class="col-12 mb-4">
+                                                                            <div class="card">
+                                                                                <div class="card-header bg-success text-white">
+                                                                                    <h6 class="mb-0"><i class="fas fa-list-check me-2"></i>Obligations Techniques</h6>
+                                                                                </div>
+                                                                                <div class="card-body">
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <h6 class="text-success">Infrastructure</h6>
+                                                                                            <ul class="list-group list-group-flush mb-3">
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-paint-roller text-success me-2"></i>
+                                                                                                    Marquage rouge des canalisations
+                                                                                                </li>
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-arrows-alt-v text-success me-2"></i>
+                                                                                                    Profondeur minimale 0,50m
+                                                                                                </li>
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-lock text-success me-2"></i>
+                                                                                                    Sécurisation des points d'accès
+                                                                                                </li>
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <h6 class="text-success">Maintenance</h6>
+                                                                                            <ul class="list-group list-group-flush">
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-tools text-success me-2"></i>
+                                                                                                    Entretien préventif
+                                                                                                </li>
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-exclamation-triangle text-success me-2"></i>
+                                                                                                    Prévention des fuites
+                                                                                                </li>
+                                                                                                <li class="list-group-item">
+                                                                                                    <i class="fas fa-recycle text-success me-2"></i>
+                                                                                                    Gestion des déchets
+                                                                                                </li>
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                            
+                                                                        <div class="col-12">
+                                                                            <div class="card">
+                                                                                <div class="card-header bg-info text-white">
+                                                                                    <h6 class="mb-0"><i class="fas fa-user-shield me-2"></i>Formation et Sécurité</h6>
+                                                                                </div>
+                                                                                <div class="card-body">
+                                                                                    <ul class="list-group list-group-flush">
+                                                                                        <li class="list-group-item">
+                                                                                            <i class="fas fa-graduation-cap text-info me-2"></i>
+                                                                                            Formation obligatoire du personnel
+                                                                                        </li>
+                                                                                        <li class="list-group-item">
+                                                                                            <i class="fas fa-hard-hat text-info me-2"></i>
+                                                                                            Port d'équipements de protection
+                                                                                        </li>
+                                                                                        <li class="list-group-item">
+                                                                                            <i class="fas fa-clipboard-list text-info me-2"></i>
+                                                                                            Suivi sanitaire régulier
+                                                                                        </li>
+                                                                                    </ul>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Arrêté Interministériel -->
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#arrete">
+            <i class="fas fa-water me-2"></i>
+            ARRÊTÉ INTERMINISTÉRIEL DU 8 SAFAR 1433 (2 janvier 2012)
+        </button>
+    </h2>
+    <div id="arrete" class="accordion-collapse collapse" data-bs-parent="#decreeAccordion">
+        <div class="accordion-body">
+            <div class="decree-header mb-4">
+                <h4 class="text-center mb-3">ARRÊTÉ INTERMINISTÉRIEL DU 8 SAFAR 1433</h4>
+                <p class="text-center text-muted">Correspondant au 2 janvier 2012</p>
+                <p class="text-center fw-bold">Fixant les spécifications des eaux usées épurées utilisées à des fins d'irrigation</p>
+            </div>
+
+            <div class="signataires mb-4">
+                <p>Le ministre des Ressources en eau,</p>
+                <p>Le ministre de l'Agriculture et du Développement rural,</p>
+                <p>Le ministre de la Santé, de la Population et de la Réforme hospitalière,</p>
+            </div>
+
+            <div class="references mb-4">
+                <p>Vu le décret présidentiel n° 10-149 du 14 Joumada Ethania 1431 correspondant au 28 mai 2010 portant nomination des membres du Gouvernement ;</p>
+                <p>Vu le décret exécutif n° 05-464 du 4 Dhou El Kaada 1426 correspondant au 6 décembre 2005, relatif à l'organisation et au fonctionnement de la normalisation ;</p>
+                <p>Vu le décret exécutif n° 07-149 du 3 Joumada El Oula 1428 correspondant au 20 mai 2007 fixant les modalités de concession d'utilisation des eaux usées épurées à des fins d'irrigation, ainsi que le cahier des charges-type y afférent ;</p>
+            </div>
+
+            <div class="articles mb-4">
+                <div class="article">
+                    <h6>Article 1er</h6>
+                    <p>En application des dispositions de l'article 2 du décret exécutif n° 07-149 du 3 Joumada El Oula 1428 correspondant au 20 mai 2007 susvisé, le présent arrêté a pour objet de fixer les spécifications des eaux usées épurées utilisées à des fins d'irrigation, conformément à l'annexe ci-jointe.</p>
+                </div>
+
+                <div class="article">
+                    <h6>Article 2</h6>
+                    <p>Le présent arrêté sera publié au Journal officiel de la République algérienne démocratique et populaire.</p>
+                </div>
+            </div>
+
+            <div class="signatures mb-4">
+                <p class="text-center mb-3">Fait à Alger, le 8 Safar 1433 correspondant au 2 janvier 2012.</p>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="text-center">Le ministre de la Santé, de la Population<br>et de la Réforme hospitalière<br>Djamel OULD ABBES</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-center">Le ministre de l'Agriculture<br>et du Développement rural<br>Rachid BENAISSA</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-center">Le ministre<br>des Ressources en eau<br>Abdelmalek SELLAL</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="annexe">
+                <h5 class="text-center mb-4">ANNEXE<br>SPÉCIFICATIONS DES EAUX USÉES ÉPURÉES UTILISÉES À DES FINS D'IRRIGATION</h5>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">1. Paramètres microbiologiques</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Groupes de cultures</th>
+                                        <th>Coliformes fécaux (CFU / 100 ml)</th>
+                                        <th>Nématodes intestinaux (œufs / L)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Irrigation non restrictive</td>
+                                        <td>< 1 000</td>
+                                        <td>Absence</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cultures utilisant l'irrigation localisée</td>
+                                        <td>< 1 000</td>
+                                        <td>Absence</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="notes mt-3">
+                            <h6>Notes importantes :</h6>
+                            <ol>
+                                <li>Arbres fruitiers : l'irrigation doit cesser deux semaines avant la cueillette. Aucun fruit tombé ne doit être ramassé.</li>
+                                <li>Cultures fourragères : le pâturage direct est interdit. Cesser l'irrigation une semaine avant la coupe.</li>
+                                <li>Cultures industrielles et arbres forestiers : paramètres plus permissifs possibles.</li>
+                                <li>Parcs et espaces verts : norme plus stricte recommandée (< 200 coliformes fécaux / 100 ml).</li>
+                                <li>Irrigation localisée : technique limitant le contact eau-produits.</li>
+                                <li>Population et ouvriers : respect des règles d'hygiène requis.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">2. Paramètres physico-chimiques</h6>
+                    </div>
+                    <div class="card-body">
+                        <h6>2.1 Paramètres physiques</h6>
+                        <ul class="list-group mb-4">
+                            <li class="list-group-item">pH : 6.5 ≤ pH ≤ 8.5</li>
+                            <li class="list-group-item">MES : ≤ 30 mg/L</li>
+                            <li class="list-group-item">CE : ≤ 3 dS/m</li>
+                        </ul>
+
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>SAR</th>
+                                        <th>CE (dS/m)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>0 – 3</td><td>0,2</td></tr>
+                                    <tr><td>3 – 6</td><td>0,3</td></tr>
+                                    <tr><td>6 – 12</td><td>0,5</td></tr>
+                                    <tr><td>12 – 20</td><td>1,3</td></tr>
+                                    <tr><td>20 – 40</td><td>3</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h6>2.2 Paramètres chimiques</h6>
+                        <ul class="list-group mb-4">
+                            <li class="list-group-item">DBO5 : 30 mg/L</li>
+                            <li class="list-group-item">DCO : 90 mg/L</li>
+                            <li class="list-group-item">Chlorure (Cl-) : 10 meq/L</li>
+                            <li class="list-group-item">Azote (NO3 – N) : 30 mg/L</li>
+                            <li class="list-group-item">Bicarbonates (HCO3) : 8,5 meq/L</li>
+                        </ul>
+
+                        <h6>2.3 Éléments toxiques</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Élément</th>
+                                        <th>Unité</th>
+                                        <th>Concentration maximale admissible</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Aluminium (Al)</td><td>mg/L</td><td>5.0</td></tr>
+                                    <tr><td>Arsenic (As)</td><td>mg/L</td><td>0.5</td></tr>
+                                    <tr><td>Béryllium (Be)</td><td>mg/L</td><td>0.5</td></tr>
+                                    <tr><td>Bore (B)</td><td>mg/L</td><td>2.0</td></tr>
+                                    <tr><td>Cadmium (Cd)</td><td>mg/L</td><td>0.05</td></tr>
+                                    <tr><td>Chrome (Cr)</td><td>mg/L</td><td>1.0</td></tr>
+                                    <tr><td>Cobalt (Co)</td><td>mg/L</td><td>0.05</td></tr>
+                                    <tr><td>Cuivre (Cu)</td><td>mg/L</td><td>0.5</td></tr>
+                                    <tr><td>Cyanures (CN-)</td><td>mg/L</td><td>0.1</td></tr>
+                                    <tr><td>Fer (Fe)</td><td>mg/L</td><td>5.0</td></tr>
+                                    <tr><td>Fluor (F-)</td><td>mg/L</td><td>5.0</td></tr>
+                                    <tr><td>Lithium (Li)</td><td>mg/L</td><td>2.5</td></tr>
+                                    <tr><td>Manganèse (Mn)</td><td>mg/L</td><td>0.2</td></tr>
+                                    <tr><td>Mercure (Hg)</td><td>mg/L</td><td>0.002</td></tr>
+                                    <tr><td>Molybdène (Mo)</td><td>mg/L</td><td>0.01</td></tr>
+                                    <tr><td>Nickel (Ni)</td><td>mg/L</td><td>0.05</td></tr>
+                                    <tr><td>Phénols</td><td>mg/L</td><td>0.5</td></tr>
+                                    <tr><td>Sélénium (Se)</td><td>mg/L</td><td>0.02</td></tr>
+                                    <tr><td>Vanadium (V)</td><td>mg/L</td><td>0.1</td></tr>
+                                    <tr><td>Zinc (Zn)</td><td>mg/L</td><td>2.0</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Observations générales</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-shield-alt text-secondary me-2"></i>
+                                Les seuils indiqués correspondent à des valeurs maximales recommandées pour protéger la santé humaine, le bétail et l'environnement.
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-tasks text-secondary me-2"></i>
+                                L'utilisation des eaux usées épurées doit toujours être encadrée par des contrôles réguliers et des pratiques agricoles adaptées (ex. mesures d'hygiène, interruption d'irrigation avant récolte, etc.).
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                            </div>
+
+                            
+                            
+{% endblock %}

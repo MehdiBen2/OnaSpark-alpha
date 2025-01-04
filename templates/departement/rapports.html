@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Rapports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-2">Rapports</h1>
+                <p class="lead text-white-50">Gestion et suivi des rapports d'exploitation</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-white">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('departements') }}" class="text-white">Départements</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('exploitation') }}" class="text-white">Exploitation</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Rapports</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-n5">
+    <div class="row g-4">
+        <!-- Incidents Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="card-icon bg-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h5 class="card-title mt-4">Incidents</h5>
+                    <p class="card-text text-muted mb-4">Gestion et suivi des incidents signalés</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('incidents.incident_list') }}" class="btn btn-outline-danger">
+                            Accéder aux incidents
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <span class="badge bg-danger">{{ incidents_count if incidents_count else '0' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rapports Journaliers Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="card-icon bg-primary">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h5 class="card-title mt-4">Rapports Journaliers</h5>
+                    <p class="card-text text-muted mb-4">Rapports quotidiens des activités</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="#" class="btn btn-outline-primary">
+                            Voir les rapports
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <span class="badge bg-primary">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rapports Mensuels Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="card-icon bg-success">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5 class="card-title mt-4">Rapports Mensuels</h5>
+                    <p class="card-text text-muted mb-4">Synthèse mensuelle des opérations</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="#" class="btn btn-outline-success">
+                            Voir les rapports
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <span class="badge bg-success">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="card-icon bg-info">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5 class="card-title mt-4">Statistiques</h5>
+                    <p class="card-text text-muted mb-4">Analyses et tendances des données</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="#" class="btn btn-outline-info">
+                            Voir les statistiques
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <span class="badge bg-info">4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 dashboard-card">
+                <div class="card-body">
+                    <div class="card-icon bg-warning">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h5 class="card-title mt-4">KPIs</h5>
+                    <p class="card-text text-muted mb-4">Indicateurs clés de performance</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="#" class="btn btn-outline-warning">
+                            Voir les KPIs
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <span class="badge bg-warning">6</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+        padding: 3rem 0 6rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .dashboard-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: var(--ona-dark);
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn:hover i {
+        transform: translateX(5px);
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 0 4rem;
+        }
+        
+        .breadcrumb {
+            justify-content: flex-start !important;
+            margin-top: 1rem;
+        }
+    }
+</style>
+{% endblock %}

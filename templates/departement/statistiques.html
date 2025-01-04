@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiques d'Exploitation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-header {
+        background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+        padding: 2rem 0 4rem;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .progress {
+        height: 8px;
+        margin-top: 1rem;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-2">Statistiques d'Exploitation</h1>
+                <p class="lead text-white-50">Analyse détaillée des performances et indicateurs</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-md-end mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-white">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('exploitation') }}" class="text-white">Exploitation</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Statistiques</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-n5">
+    <!-- KPI Cards Row -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-cogs fa-2x text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="stat-value text-primary">98%</div>
+                            <div class="stat-label">Disponibilité des Équipements</div>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 98%" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-tools fa-2x text-success"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="stat-value text-success">245</div>
+                            <div class="stat-label">Interventions ce Mois</div>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="stat-value text-warning">1.5h</div>
+                            <div class="stat-label">Temps Moyen d'Intervention</div>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle fa-2x text-info"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="stat-value text-info">92%</div>
+                            <div class="stat-label">Taux de Résolution</div>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 92%" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Interventions par Type</h5>
+                    <div class="chart-container">
+                        <!-- Placeholder for chart -->
+                        <canvas id="interventionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Performance Mensuelle</h5>
+                    <div class="chart-container">
+                        <!-- Placeholder for chart -->
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Stats Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Détails des Interventions Récentes</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Équipement</th>
+                                    <th>Durée</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>10/12/2023</td>
+                                    <td>Maintenance Préventive</td>
+                                    <td>Pompe P-101</td>
+                                    <td>2h</td>
+                                    <td><span class="badge bg-success">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>09/12/2023</td>
+                                    <td>Réparation</td>
+                                    <td>Vanne V-203</td>
+                                    <td>1.5h</td>
+                                    <td><span class="badge bg-success">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>08/12/2023</td>
+                                    <td>Inspection</td>
+                                    <td>Filtre F-305</td>
+                                    <td>1h</td>
+                                    <td><span class="badge bg-warning">En cours</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Interventions Chart
+    const interventionsCtx = document.getElementById('interventionsChart').getContext('2d');
+    new Chart(interventionsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Maintenance Préventive', 'Réparations', 'Inspections', 'Autres'],
+            datasets: [{
+                data: [40, 25, 20, 15],
+                backgroundColor: [
+                    '#0d6efd',
+                    '#198754',
+                    '#ffc107',
+                    '#0dcaf0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+            datasets: [{
+                label: 'Taux de Disponibilité',
+                data: [95, 93, 97, 96, 98, 97],
+                borderColor: '#0d6efd',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 90,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

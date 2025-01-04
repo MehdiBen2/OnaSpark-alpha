@@ -1,0 +1,695 @@
+{% extends "base.html" %}
+
+{% block title %}ONA - Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <h2 class="mb-0">
+                    <i class="fas fa-users me-2 text-primary"></i>
+                    <span class="gradient-text">Gestion des Utilisateurs</span>
+                </h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main_dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item active">Utilisateurs</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Utilisateurs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-3 mb-4">
+                        <div class="flex-grow-1">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un utilisateur...">
+                            </div>
+                        </div>
+                        <div>
+                            <button id="createUserBtn" class="btn btn-primary w-100">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Créer un Utilisateur
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th class="text-nowrap">Nom d'affichage</th>
+                                    <th class="text-nowrap">Nom d'utilisateur</th>
+                                    <th class="text-nowrap">Rôle</th>
+                                    <th class="text-nowrap">Zone</th>
+                                    <th class="text-nowrap">Unité</th>
+                                    <th class="text-nowrap">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td class="text-break">{{ user.nickname if user.nickname else '-' }}</td>
+                                    <td><span class="badge bg-info text-break">{{ user.username }}</span></td>
+                                    <td>
+                                        {% if user.role == UserRole.ADMIN %}
+                                            <span class="badge bg-danger text-wrap">{{ UserRole.get_role_display_name(user.role) }}</span>
+                                        {% elif user.role == UserRole.EMPLOYEUR_DG %}
+                                            <span class="badge bg-warning text-wrap">{{ UserRole.get_role_display_name(user.role) }}</span>
+                                        {% elif user.role == UserRole.EMPLOYEUR_ZONE %}
+                                            <span class="badge bg-primary text-wrap">{{ UserRole.get_role_display_name(user.role) }}</span>
+                                        {% elif user.role == UserRole.EMPLOYEUR_UNITE %}
+                                            <span class="badge bg-success text-wrap">{{ UserRole.get_role_display_name(user.role) }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary text-wrap">{{ UserRole.get_role_display_name(user.role) }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-break">{{ user.assigned_zone.name if user.assigned_zone else '-' }}</td>
+                                    <td class="text-break">{{ user.assigned_unit.name if user.assigned_unit else '-' }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary edit-user me-2" data-user-id="{{ user.id }}" 
+                                                    data-username="{{ user.username }}"
+                                                    data-nickname="{{ user.nickname }}"
+                                                    data-role="{{ user.role }}"
+                                                    data-zone="{{ user.assigned_zone.id if user.assigned_zone else '' }}"
+                                                    data-unit="{{ user.assigned_unit.id if user.assigned_unit else '' }}"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Modifier l'utilisateur">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger delete-user" data-user-id="{{ user.id }}" data-bs-toggle="tooltip" title="Supprimer l'utilisateur">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
+                        <div class="text-muted order-2 order-md-1">
+                            Affichage de <span id="startRange">1</span> à <span id="endRange">10</span> sur <span id="totalItems">{{ users|length }}</span> utilisateurs
+                        </div>
+                        <nav aria-label="Page navigation" class="order-1 order-md-2">
+                            <ul class="pagination mb-0">
+                                <li class="page-item">
+                                    <button class="page-link" id="prevPage">Précédent</button>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" id="nextPage">Suivant</button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Panel -->
+<div id="userPanel" class="sliding-panel">
+    <div class="panel-content">
+        <div class="panel-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-user-plus me-2 text-primary"></i>
+                <h3 class="mb-0" id="panelTitle">Créer un Utilisateur</h3>
+            </div>
+            <button id="closePanelBtn" class="btn-close"></button>
+        </div>
+        <div class="panel-body">
+            <form id="createUserForm" class="needs-validation" novalidate>
+                <!-- Username field -->
+                <div class="mb-4">
+                    <label for="username" class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" required 
+                               minlength="3" pattern="[a-zA-Z0-9_-]+" 
+                               placeholder="Entrez le nom d'utilisateur">
+                    </div>
+                    <div class="invalid-feedback">
+                        Le nom d'utilisateur doit contenir au moins 3 caractères (lettres, chiffres, - ou _)
+                    </div>
+                    <small class="form-text text-muted">
+                        Utilisé pour la connexion. Doit être unique.
+                    </small>
+                </div>
+
+                <!-- Display name field -->
+                <div class="mb-4">
+                    <label for="nickname" class="form-label">Nom d'affichage <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-id-card"></i>
+                        </span>
+                        <input type="text" class="form-control" id="nickname" name="nickname" required 
+                               minlength="2" placeholder="Entrez le nom d'affichage">
+                    </div>
+                    <div class="invalid-feedback">
+                        Le nom d'affichage doit contenir au moins 2 caractères
+                    </div>
+                    <small class="form-text text-muted">
+                        Nom affiché dans l'interface
+                    </small>
+                </div>
+
+                <!-- Password field -->
+                <div class="mb-4" id="passwordContainer">
+                    <label for="password" class="form-label">Mot de passe <span class="text-danger password-required">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password" required 
+                               minlength="6" placeholder="Entrez le mot de passe">
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="invalid-feedback">
+                        Le mot de passe doit contenir au moins 6 caractères
+                    </div>
+                    <small class="form-text text-muted">
+                        Minimum 6 caractères. Laissez vide pour conserver l'ancien mot de passe lors d'une modification.
+                    </small>
+                </div>
+
+                <!-- Role field -->
+                <div class="mb-4">
+                    <label for="role" class="form-label">Rôle <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user-tag"></i>
+                        </span>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">Sélectionner un rôle</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Employeur DG">Employeur DG</option>
+                            <option value="Employeur Zone">Employeur Zone</option>
+                            <option value="Employeur Unité">Employeur Unité</option>
+                            <option value="Utilisateur">Utilisateur</option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback">
+                        Veuillez sélectionner un rôle
+                    </div>
+                    <div class="form-text role-description"></div>
+                </div>
+
+                <!-- Zone selection -->
+                <div class="mb-4" id="zoneContainer" style="display: none;">
+                    <label for="zone_id" class="form-label">Zone <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                        <select class="form-select" id="zone_id" name="zone_id">
+                            <option value="">Sélectionnez une zone</option>
+                            {% for zone in zones %}
+                                <option value="{{ zone.id }}">{{ zone.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="invalid-feedback">
+                        Veuillez sélectionner une zone
+                    </div>
+                    <small class="form-text text-muted">
+                        La zone détermine le périmètre d'accès
+                    </small>
+                </div>
+
+                <!-- Unit selection -->
+                <div class="mb-4" id="unitContainer" style="display: none;">
+                    <label for="unit_id" class="form-label">Unité <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-building"></i>
+                        </span>
+                        <select class="form-select" id="unit_id" name="unit_id">
+                            <option value="">Sélectionnez d'abord une zone</option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback">
+                        Veuillez sélectionner une unité
+                    </div>
+                    <small class="form-text text-muted">
+                        L'unité détermine le périmètre d'accès spécifique
+                    </small>
+                </div>
+
+                <!-- Submit button -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                        <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                        <i class="fas fa-save me-2"></i>
+                        <span class="button-text">Créer l'utilisateur</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/users.css') }}">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap components
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Elements
+    const createBtn = document.getElementById('createUserBtn');
+    const panel = document.getElementById('userPanel');
+    const closeBtn = document.getElementById('closePanelBtn');
+    const form = document.getElementById('createUserForm');
+    const roleSelect = document.getElementById('role');
+    const zoneContainer = document.getElementById('zoneContainer');
+    const unitContainer = document.getElementById('unitContainer');
+    const zoneSelect = document.getElementById('zone_id');
+    const unitSelect = document.getElementById('unit_id');
+    const submitBtn = document.getElementById('submitBtn');
+    const searchInput = document.getElementById('searchInput');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    let currentUserToDelete = null;
+    let isEditing = false;
+    let currentUserId = null;
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container') || (() => {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        })();
+
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        toastContainer.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+
+    // Role descriptions
+    const roleDescriptions = {
+        'Admin': 'Accès administrateur complet avec capacité d\'assigner des rôles et des permissions aux utilisateurs. Peut choisir les zones et les unités pour les autres utilisateurs.',
+        'Employeur DG': 'Accès global à toutes les données à travers toutes les zones et unités.',
+        'Employeur Zone': 'Accès et gestion des données pour une zone spécifique uniquement.',
+        'Employeur Unité': 'Accès et gestion des données pour une unité spécifique dans une zone.',
+        'Utilisateur': 'Accès restreint à une zone et une unité spécifiques.'
+    };
+
+    // Update role description when role changes
+    roleSelect.addEventListener('change', function() {
+        const description = document.querySelector('.role-description');
+        description.textContent = roleDescriptions[this.value] || '';
+    });
+
+    // Update panel title and button text when editing
+    function updatePanelForEditing(editing) {
+        const panelTitle = document.getElementById('panelTitle');
+        const buttonText = document.querySelector('#submitBtn .button-text');
+        const passwordRequired = document.querySelector('.password-required');
+        const passwordInput = document.getElementById('password');
+
+        if (editing) {
+            panelTitle.textContent = 'Modifier l\'utilisateur';
+            buttonText.textContent = 'Enregistrer les modifications';
+            passwordRequired.style.display = 'none';
+            passwordInput.required = false;
+        } else {
+            panelTitle.textContent = 'Créer un utilisateur';
+            buttonText.textContent = 'Créer l\'utilisateur';
+            passwordRequired.style.display = 'inline';
+            passwordInput.required = true;
+        }
+    }
+
+    // Password visibility toggle
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+
+    // Edit user handler
+    document.querySelectorAll('.edit-user').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            const nickname = this.dataset.nickname;
+            const role = this.dataset.role;
+            const zoneId = this.dataset.zone;
+            const unitId = this.dataset.unit;
+
+            currentUserId = userId;
+            isEditing = true;
+            
+            // Update form
+            document.getElementById('username').value = username;
+            document.getElementById('nickname').value = nickname || '';
+            document.getElementById('role').value = role;
+            document.getElementById('password').value = '';
+            
+            // Trigger role change to show/hide zone and unit fields
+            const roleEvent = new Event('change');
+            roleSelect.dispatchEvent(roleEvent);
+            
+            // Set zone if present
+            if (zoneId) {
+                document.getElementById('zone_id').value = zoneId;
+                // Trigger zone change to load units
+                const zoneEvent = new Event('change');
+                document.getElementById('zone_id').dispatchEvent(zoneEvent);
+                
+                // Set unit after a small delay to ensure units are loaded
+                if (unitId) {
+                    setTimeout(() => {
+                        document.getElementById('unit_id').value = unitId;
+                    }, 500);
+                }
+            }
+            
+            updatePanelForEditing(true);
+            panel.classList.add('open');
+        });
+    });
+
+    // Reset form handler
+    function resetForm() {
+        form.reset();
+        form.classList.remove('was-validated');
+        currentUserId = null;
+        isEditing = false;
+        
+        // Reset displays
+        document.getElementById('zoneContainer').style.display = 'none';
+        document.getElementById('unitContainer').style.display = 'none';
+        
+        // Reset role description
+        document.querySelector('.role-description').textContent = '';
+        
+        updatePanelForEditing(false);
+    }
+
+    // Create button handler
+    createBtn.addEventListener('click', () => {
+        resetForm();
+        panel.classList.add('open');
+    });
+
+    // Reset form on panel close
+    closeBtn.addEventListener('click', () => {
+        resetForm();
+        panel.classList.remove('open');
+    });
+
+    panel.addEventListener('click', (e) => {
+        if (e.target === panel) {
+            resetForm();
+            panel.classList.remove('open');
+        }
+    });
+
+    // Role change handler
+    roleSelect.addEventListener('change', function() {
+        const role = this.value;
+        const zoneContainer = document.getElementById('zoneContainer');
+        const unitContainer = document.getElementById('unitContainer');
+        const zoneSelect = document.getElementById('zone_id');
+        const unitSelect = document.getElementById('unit_id');
+        const description = document.querySelector('.role-description');
+
+        // Update role description
+        description.textContent = roleDescriptions[role] || '';
+
+        // Reset validations
+        zoneSelect.required = false;
+        unitSelect.required = false;
+
+        // Hide containers by default
+        zoneContainer.style.display = 'none';
+        unitContainer.style.display = 'none';
+
+        // Show/hide containers based on role
+        switch(role) {
+            case 'Admin':
+            case 'Employeur DG':
+                // Admin and DG don't need zone or unit
+                zoneSelect.value = '';
+                unitSelect.value = '';
+                break;
+            case 'Employeur Zone':
+                // Zone employer needs zone only
+                zoneContainer.style.display = 'block';
+                zoneSelect.required = true;
+                unitSelect.value = '';
+                break;
+            case 'Employeur Unité':
+            case 'Utilisateur':
+                // Unit employer and regular user need both zone and unit
+                zoneContainer.style.display = 'block';
+                unitContainer.style.display = 'block';
+                zoneSelect.required = true;
+                unitSelect.required = true;
+                break;
+        }
+    });
+
+    // Zone change handler
+    document.getElementById('zone_id').addEventListener('change', function() {
+        const zoneId = this.value;
+        const unitSelect = document.getElementById('unit_id');
+        const unitContainer = document.getElementById('unitContainer');
+        
+        // Clear current units
+        unitSelect.innerHTML = '<option value="">Sélectionnez une unité</option>';
+        
+        if (!zoneId) {
+            unitContainer.style.display = 'none';
+            return;
+        }
+
+        // Show loading state
+        unitSelect.disabled = true;
+        unitSelect.innerHTML = '<option value="">Chargement des unités...</option>';
+
+        // Fetch units for selected zone
+        fetch(`/api/zones/${zoneId}/units`)
+            .then(response => response.json())
+            .then(data => {
+                unitSelect.innerHTML = '<option value="">Sélectionner une unité</option>';
+                
+                if (data.success) {
+                    if (data.units && data.units.length > 0) {
+                        data.units.forEach(unit => {
+                            const option = document.createElement('option');
+                            option.value = unit.id;
+                            option.textContent = `${unit.name} (${unit.code})`;
+                            unitSelect.appendChild(option);
+                        });
+                    } else {
+                        unitSelect.innerHTML = '<option value="">Aucune unité disponible</option>';
+                    }
+                } else {
+                    showToast(data.message || 'Erreur lors du chargement des unités', 'error');
+                    unitSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Erreur lors du chargement des unités', 'error');
+                unitSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            })
+            .finally(() => {
+                unitSelect.disabled = false;
+            });
+    });
+
+    // Form submission handler
+    document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Form submission started');
+
+        try {
+            // Disable form submission while processing
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEditing ? 'Modification' : 'Création') + ' en cours...';
+
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Log form data for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+
+            // Determine the endpoint based on whether we're editing or creating
+            const endpoint = isEditing 
+                ? `/admin/users/${currentUserId}/update`
+                : '/admin/users/create';
+
+            // Send the request
+            const response = await fetch(endpoint, {
+                method: isEditing ? 'PUT' : 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    showToast(data.message || (isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès'), 'success');
+                    panel.classList.remove('open');
+                    location.reload();
+                } else {
+                    showToast(data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur'), 'error');
+                }
+            } else {
+                if (response.ok) {
+                    showToast(isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès', 'success');
+                    panel.classList.remove('open');
+                    location.reload();
+                } else {
+                    showToast(isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error during form submission:', error);
+            showToast('Une erreur est survenue lors de la communication avec le serveur', 'error');
+        } finally {
+            // Re-enable the submit button
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+        }
+    });
+
+    // Delete user handling
+    document.querySelectorAll('.delete-user').forEach(button => {
+        button.addEventListener('click', function() {
+            currentUserToDelete = this.dataset.userId;
+            deleteModal.show();
+        });
+    });
+
+    confirmDeleteBtn.addEventListener('click', async function() {
+        if (!currentUserToDelete) return;
+        
+        try {
+            const response = await fetch(`/admin/users/${currentUserToDelete}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                showToast('Utilisateur supprimé avec succès', 'success');
+                location.reload();
+            } else {
+                throw new Error(data.error || data.message || 'Erreur lors de la suppression');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(error.message, 'error');
+        } finally {
+            deleteModal.hide();
+            currentUserToDelete = null;
+        }
+    });
+
+    // Search functionality
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }, 300);
+    });
+
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+});
+</script>
+{% endblock %}
