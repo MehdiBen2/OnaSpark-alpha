@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -15,41 +16,24 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual Environment
 venv/
-env/
-.env
-.venv
+ENV/
+
+# Database
+*.db
+*.sqlite3
 
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 
-# Logs
-*.log
-
-# Database
-*.sqlite3
-
-# OS Generated Files
+# OS
 .DS_Store
 Thumbs.db
-
-# Heroku
-.heroku/
-
-# Azure
-*.azurecredentials
-.azure/
-azure_credentials.json
-
-# Azure Pipelines
-*.tmp

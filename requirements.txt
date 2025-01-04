@@ -7,7 +7,3 @@ Werkzeug==2.3.7
 WTForms==3.0.1
 reportlab==4.0.7
 openpyxl==3.1.2
-azure-identity==1.14.0
-azure-keyvault-secrets==4.7.0
-azure-monitor-opentelemetry==1.2.0
-azure-storage-blob==12.17.0
