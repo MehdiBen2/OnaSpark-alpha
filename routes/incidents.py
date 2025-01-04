@@ -11,12 +11,26 @@ incidents = Blueprint('incidents', __name__)
 
 @incidents.route('/incidents')
 @login_required
-@unit_required
 def incident_list():
     if current_user.role == 'Admin':
         incidents = Incident.query.order_by(Incident.date_incident.desc()).all()
+    elif current_user.role == 'Employeur Zone':
+        # Check if user has a zone assigned
+        if not current_user.zone_id:
+            flash('Vous devez être assigné à une zone pour voir les incidents.', 'warning')
+            return redirect(url_for('main_dashboard'))
+            
+        # Get all incidents from units in the user's zone
+        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        unit_ids = [unit.id for unit in zone_units]
+        incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).all()
     else:
+        # Regular users need a unit
+        if not current_user.unit_id:
+            flash('Vous devez sélectionner une unité pour voir les incidents.', 'warning')
+            return redirect(url_for('select_unit'))
         incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
+    
     return render_template('incident_list.html', incidents=incidents)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
