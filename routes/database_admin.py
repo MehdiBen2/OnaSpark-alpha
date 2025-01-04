@@ -1,9 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required
 from utils.decorators import admin_required
 from models import db
 from sqlalchemy import inspect, text, MetaData
 import sqlalchemy as sa
+import os
+import shutil
+from datetime import datetime
 
 database_admin = Blueprint('database_admin', __name__)
 
@@ -204,3 +207,40 @@ def delete_row(table_name, row_id):
         flash(f'Error deleting row: {str(e)}', 'error')
     
     return redirect(url_for('database_admin.view_table', table_name=table_name))
+
+@database_admin.route('/admin/database/download')
+@login_required
+@admin_required
+def download_database():
+    """Download the SQLite database file"""
+    try:
+        db_path = db.engine.url.database
+        if not db_path or not os.path.exists(db_path):
+            flash("Base de données introuvable.", "error")
+            return redirect(url_for('database_admin.database_overview'))
+
+        # Create a copy of the database file
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_filename = f'OnaDB_backup_{timestamp}.db'
+        temp_path = os.path.join(os.path.dirname(db_path), backup_filename)
+        
+        # Copy the database file
+        shutil.copy2(db_path, temp_path)
+        
+        try:
+            return send_file(
+                temp_path,
+                mimetype='application/x-sqlite3',
+                as_attachment=True,
+                download_name=backup_filename
+            )
+        finally:
+            # Clean up the temporary file after sending
+            try:
+                os.unlink(temp_path)
+            except:
+                pass  # Ignore cleanup errors
+                
+    except Exception as e:
+        flash(f"Erreur lors du téléchargement de la base de données: {str(e)}", "error")
+        return redirect(url_for('database_admin.database_overview'))

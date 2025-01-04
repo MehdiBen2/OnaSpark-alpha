@@ -2,7 +2,12 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Database Management</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Database Management</h2>
+        <a href="{{ url_for('database_admin.download_database') }}" class="btn btn-success">
+            <i class="fas fa-download me-2"></i>Télécharger la Base de Données
+        </a>
+    </div>
     
     <div class="row">
         {% for table in tables %}

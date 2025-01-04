@@ -374,22 +374,20 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
+import tempfile
 
 def generate_water_quality_pdf(result_data, output_path=None):
     """
     Generate a professional PDF report for water quality assessment.
     
     :param result_data: Dictionary containing water quality assessment results
-    :param output_path: Optional path to save the PDF. If None, generates a default path.
+    :param output_path: Optional path to save the PDF. If None, generates in a temporary directory.
     :return: Path to the generated PDF file
     """
-    # Determine output path
     if output_path is None:
-        output_path = os.path.join(
-            os.path.expanduser('~'), 
-            'Downloads', 
-            f'Rapport_Qualite_Eau_{result_data.get("timestamp", "")}.pdf'
-        )
+        # Create a temporary file with .pdf extension
+        temp_fd, output_path = tempfile.mkstemp(suffix='.pdf', prefix='Rapport_Qualite_Eau_')
+        os.close(temp_fd)  # Close the file descriptor as we'll use the path
     
     # Create PDF document
     doc = SimpleDocTemplate(output_path, pagesize=letter)
