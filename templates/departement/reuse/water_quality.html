@@ -48,63 +48,148 @@
     </div>
 </div>
 
+<!-- Include the evaluation modal -->
+{% include 'departement/reuse/components/evaluation_modal.html' %}
+
 <!-- Custom JavaScript -->
 <script>
-document.getElementById('waterQualityForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    // Show loading state
-    const submitButton = this.querySelector('button[type="submit"]');
-    const originalButtonText = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Évaluation en cours...';
-    submitButton.disabled = true;
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('waterQualityForm');
+    let evaluationModal;
+    let progressBar;
 
-    try {
-        // Create FormData from form
-        const formData = new FormData(this);
-        
-        // Convert FormData to URLSearchParams for proper submission
-        const params = new URLSearchParams();
-        for (const [key, value] of formData.entries()) {
-            // Convert to float and check if it's a valid number
-            const numValue = parseFloat(value);
-            if (!isNaN(numValue)) {
-                params.append(key, numValue);
-            }
-        }
-
-        // Make the request
-        const response = await fetch("{{ url_for('assess_water_quality_route') }}", {
-            method: 'POST',
-            body: params,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
+    // Initialize modal
+    const modalElement = document.getElementById('evaluationModal');
+    if (modalElement) {
+        evaluationModal = new bootstrap.Modal(modalElement, {
+            backdrop: 'static',
+            keyboard: false
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        // Create URL with parameters
-        const url = new URL("{{ url_for('water_quality_results_route', _external=True) }}");
-        for (const [key, value] of params.entries()) {
-            url.searchParams.append(key, value);
-        }
-        
-        // Redirect to results page
-        window.location.href = url.toString();
-
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Une erreur est survenue lors de l\'évaluation. Veuillez réessayer.');
-        
-        // Restore button state
-        submitButton.innerHTML = originalButtonText;
-        submitButton.disabled = false;
+        progressBar = modalElement.querySelector('.progress-bar');
     }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show the evaluation modal
+        if (evaluationModal) {
+            evaluationModal.show();
+        }
+
+        // Reset progress bar
+        if (progressBar) {
+            progressBar.style.width = '0%';
+        }
+
+        try {
+            // Create FormData from form
+            const formData = new FormData(this);
+            
+            // Convert FormData to URLSearchParams for proper submission
+            const params = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                    params.append(key, numValue);
+                }
+            }
+
+            // Simulate progress over exactly 5 seconds
+            const updateProgress = (progress) => {
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            };
+
+            // Calculate progress increments
+            const totalDuration = 5000; // 5 seconds
+            const updateInterval = 50; // update every 50ms
+            const totalSteps = totalDuration / updateInterval;
+            let currentStep = 0;
+
+            const progressInterval = setInterval(() => {
+                currentStep++;
+                const progress = (currentStep / totalSteps) * 100;
+                
+                if (currentStep <= totalSteps) {
+                    updateProgress(progress);
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, updateInterval);
+
+            // Make the request
+            const response = await fetch("{{ url_for('assess_water_quality_route') }}", {
+                method: 'POST',
+                body: params,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            // Create URL with parameters
+            const url = new URL("{{ url_for('water_quality_results_route', _external=True) }}");
+            for (const [key, value] of params.entries()) {
+                url.searchParams.append(key, value);
+            }
+            
+            // Wait for animation to complete (5 seconds)
+            setTimeout(() => {
+                window.location.href = url.toString();
+            }, 5000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            if (evaluationModal) {
+                evaluationModal.hide();
+            }
+            // Show error alert
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>Une erreur est survenue lors de l'évaluation. Veuillez réessayer.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            form.insertAdjacentHTML('beforebegin', alertHtml);
+        }
+    });
 });
 </script>
+
+<!-- Include logo animation styles -->
+<style>
+@import url("{{ url_for('static', filename='css/logo_animation.css') }}");
+
+/* Modal customization */
+#evaluationModal .modal-content {
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    border: none;
+}
+
+#evaluationModal .modal-dialog {
+    max-width: 500px;
+}
+
+#evaluationModal .logo-container {
+    margin: 2rem auto;
+}
+
+#evaluationModal .text-center {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#evaluationModal .progress-bar {
+    transition: width 0.05s linear;
+}
+</style>
 {% endblock %}

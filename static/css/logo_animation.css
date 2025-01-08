@@ -1,0 +1,119 @@
+.logo-container {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.orbit-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: transparent;
+}
+
+.orbit-circle {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+    animation-fill-mode: forwards;
+}
+
+.orbit-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: all 1s ease;
+}
+
+.orbit-circle-1 {
+    animation: orbit-1 5s ease-in-out forwards;
+    z-index: 3;
+}
+
+.orbit-circle-2 {
+    animation: orbit-2 5s ease-in-out forwards;
+    z-index: 2;
+}
+
+.orbit-circle-3 {
+    animation: orbit-3 5s ease-in-out forwards;
+    z-index: 1;
+}
+
+@keyframes orbit-1 {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(100px) rotate(0deg);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(-50%, -50%) rotate(720deg) translateX(100px) rotate(-720deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) translateX(-100px) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes orbit-2 {
+    0% {
+        transform: translate(-50%, -50%) rotate(120deg) translateX(100px) rotate(-120deg);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(-50%, -50%) rotate(840deg) translateX(100px) rotate(-840deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) translateX(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes orbit-3 {
+    0% {
+        transform: translate(-50%, -50%) rotate(240deg) translateX(100px) rotate(-240deg);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(-50%, -50%) rotate(960deg) translateX(100px) rotate(-960deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) translateX(100px) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Optional Glow Effect */
+.orbit-circle::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.orbit-circle:hover::after {
+    opacity: 1;
+}
