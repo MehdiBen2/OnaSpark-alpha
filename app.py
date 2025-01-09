@@ -31,6 +31,7 @@ from routes.database_admin import database_admin
 from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
+from utils.roles import UserRole
 from utils.water_quality import assess_water_quality, get_parameter_metadata, generate_water_quality_pdf
 
 # Load environment variables
@@ -71,69 +72,6 @@ def init_db_command():
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-class UserRole:
-    ADMIN = 'Admin'
-    DG = 'DG'
-    ZONE_EMPLOYER = 'Zone Employer'
-    UNIT_OFFICER = 'Unit Officer'
-    REGULAR_USER = 'Regular User'
-
-    @classmethod
-    def requires_unit_selection(cls, role):
-        return role not in [cls.ADMIN, cls.DG, cls.ZONE_EMPLOYER]
-
-    @classmethod
-    def get_permissions(cls, role):
-        permissions = {
-            cls.ADMIN: {
-                'can_view_all_incidents': True,
-                'can_view_all_units': True,
-                'can_view_zone_incidents': True,
-            },
-            cls.DG: {
-                'can_view_all_incidents': True,
-                'can_view_all_units': True,
-                'can_view_zone_incidents': True,
-            },
-            cls.ZONE_EMPLOYER: {
-                'can_view_zone_incidents': True,
-            },
-            cls.UNIT_OFFICER: {},
-            cls.REGULAR_USER: {},
-        }
-        return permissions.get(role, {})
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.role not in [UserRole.ADMIN, UserRole.DG]:
-            flash('Vous devez être administrateur pour accéder à cette page.', 'danger')
-            return redirect(url_for(INCIDENT_LIST))
-        return f(*args, **kwargs)
-    return decorated_function
-
-def unit_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
-            
-        # Zone employers don't need a unit
-        if current_user.role == 'Employeur Zone':
-            return f(*args, **kwargs)
-            
-        # Admin and DG don't need a unit
-        if current_user.role in ['Admin', 'Employeur DG']:
-            return f(*args, **kwargs)
-            
-        # All other roles need a unit
-        if current_user.unit_id is None:
-            flash("Vous devez sélectionner une unité pour accéder à cette page.", "warning")
-            return redirect(url_for('select_unit'))
-            
-        return f(*args, **kwargs)
-    return decorated_function
-
 # Water and sanitation phrases
 WATER_PHRASES = [
     "L'eau est l'essence de la vie ; préservons-la pour les générations futures.",
@@ -148,52 +86,32 @@ WATER_PHRASES = [
     "La propreté de l'eau est notre responsabilité collective."
 ]
 
-# Water quality assessment constants
-WATER_QUALITY_THRESHOLDS = {
-    'microbiological': {
-        'coliform_fecal': {'A': 100, 'B': 1000},
-        'nematodes': {'A': 0.1, 'B': 1.0}
-    },
-    'physical': {
-        'ph': {'min': 6.5, 'max': 8.5},
-        'mes': {'max': 30},
-        'ce': {'max': 3}
-    },
-    'chemical': {
-        'dbo5': {'max': 30},
-        'dco': {'max': 90},
-        'chlorure': {'max': 10}
-    },
-    'toxic': {
-        'cadmium': {'max': 0.05},
-        'mercury': {'max': 0.002},
-        'arsenic': {'max': 0.5},
-        'lead': {'max': 0.05}
-    }
-}
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not UserRole.has_permission(current_user.role, 'can_view_all_incidents'):
+            flash('Vous devez être administrateur pour accéder à cette page.', 'danger')
+            return redirect(url_for(INCIDENT_LIST))
+        return f(*args, **kwargs)
+    return decorated_function
 
-CROP_CATEGORIES = {
-    'category1': {
-        'name': 'Légumes consommés crus',
-        'requirements': {'micro': 'A', 'physico': 'OK'},
-        'restrictions': []
-    },
-    'category2': {
-        'name': 'Arbres fruitiers',
-        'requirements': {'micro': 'B', 'physico': 'OK'},
-        'restrictions': ['Arrêter l\'irrigation 2 semaines avant la récolte', 'Ne pas ramasser les fruits tombés']
-    },
-    'category3': {
-        'name': 'Cultures fourragères',
-        'requirements': {'micro': 'B', 'physico': 'OK'},
-        'restrictions': ['Pas de pâturage direct', 'Arrêter l\'irrigation 1 semaine avant la coupe']
-    },
-    'category4': {
-        'name': 'Cultures industrielles et céréalières',
-        'requirements': {'micro': 'C', 'physico': 'OK'},
-        'restrictions': ['Paramètres plus permissifs possibles selon réglementation']
-    }
-}
+def unit_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('login'))
+            
+        # Check if the role requires unit selection
+        if not UserRole.requires_unit_selection(current_user.role):
+            return f(*args, **kwargs)
+            
+        # All other roles need a unit
+        if current_user.unit_id is None:
+            flash("Vous devez sélectionner une unité pour accéder à cette page.", "warning")
+            return redirect(url_for('select_unit'))
+            
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def index():
@@ -236,7 +154,7 @@ def dashboard():
     # Get statistics based on user role and permissions
     permissions = UserRole.get_permissions(current_user.role)
     
-    if permissions.get('can_view_all_incidents', False):
+    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         # Admin and DG see everything
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
@@ -248,7 +166,7 @@ def dashboard():
         total_zones = Zone.query.count()
         total_centers = Center.query.count()
         
-    elif permissions.get('can_view_zone_incidents', False):
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
         # Zone employer sees all incidents in their zone
         zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
         unit_ids = [unit.id for unit in zone_units]
@@ -264,8 +182,20 @@ def dashboard():
         total_zones = 1  # Their own zone
         total_centers = Center.query.join(Unit).filter(Unit.zone_id == current_user.zone_id).count()
         
-    else:
-        # Unit employers and regular users see their unit's incidents
+    elif current_user.role == UserRole.EMPLOYEUR_UNITE:
+        # Unit employers see their unit's incidents
+        total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
+        resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
+        pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
+        recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
+        
+        total_users = None
+        total_units = None
+        total_zones = None
+        total_centers = None
+        
+    elif current_user.role == UserRole.UTILISATEUR:
+        # Regular users see their unit's incidents
         total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
         resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
         pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
@@ -299,9 +229,14 @@ def services():
 @login_required
 @unit_required
 def listes_dashboard():
-    if current_user.role == UserRole.ADMIN:
+    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        unit_ids = [unit.id for unit in zone_units]
+        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
+        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
     else:
         total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
         resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
@@ -470,11 +405,11 @@ def download_water_quality_pdf():
 @login_required
 def list_units():
     # Admin and DG see all units
-    if current_user.role in ['Admin', 'Employeur DG']:
+    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         units = Unit.query.all()
         zones = Zone.query.all()
     # Zone employers see units in their zone
-    elif current_user.role == 'Employeur Zone':
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
         units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
         zones = [Zone.query.get(current_user.zone_id)]
     # Others only see their unit
@@ -663,7 +598,7 @@ def delete_center(id):
 @login_required
 def select_unit():
     # Zone employers, Admin, and DG don't need to select a unit
-    if current_user.role in ['Employeur Zone', 'Admin', 'Employeur DG']:
+    if current_user.role in [UserRole.EMPLOYEUR_ZONE, UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
@@ -688,7 +623,7 @@ def select_unit():
         return redirect(url_for('dashboard'))
         
     # GET request - show selection form
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         zones = Zone.query.all()
     elif current_user.zone_id:
         zones = [Zone.query.get(current_user.zone_id)]

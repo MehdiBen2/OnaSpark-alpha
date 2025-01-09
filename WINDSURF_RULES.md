@@ -1,8 +1,14 @@
 # Windsurf Workplace Coding Guidelines
 
 ## 1. Project Structure and Organization
+### 1.1 Context-Aware Cascade and Compatibility : IMPORTANT!
 
-### 1.1 File Placement
+- Always be mindful of the context of the codebase, including existing features and new features being added
+- Ensure that new features are compatible with old features and that nothing is broken
+- Use decorators to add new features and avoid hardcoding values or behavior
+- When adding new features or modifying existing ones, use a context-aware cascade approach to ensure that the codebase remains consistent and functional
+
+### 1.2 File Placement
 - All URL endpoints MUST be defined in `url_endpoints.py`
 - Each feature should have its dedicated feature-specific file (e.g., `water_quality.py` for water quality-related functionality)
 - Maintain a clear and logical directory structure
@@ -94,7 +100,10 @@
 - Keep inline comments clear and concise
 - Update documentation with each significant change
 
-
+9. UX/UI Design Principles
+9.1 Consistent Layout and Design
+Use a consistent layout across all pages.
+Ensure responsive design for different screen sizes.
 
 
 ---
