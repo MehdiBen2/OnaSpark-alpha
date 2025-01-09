@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file
 from flask_login import login_required, current_user
-from models import db, Incident, Unit
+from models import db, Incident, Unit, UserRole
 from datetime import datetime
 from functools import wraps
 from utils.decorators import admin_required, unit_required
@@ -12,25 +12,28 @@ incidents = Blueprint('incidents', __name__)
 @incidents.route('/incidents')
 @login_required
 def incident_list():
-    if current_user.role == 'Admin':
-        incidents = Incident.query.order_by(Incident.date_incident.desc()).all()
-    elif current_user.role == 'Employeur Zone':
-        # Check if user has a zone assigned
-        if not current_user.zone_id:
-            flash('Vous devez être assigné à une zone pour voir les incidents.', 'warning')
-            return redirect(url_for('main_dashboard'))
+    # Centralized incident fetching logic
+    def get_incidents_for_user():
+        if current_user.role == UserRole.ADMIN:
+            return Incident.query.order_by(Incident.date_incident.desc()).all()
+        
+        if current_user.role == UserRole.EMPLOYEUR_ZONE:
+            if not current_user.zone_id:
+                flash('Vous devez être assigné à une zone pour voir les incidents.', 'warning')
+                return []
             
-        # Get all incidents from units in the user's zone
-        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-        unit_ids = [unit.id for unit in zone_units]
-        incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).all()
-    else:
-        # Regular users need a unit
+            zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+            unit_ids = [unit.id for unit in zone_units]
+            return Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).all()
+        
+        # For unit-level and regular users
         if not current_user.unit_id:
             flash('Vous devez sélectionner une unité pour voir les incidents.', 'warning')
-            return redirect(url_for('select_unit'))
-        incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
+            return []
+        
+        return Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
     
+    incidents = get_incidents_for_user()
     return render_template('incident_list.html', incidents=incidents)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
@@ -38,7 +41,7 @@ def incident_list():
 @unit_required
 def new_incident():
     # Get all available units for admin, or just the user's unit for others
-    if current_user.role == 'Admin':
+    if current_user.role == UserRole.ADMIN:
         units = Unit.query.all()
     else:
         if not current_user.unit_id:
@@ -57,7 +60,7 @@ def new_incident():
                 return render_template('new_incident.html', units=units)
 
             # For non-admin users, verify they're creating an incident for their own unit
-            if current_user.role != 'Admin' and str(current_user.assigned_unit.id) != str(unit_id):
+            if current_user.role != UserRole.ADMIN and str(current_user.assigned_unit.id) != str(unit_id):
                 flash('Vous ne pouvez créer des incidents que pour votre unité.', 'error')
                 return render_template('new_incident.html', units=units)
 
@@ -93,7 +96,7 @@ def new_incident():
 @unit_required
 def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
-    if not current_user.role == 'Admin' and current_user.unit_id != incident.unit_id:
+    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
         return redirect(url_for('incidents.incident_list'))
     return render_template('view_incident.html', incident=incident)
@@ -103,7 +106,7 @@ def view_incident(incident_id):
 @unit_required
 def edit_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
-    if not current_user.role == 'Admin' and current_user.unit_id != incident.unit_id:
+    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
         return redirect(url_for('incidents.incident_list'))
     
@@ -136,7 +139,7 @@ def edit_incident(incident_id):
 def delete_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     
-    if not current_user.role == 'Admin' and current_user.unit_id != incident.unit_id:
+    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas la permission de supprimer cet incident.', 'danger')
         return redirect(url_for('incidents.incident_list'))
     
@@ -155,7 +158,7 @@ def delete_incident(incident_id):
 @unit_required
 def resolve_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
-    if not current_user.role == 'Admin' and current_user.unit_id != incident.unit_id:
+    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'êtes pas autorisé à résoudre cet incident.', 'danger')
         return redirect(url_for('incidents.incident_list'))
     
@@ -216,7 +219,7 @@ def export_incident_pdf(incident_id):
 def export_all_incidents_pdf():
     try:
         # Get all incidents based on user role
-        if current_user.role == 'Admin':
+        if current_user.role == UserRole.ADMIN:
             incidents = Incident.query.all()
         else:
             incidents = Incident.query.filter_by(unit_id=current_user.unit_id).all()
@@ -235,7 +238,7 @@ def export_all_incidents_pdf():
         pdf_path = os.path.join(temp_dir, filename)
         
         # Get unit name safely
-        unit_name = current_user.assigned_unit.name if current_user.assigned_unit else "Toutes les unités" if current_user.role == 'Admin' else "Unité non spécifiée"
+        unit_name = current_user.assigned_unit.name if current_user.assigned_unit else "Toutes les unités" if current_user.role == UserRole.ADMIN else "Unité non spécifiée"
         
         # Generate PDF
         create_incident_pdf(incidents, pdf_path, unit_name)

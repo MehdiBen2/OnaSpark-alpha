@@ -145,17 +145,23 @@ def main_dashboard():
                          pending_incidents=pending_incidents,
                          datetime=datetime)
 
-@app.route('/dashboard')
-@login_required
-@unit_required
-def dashboard():
+def get_dashboard_data():
+    # Centralized dashboard data fetching
     random_phrase = random.choice(WATER_PHRASES)
-    
-    # Get statistics based on user role and permissions
     permissions = UserRole.get_permissions(current_user.role)
-    
-    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-        # Admin and DG see everything
+
+    # Default values
+    total_incidents = None
+    resolved_incidents = None
+    pending_incidents = None
+    recent_incidents = None
+    total_users = None
+    total_units = None
+    total_zones = None
+    total_centers = None
+
+    if current_user.role == UserRole.ADMIN:
+        # Admin sees everything
         total_incidents = Incident.query.count()
         resolved_incidents = Incident.query.filter_by(status='Résolu').count()
         pending_incidents = Incident.query.filter_by(status='En cours').count()
@@ -182,42 +188,33 @@ def dashboard():
         total_zones = 1  # Their own zone
         total_centers = Center.query.join(Unit).filter(Unit.zone_id == current_user.zone_id).count()
         
-    elif current_user.role == UserRole.EMPLOYEUR_UNITE:
-        # Unit employers see their unit's incidents
+    elif current_user.role in [UserRole.EMPLOYEUR_UNITE, UserRole.UTILISATEUR]:
+        # Unit employers and regular users see their unit's incidents
         total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
         resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
         pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
         recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
-        
-        total_users = None
-        total_units = None
-        total_zones = None
-        total_centers = None
-        
-    elif current_user.role == UserRole.UTILISATEUR:
-        # Regular users see their unit's incidents
-        total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
-        resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
-        pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
-        recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
-        
-        total_users = None
-        total_units = None
-        total_zones = None
-        total_centers = None
     
-    return render_template('main_dashboard.html',
-                         phrase=random_phrase,
-                         datetime=datetime,
-                         total_incidents=total_incidents,
-                         resolved_incidents=resolved_incidents,
-                         pending_incidents=pending_incidents,
-                         recent_incidents=recent_incidents,
-                         total_users=total_users,
-                         total_units=total_units,
-                         total_zones=total_zones,
-                         total_centers=total_centers,
-                         permissions=permissions)
+    return {
+        'phrase': random_phrase,
+        'datetime': datetime,
+        'total_incidents': total_incidents,
+        'resolved_incidents': resolved_incidents,
+        'pending_incidents': pending_incidents,
+        'recent_incidents': recent_incidents,
+        'total_users': total_users,
+        'total_units': total_units,
+        'total_zones': total_zones,
+        'total_centers': total_centers,
+        'permissions': permissions
+    }
+
+@app.route('/dashboard')
+@login_required
+@unit_required
+def dashboard():
+    dashboard_data = get_dashboard_data()
+    return render_template('main_dashboard.html', **dashboard_data)
 
 @app.route('/services')
 @login_required
@@ -229,18 +226,22 @@ def services():
 @login_required
 @unit_required
 def listes_dashboard():
-    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-        total_incidents = Incident.query.count()
-        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
-    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
-        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-        unit_ids = [unit.id for unit in zone_units]
-        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
-        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
-    else:
-        total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
-        resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
+    def get_incidents_count():
+        if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+            total_incidents = Incident.query.count()
+            resolved_incidents = Incident.query.filter_by(status='Résolu').count()
+        elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+            zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+            unit_ids = [unit.id for unit in zone_units]
+            total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
+            resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
+        else:
+            total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
+            resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
+        
+        return total_incidents, resolved_incidents
 
+    total_incidents, resolved_incidents = get_incidents_count()
     return render_template('listes_dashboard.html',
                          total_incidents=total_incidents,
                          resolved_incidents=resolved_incidents)
