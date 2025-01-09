@@ -39,13 +39,21 @@
                     </li>
                 </ul>
             </div>
+            <div class="ona-spark-engine text-center py-3">
+                <div class="spark-engine-text">
+                    <span class="ona-text">ONA</span>
+                    <span class="spark-text">SPARK ENGINE</span>
+                </div>
+            </div>
         </div>
+        
 
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             {% block reuse_content %}{% endblock %}
         </main>
     </div>
+    
 </div>
 
 <style>
@@ -77,6 +85,39 @@
 
 .sidebar .nav-link i {
     margin-right: .5rem;
+}
+
+.ona-spark-engine {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem 0;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.spark-engine-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.ona-text {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.spark-text {
+    font-size: 1rem;
+    background: linear-gradient(135deg, #2196f3, #162a99);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 </style>
 {% endblock %}
