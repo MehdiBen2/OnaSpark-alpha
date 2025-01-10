@@ -337,19 +337,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let isEditing = false;
     let currentUserId = null;
 
-    // Notification management
-    let activeNotification = null;
-
     // Toast notification function
     function showToast(message, type = 'success') {
         const flashContainer = document.querySelector('.notification-container');
         if (!flashContainer) return;
-
-        // Remove any existing notification
-        if (activeNotification) {
-            activeNotification.remove();
-            activeNotification = null;
-        }
 
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -375,24 +366,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add close event listener
         const closeButton = notification.querySelector('.notification-close');
         closeButton.addEventListener('click', () => {
-            dismissNotification(notification);
+            notification.style.transform = 'translateX(-100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
         });
-
-        // Dismiss function
-        function dismissNotification(notif) {
-            notif.style.transform = 'translateX(-100%)';
-            notif.style.opacity = '0';
-            setTimeout(() => {
-                notif.remove();
-                if (notif === activeNotification) {
-                    activeNotification = null;
-                }
-            }, 300);
-        }
 
         // Append and trigger animation
         flashContainer.appendChild(notification);
-        activeNotification = notification;
         
         // Force reflow
         notification.offsetHeight;
@@ -403,7 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
-            dismissNotification(notification);
+            notification.style.transform = 'translateX(-100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
         }, 5000);
     }
 
