@@ -290,6 +290,24 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/users.css') }}">
+<style>
+.btn-loading {
+    position: relative;
+    color: #ffffff !important;
+    background-color: #007bff !important;
+}
+
+.btn-loading .spinner-border {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.btn-loading .button-text {
+    margin-left: 25px;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -319,33 +337,74 @@ document.addEventListener('DOMContentLoaded', function() {
     let isEditing = false;
     let currentUserId = null;
 
+    // Notification management
+    let activeNotification = null;
+
     // Toast notification function
     function showToast(message, type = 'success') {
-        const toastContainer = document.querySelector('.toast-container') || (() => {
-            const container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-            return container;
-        })();
+        const flashContainer = document.querySelector('.notification-container');
+        if (!flashContainer) return;
 
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type}`;
-        toast.setAttribute('role', 'alert');
-        toast.setAttribute('aria-live', 'assertive');
-        toast.setAttribute('aria-atomic', 'true');
+        // Remove any existing notification
+        if (activeNotification) {
+            activeNotification.remove();
+            activeNotification = null;
+        }
 
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.setAttribute('role', 'alert');
+
+        const iconClass = {
+            'success': 'fa-check-circle text-success',
+            'error': 'fa-times-circle text-danger',
+            'warning': 'fa-exclamation-triangle text-warning',
+            'info': 'fa-info-circle text-info'
+        }[type] || 'fa-info-circle text-info';
+
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${iconClass} notification-icon"></i>
+                <span class="notification-message">${message}</span>
             </div>
+            <button type="button" class="notification-close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         `;
 
-        toastContainer.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
+        // Add close event listener
+        const closeButton = notification.querySelector('.notification-close');
+        closeButton.addEventListener('click', () => {
+            dismissNotification(notification);
+        });
 
-        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        // Dismiss function
+        function dismissNotification(notif) {
+            notif.style.transform = 'translateX(-100%)';
+            notif.style.opacity = '0';
+            setTimeout(() => {
+                notif.remove();
+                if (notif === activeNotification) {
+                    activeNotification = null;
+                }
+            }, 300);
+        }
+
+        // Append and trigger animation
+        flashContainer.appendChild(notification);
+        activeNotification = notification;
+        
+        // Force reflow
+        notification.offsetHeight;
+        
+        // Slide in animation
+        notification.style.transform = 'translateX(0)';
+        notification.style.opacity = '1';
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            dismissNotification(notification);
+        }, 5000);
     }
 
     // Role descriptions
@@ -578,19 +637,70 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         console.log('Form submission started');
 
+        // Validate form before submission
+        if (!this.checkValidity()) {
+            e.stopPropagation();
+            this.classList.add('was-validated');
+            return;
+        }
+
         try {
             // Disable form submission while processing
             const submitButton = this.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.innerHTML;
+            const spinnerElement = submitButton.querySelector('.spinner-border');
+            const buttonTextElement = submitButton.querySelector('.button-text');
+            const originalButtonText = buttonTextElement.textContent;
+
+            // Show loading state with clear visibility
             submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isEditing ? 'Modification' : 'Création') + ' en cours...';
+            spinnerElement.classList.remove('d-none');
+            buttonTextElement.textContent = isEditing ? 'Modification en cours...' : 'Création en cours...';
+
+            // Ensure clear, high-contrast text
+            submitButton.classList.add('btn-loading');
+            submitButton.style.color = '#ffffff'; // Ensure white text
+            submitButton.style.backgroundColor = '#007bff'; // Visible blue background
 
             // Get form data
             const formData = new FormData(this);
             
-            // Log form data for debugging
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}: ${value}`);
+            // Validate required fields
+            const requiredFields = ['username', 'nickname', 'role'];
+            if (!isEditing) {
+                requiredFields.push('password');
+            }
+
+            for (let field of requiredFields) {
+                const input = this.querySelector(`#${field}`);
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    input.focus();
+                    throw new Error(`Le champ ${field} est obligatoire`);
+                }
+            }
+
+            // Role-specific validation
+            const role = formData.get('role');
+            if (role === 'Employeur Zone' && !formData.get('zone_id')) {
+                const zoneSelect = document.getElementById('zone_id');
+                zoneSelect.classList.add('is-invalid');
+                zoneSelect.focus();
+                throw new Error('Sélectionnez une zone pour ce rôle');
+            }
+
+            if (['Employeur Unité', 'Utilisateur'].includes(role)) {
+                if (!formData.get('zone_id')) {
+                    const zoneSelect = document.getElementById('zone_id');
+                    zoneSelect.classList.add('is-invalid');
+                    zoneSelect.focus();
+                    throw new Error('Sélectionnez une zone pour ce rôle');
+                }
+                if (!formData.get('unit_id')) {
+                    const unitSelect = document.getElementById('unit_id');
+                    unitSelect.classList.add('is-invalid');
+                    unitSelect.focus();
+                    throw new Error('Sélectionnez une unité pour ce rôle');
+                }
             }
 
             // Determine the endpoint based on whether we're editing or creating
@@ -615,6 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     location.reload();
                 } else {
                     showToast(data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur'), 'error');
+                    throw new Error(data.message);
                 }
             } else {
                 if (response.ok) {
@@ -623,16 +734,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     location.reload();
                 } else {
                     showToast(isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur', 'error');
+                    throw new Error('Erreur de serveur');
                 }
             }
         } catch (error) {
             console.error('Error during form submission:', error);
-            showToast('Une erreur est survenue lors de la communication avec le serveur', 'error');
+            showToast(error.message || 'Une erreur est survenue lors de la communication avec le serveur', 'error');
         } finally {
             // Re-enable the submit button
             const submitButton = this.querySelector('button[type="submit"]');
+            const spinnerElement = submitButton.querySelector('.spinner-border');
+            const buttonTextElement = submitButton.querySelector('.button-text');
+            
             submitButton.disabled = false;
-            submitButton.innerHTML = originalButtonText;
+            spinnerElement.classList.add('d-none');
+            buttonTextElement.textContent = originalButtonText;
+            submitButton.classList.remove('btn-loading');
+            submitButton.style.color = ''; // Reset color
+            submitButton.style.backgroundColor = ''; // Reset background
         }
     });
 
