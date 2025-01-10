@@ -134,7 +134,6 @@ def main_dashboard():
 
 def get_dashboard_data():
     # Centralized dashboard data fetching
-    random_phrase = random.choice(WATER_PHRASES)
     permissions = UserRole.get_permissions(current_user.role)
 
     # Default values
@@ -183,7 +182,6 @@ def get_dashboard_data():
         recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
     
     return {
-        'phrase': random_phrase,
         'datetime': datetime,
         'total_incidents': total_incidents,
         'resolved_incidents': resolved_incidents,
