@@ -1,10 +1,12 @@
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4, landscape, letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch, mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from datetime import datetime
 import os
+import tempfile
+from .water_quality import PARAMETER_METADATA
 
 def clean_unit_name(unit_text):
     """Clean and format the unit name"""
@@ -89,7 +91,7 @@ def create_incident_pdf(incidents, output_path, unit=None):
         
         header_table_data = [
             [
-                Table(header_text, colWidths=[350]),
+                Table(header_text, colWidths=[350]),#img
                 img
             ]
         ]
@@ -210,3 +212,230 @@ def create_incident_pdf(incidents, output_path, unit=None):
     
     # Build PDF
     doc.build(elements)
+
+def generate_water_quality_pdf(result_data, output_path=None):
+    """
+    Generate a professional PDF report for water quality assessment.
+    
+    Args:
+        result_data: Dictionary containing water quality assessment results
+        output_path: Optional path to save the PDF. If None, generates in a temporary directory.
+    Returns:
+        Path to the generated PDF file
+    """
+    if output_path is None:
+        # Create a temporary file with .pdf extension
+        temp_fd, output_path = tempfile.mkstemp(suffix='.pdf', prefix='Rapport_Qualite_Eau_')
+        os.close(temp_fd)  # Close the file descriptor as we'll use the path
+    
+    # Create PDF document
+    doc = SimpleDocTemplate(output_path, pagesize=letter)
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = styles['Title'].clone('Title')
+    title_style.fontSize = 16
+    title_style.textColor = colors.darkblue
+    
+    subtitle_style = styles['Heading2'].clone('Subtitle')
+    subtitle_style.fontSize = 14
+    subtitle_style.textColor = colors.darkblue
+    
+    normal_style = styles['Normal'].clone('Normal')
+    normal_style.fontSize = 10
+
+    # Date style
+    date_style = styles['Normal'].clone('Date')
+    date_style.fontSize = 10
+    date_style.alignment = 2  # Right alignment
+    
+    # Footer style
+    footer_style = styles['Normal'].clone('Footer')
+    footer_style.fontSize = 8
+    footer_style.textColor = colors.darkblue
+    footer_style.alignment = 1  # Center alignment
+    
+    story = []
+
+    # Add Header
+    logo_paths = [
+        os.path.join(os.path.dirname(__file__), '..', 'static', 'images', 'ona_logoFull.png'),
+        os.path.join(os.path.dirname(__file__), '..', 'static', 'img', 'ona_logo.png')
+    ]
+    
+    logo_added = False
+    for logo_path in logo_paths:
+        try:
+            if os.path.exists(logo_path):
+                from PIL import Image as PILImage
+                
+                # Open image and maintain aspect ratio
+                pil_img = PILImage.open(logo_path)
+                original_width, original_height = pil_img.size
+                
+                # Calculate new dimensions maintaining aspect ratio
+                max_width = 2*inch
+                aspect_ratio = original_width / original_height
+                new_height = max_width / aspect_ratio
+                
+                # Create ReportLab Image with correct dimensions
+                logo = Image(logo_path, width=max_width, height=new_height)
+                story.append(logo)
+                logo_added = True
+                break
+        except Exception as e:
+            print(f"Could not add logo from {logo_path}: {e}")
+    
+    if not logo_added:
+        # Add a text placeholder if no logo is found
+        story.append(Paragraph("OFFICE NATIONAL D'ASSAINISSEMENT", title_style))
+
+    # Add Date
+    current_date = datetime.now().strftime("%d/%m/%Y")
+    story.append(Paragraph(f"Date: {current_date}", date_style))
+    story.append(Spacer(1, 12))
+
+    # Title
+    title = Paragraph("Rapport d'Évaluation de la Qualité de l'Eau", title_style)
+    story.append(title)
+    story.append(Spacer(1, 12))
+
+    # General Classification
+    rating_info = result_data.get('rating_info', {})
+    classification_text = Paragraph(f"Classification Générale: {rating_info.get('title', 'N/A')}", subtitle_style)
+    classification_desc = Paragraph(rating_info.get('description', 'Aucune description disponible'), normal_style)
+    story.append(classification_text)
+    story.append(classification_desc)
+    story.append(Spacer(1, 12))
+
+    # Parameters Table
+    parameter_data = [['Paramètre', 'Valeur', 'Unité']]
+    parameters = result_data.get('parameters', {})
+    
+    for param_type in ['microbiological', 'physical', 'chemical', 'toxic']:
+        for param_name, param_value in parameters.items():
+            if param_name in PARAMETER_METADATA.get(param_type, {}).get('parameters', {}):
+                param_info = PARAMETER_METADATA[param_type]['parameters'][param_name]
+                parameter_data.append([
+                    param_info.get('name', param_name),
+                    str(param_value),
+                    param_info.get('unit', '')
+                ])
+
+    parameter_table = Table(parameter_data, colWidths=[3*inch, 1.5*inch, 1*inch])
+    parameter_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.Color(0.2, 0.4, 0.6, 0.5)),  # Softer blue background
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 10),
+        ('BOTTOMPADDING', (0,0), (-1,0), 6),
+        ('BACKGROUND', (0,1), (-1,-1), colors.Color(0.9, 0.9, 1, 0.5)),  # Light blue background
+        ('GRID', (0,0), (-1,-1), 1, colors.Color(0.7, 0.7, 0.7)),  # Soft grey grid
+        ('FONTSIZE', (0,1), (-1,-1), 9)
+    ]))
+    story.append(parameter_table)
+    story.append(Spacer(1, 12))
+
+    # Helper function to create consistent tables
+    def create_styled_table(title, data_list, styles_sheet):
+        # Create table data
+        table_data = [[title]]
+        for item in data_list or [f'Aucun {title.lower()}']:
+            table_data.append([item])
+        
+        # Create table
+        table = Table(table_data, colWidths=[6*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.2, 0.4, 0.6, 0.5)),  # Softer blue background
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 6),
+            ('BACKGROUND', (0,1), (-1,-1), colors.Color(0.9, 0.9, 1, 0.5)),  # Light blue background
+            ('GRID', (0,0), (-1,-1), 1, colors.Color(0.7, 0.7, 0.7)),  # Soft grey grid
+            ('FONTSIZE', (0,1), (-1,-1), 9)
+        ]))
+        return table
+
+    # Water Quality Norms and Standards Section
+    norms_title = Paragraph("Normes et Standards de Qualité de l'Eau", subtitle_style)
+    story.append(norms_title)
+    story.append(Spacer(1, 12))
+
+    # Detailed Norms Content
+    norms_content = [
+        "1. Paramètres Microbiologiques:",
+        "   - Coliformes fécaux : Maximum 0 CFU/100ml pour l'irrigation",
+        "   - Nématodes : Maximum 1 œuf/L selon les normes OMS",
+        "",
+        "2. Paramètres Physiques:",
+        "   - pH : Entre 6.5 et 8.5 (acceptable pour l'irrigation)",
+        "   - Conductivité Électrique (CE) : < 3 dS/m pour une irrigation sans risque",
+        "   - Matières En Suspension (MES) : < 50 mg/L",
+        "",
+        "3. Paramètres Chimiques:",
+        "   - DBO5 : < 30 mg/L (indiquant une faible charge organique)",
+        "   - DCO : < 100 mg/L (niveau acceptable de pollution organique)",
+        "   - Chlorures : < 350 meq/L pour minimiser les risques de salinité",
+        "",
+        "4. Éléments Toxiques (Limites Maximales):",
+        "   - Cadmium : < 0.01 mg/L",
+        "   - Mercure : < 0.001 mg/L",
+        "   - Arsenic : < 0.1 mg/L",
+        "   - Plomb : < 0.1 mg/L",
+        "",
+        "Recommandations Générales :",
+        "- Toujours traiter l'eau avant utilisation",
+        "- Effectuer des tests réguliers de qualité de l'eau",
+        "- Consulter les autorités locales pour des normes spécifiques"
+    ]
+
+    # Create Paragraph style for norms
+    norms_style = styles['Normal'].clone('NormsStyle')
+    norms_style.fontSize = 9
+    norms_style.leading = 12
+
+    # Add norms content
+    for line in norms_content:
+        story.append(Paragraph(line, norms_style))
+    
+    story.append(Spacer(1, 12))
+
+    # Allowed Crops
+    crops_text = Paragraph("Cultures Autorisées:", subtitle_style)
+    story.append(crops_text)
+    story.append(create_styled_table('Cultures', result_data.get('allowed_crops', []), styles))
+    story.append(Spacer(1, 12))
+
+    # Restrictions
+    restrictions_text = Paragraph("Restrictions:", subtitle_style)
+    story.append(restrictions_text)
+    story.append(create_styled_table('Restrictions', result_data.get('restrictions', []), styles))
+    story.append(Spacer(1, 12))
+
+    # Violations
+    violations_text = Paragraph("Paramètres Hors Normes:", subtitle_style)
+    story.append(violations_text)
+    story.append(create_styled_table('Violations', result_data.get('violations', ['Tous les paramètres sont conformes']), styles))
+
+    # Add Footer with governmental details
+    story.append(Spacer(1, 20))
+    footer_text = [
+        "OFFICE NATIONAL DE L'ASSAINISSEMENT",
+        "République Algérienne Démocratique et Populaire",
+        "Ministère des Ressources en Eau",
+        " 2025 ONA Spark - Tous droits réservés"
+    ]
+    
+    for line in footer_text:
+        story.append(Paragraph(line, footer_style))
+        story.append(Spacer(1, 4))
+
+    # Build PDF
+    doc.build(story)
+    
+    return output_path

@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, jsonify, send_file
 from flask_login import login_required, current_user
 from utils.water_quality import (
     assess_water_quality, 
-    get_parameter_metadata, 
-    generate_water_quality_pdf
+    get_parameter_metadata,
+    generate_pdf_report
 )
 from utils.url_endpoints import *
 from datetime import datetime
@@ -100,7 +100,7 @@ def download_water_quality_pdf_route():
         # Generate PDF with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'Rapport_Qualite_Eau_{timestamp}.pdf'
-        pdf_path = generate_water_quality_pdf(result)
+        pdf_path = generate_pdf_report(result)
         
         try:
             # Send file for download with proper headers

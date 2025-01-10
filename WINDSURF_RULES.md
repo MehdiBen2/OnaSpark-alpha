@@ -6,7 +6,8 @@
 - Always be mindful of the context of the codebase, including existing features and new features being added
 - Ensure that new features are compatible with old features and that nothing is broken
 - Use decorators to add new features and avoid hardcoding values or behavior
-- When adding new features or modifying existing ones, use a context-aware cascade approach to ensure that the codebase remains consistent and functional
+- When adding new features or modifying existing ones, Cascade needs to ensure that the codebase remains consistent and functional
+- Cascade will do edits in a focused and targeted manner, after scanning the file, to avoid wasting time or throwing errors and wasting credits
 
 ### 1.2 File Placement
 - All URL endpoints MUST be defined in `url_endpoints.py`

@@ -33,7 +33,7 @@ from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
 from utils.roles import UserRole
-from utils.water_quality import assess_water_quality, get_parameter_metadata, generate_water_quality_pdf
+from utils.water_quality import assess_water_quality, get_parameter_metadata, generate_pdf_report
 
 # Load environment variables
 load_dotenv()
