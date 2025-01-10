@@ -5,6 +5,7 @@ from datetime import datetime
 from functools import wraps
 from utils.decorators import admin_required, unit_required
 from utils.pdf_generator import create_incident_pdf
+from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, MERGE_INCIDENT, BATCH_MERGE
 import os
 
 incidents = Blueprint('incidents', __name__)
@@ -34,7 +35,7 @@ def incident_list():
         return Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
     
     incidents = get_incidents_for_user()
-    return render_template('incident_list.html', incidents=incidents)
+    return render_template('incidents/incident_list.html', incidents=incidents)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
 @login_required
@@ -46,7 +47,7 @@ def new_incident():
     else:
         if not current_user.unit_id:
             flash('Vous devez être assigné à une unité pour signaler un incident.', 'warning')
-            return redirect(url_for('select_unit'))
+            return redirect(url_for(SELECT_UNIT))
         units = [current_user.assigned_unit] if current_user.assigned_unit else []
 
     if request.method == 'POST':
@@ -57,12 +58,12 @@ def new_incident():
             # Validate unit_id
             if not unit_id:
                 flash('Une unité est requise pour créer un incident.', 'error')
-                return render_template('new_incident.html', units=units)
+                return render_template('incidents/new_incident.html', units=units)
 
             # For non-admin users, verify they're creating an incident for their own unit
             if current_user.role != UserRole.ADMIN and str(current_user.assigned_unit.id) != str(unit_id):
                 flash('Vous ne pouvez créer des incidents que pour votre unité.', 'error')
-                return render_template('new_incident.html', units=units)
+                return render_template('incidents/new_incident.html', units=units)
 
             # Create the incident
             incident = Incident(
@@ -83,13 +84,13 @@ def new_incident():
             db.session.add(incident)
             db.session.commit()
             flash('Incident signalé avec succès.', 'success')
-            return redirect(url_for('incidents.incident_list'))
+            return redirect(url_for(INCIDENT_LIST))
         except Exception as e:
             db.session.rollback()
             flash(f'Une erreur est survenue lors de la création de l\'incident: {str(e)}', 'error')
-            return render_template('new_incident.html', units=units)
+            return render_template('incidents/new_incident.html', units=units)
 
-    return render_template('new_incident.html', units=units)
+    return render_template('incidents/new_incident.html', units=units)
 
 @incidents.route('/incident/<int:incident_id>')
 @login_required
@@ -98,8 +99,8 @@ def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
-        return redirect(url_for('incidents.incident_list'))
-    return render_template('view_incident.html', incident=incident)
+        return redirect(url_for(INCIDENT_LIST))
+    return render_template('incidents/view_incident.html', incident=incident)
 
 @incidents.route('/incident/<int:incident_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -108,7 +109,7 @@ def edit_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
     
     if request.method == 'POST':
         try:
@@ -124,14 +125,14 @@ def edit_incident(incident_id):
             
             db.session.commit()
             flash('Incident mis à jour avec succès.', 'success')
-            return redirect(url_for('incidents.view_incident', incident_id=incident.id))
+            return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Erreur lors de la mise à jour de l\'incident: {str(e)}', 'danger')
-            return render_template('edit_incident.html', incident=incident)
+            return render_template('incidents/edit_incident.html', incident=incident)
     
-    return render_template('edit_incident.html', incident=incident)
+    return render_template('incidents/edit_incident.html', incident=incident)
 
 @incidents.route('/incident/<int:incident_id>/delete', methods=['POST'])
 @login_required
@@ -141,7 +142,7 @@ def delete_incident(incident_id):
     
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas la permission de supprimer cet incident.', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
     
     try:
         db.session.delete(incident)
@@ -151,7 +152,7 @@ def delete_incident(incident_id):
         db.session.rollback()
         flash(f'Erreur lors de la suppression de l\'incident: {str(e)}', 'danger')
     
-    return redirect(url_for('incidents.incident_list'))
+    return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incident/<int:incident_id>/resolve', methods=['POST'])
 @login_required
@@ -160,16 +161,16 @@ def resolve_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'êtes pas autorisé à résoudre cet incident.', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
     
     if incident.status == 'Résolu':
         flash('Cet incident est déjà résolu.', 'warning')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
     
     mesures_prises = request.form.get('mesures_prises')
     if not mesures_prises:
         flash('Veuillez décrire les mesures prises pour résoudre l\'incident.', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
     
     incident.status = 'Résolu'
     incident.mesures_prises = mesures_prises
@@ -177,7 +178,7 @@ def resolve_incident(incident_id):
     db.session.commit()
     
     flash('L\'incident a été marqué comme résolu.', 'success')
-    return redirect(url_for('incidents.incident_list'))
+    return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incident/<int:incident_id>/export_pdf')
 @login_required
@@ -211,7 +212,7 @@ def export_incident_pdf(incident_id):
         
     except Exception as e:
         flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incidents/export_all_pdf')
 @login_required
@@ -226,7 +227,7 @@ def export_all_incidents_pdf():
         
         if not incidents:
             flash('Aucun incident à exporter.', 'warning')
-            return redirect(url_for('incidents.incident_list'))
+            return redirect(url_for(INCIDENT_LIST))
         
         # Create temporary directory if it doesn't exist
         temp_dir = os.path.join(current_app.root_path, 'temp')
@@ -253,7 +254,7 @@ def export_all_incidents_pdf():
         
     except Exception as e:
         flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
-        return redirect(url_for('incidents.incident_list'))
+        return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incident/<int:incident_id>/merge', methods=['GET', 'POST'])
 @login_required
@@ -268,7 +269,7 @@ def merge_incident(incident_id):
         
         if not new_unit_id:
             flash('Veuillez sélectionner une unité de destination.', 'danger')
-            return redirect(url_for('incidents.merge_incident', incident_id=incident_id))
+            return redirect(url_for(MERGE_INCIDENT, incident_id=incident_id))
             
         try:
             # Update the incident's unit
@@ -290,14 +291,14 @@ def merge_incident(incident_id):
             
             db.session.commit()
             flash(f'L\'incident a été fusionné avec succès vers l\'unité {new_unit.name}.', 'success')
-            return redirect(url_for('incidents.view_incident', incident_id=incident.id))
+            return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Erreur lors de la fusion de l\'incident: {str(e)}', 'danger')
-            return redirect(url_for('incidents.merge_incident', incident_id=incident_id))
+            return redirect(url_for(MERGE_INCIDENT, incident_id=incident_id))
     
-    return render_template('merge_incident.html', incident=incident, units=units)
+    return render_template('incidents/merge_incident.html', incident=incident, units=units)
 
 @incidents.route('/incidents/batch_merge', methods=['GET', 'POST'])
 @login_required
@@ -313,7 +314,7 @@ def batch_merge():
         
         if not all([source_unit_id, target_unit_id, incident_ids]):
             flash('Veuillez sélectionner les unités source et destination et au moins un incident.', 'danger')
-            return redirect(url_for('incidents.batch_merge'))
+            return redirect(url_for(BATCH_MERGE))
             
         try:
             source_unit = Unit.query.get(source_unit_id)
@@ -337,11 +338,11 @@ def batch_merge():
             
             db.session.commit()
             flash(f'{len(incident_ids)} incidents ont été fusionnés avec succès vers l\'unité {target_unit.name}.', 'success')
-            return redirect(url_for('incidents.incident_list'))
+            return redirect(url_for(INCIDENT_LIST))
             
         except Exception as e:
             db.session.rollback()
             flash(f'Erreur lors de la fusion des incidents: {str(e)}', 'danger')
-            return redirect(url_for('incidents.batch_merge'))
+            return redirect(url_for(BATCH_MERGE))
     
-    return render_template('batch_merge.html', units=units)
+    return render_template('incidents/batch_merge.html', units=units)

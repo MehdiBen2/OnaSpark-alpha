@@ -27,6 +27,8 @@ REGISTER = 'auth.register'
 # Profile routes
 VIEW_PROFILE = 'profiles.view_profile'
 EDIT_PROFILE = 'profiles.edit_profile'
+CREATE_PROFILE = 'profiles.create_profile'
+ADMIN_PROFILES = 'profiles.admin_profiles'
 
 # Unit routes
 SELECT_UNIT = 'select_unit'

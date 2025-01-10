@@ -4,6 +4,7 @@ from models import db, User, UserProfile, Unit
 from datetime import datetime
 from sqlalchemy import or_
 from utils.form_validation import FormValidator, handle_form_exception
+from utils.url_endpoints import INDEX, VIEW_PROFILE, CREATE_PROFILE, ADMIN_PROFILES
 
 profiles = Blueprint('profiles', __name__)
 
@@ -86,7 +87,7 @@ def create_profile():
             db.session.add(profile)
             db.session.commit()
             flash('Profil créé avec succès', 'success')
-            return redirect(url_for('profiles.view_profile'))
+            return redirect(url_for(VIEW_PROFILE))
 
         except Exception as e:
             db.session.rollback()
@@ -100,7 +101,7 @@ def create_profile():
 def view_profile():
     if not current_user.profile:
         flash('Vous n\'avez pas encore créé votre profil.', 'info')
-        return redirect(url_for('profiles.create_profile'))
+        return redirect(url_for(CREATE_PROFILE))
     
     return render_template('profiles/view_profile.html', profile=current_user.profile)
 
@@ -110,12 +111,12 @@ def view_user_profile(user_id):
     # Check if the current user is an admin or viewing their own profile
     if not current_user.role == 'Admin' and current_user.id != user_id:
         flash('Vous n\'avez pas la permission de voir ce profil.', 'error')
-        return redirect(url_for('profiles.view_profile'))
+        return redirect(url_for(VIEW_PROFILE))
     
     user = User.query.get_or_404(user_id)
     if not user.profile:
         flash('Ce utilisateur n\'a pas encore créé son profil.', 'info')
-        return redirect(url_for('profiles.admin_profiles'))
+        return redirect(url_for(ADMIN_PROFILES))
     
     return render_template('profiles/view_profile.html', profile=user.profile, is_admin_view=True)
 
@@ -125,7 +126,7 @@ def edit_profile():
     profile = current_user.profile
     if not profile:
         flash('Profile not found', 'error')
-        return redirect(url_for('profiles.create_profile'))
+        return redirect(url_for(CREATE_PROFILE))
 
     if request.method == 'POST':
         try:
@@ -193,7 +194,7 @@ def edit_profile():
 
             db.session.commit()
             flash('Profile updated successfully', 'success')
-            return redirect(url_for('profiles.view_profile'))
+            return redirect(url_for(VIEW_PROFILE))
 
         except Exception as e:
             db.session.rollback()
@@ -207,14 +208,14 @@ def edit_profile():
 def edit_user_profile(user_id):
     if current_user.role != 'Admin':
         flash('Unauthorized access', 'error')
-        return redirect(url_for('main.index'))
+        return redirect(url_for(INDEX))
     
     user = User.query.get_or_404(user_id)
     profile = user.profile
     
     if not profile:
         flash('Profile not found', 'error')
-        return redirect(url_for('profiles.admin_profiles'))
+        return redirect(url_for(ADMIN_PROFILES))
 
     if request.method == 'POST':
         try:
@@ -296,7 +297,7 @@ def edit_user_profile(user_id):
 def admin_profiles():
     if current_user.role != 'Admin':
         flash('Accès non autorisé', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for(INDEX))
 
     search_query = request.args.get('search', '')
     sort_by = request.args.get('sort_by', 'last_name')

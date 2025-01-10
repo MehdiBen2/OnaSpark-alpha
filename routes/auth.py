@@ -54,7 +54,7 @@ def login():
     
     # Get a random water phrase
     random_phrase = random.choice(WATER_PHRASES)
-    return render_template('login.html', water_phrase=random_phrase)
+    return render_template('auth/login.html', water_phrase=random_phrase)
 
 @auth.route('/logout')
 @login_required

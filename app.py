@@ -72,19 +72,6 @@ def init_db_command():
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# Water and sanitation phrases
-WATER_PHRASES = [
-    "L'eau est l'essence de la vie ; préservons-la pour les générations futures.",
-    "L'assainissement est une question de dignité ; assurons-le pour tous.",
-    "Chaque goutte compte dans la préservation de nos ressources en eau.",
-    "Un environnement propre commence par un bon assainissement.",
-    "La qualité de l'eau reflète la santé de notre société.",
-    "Protéger l'eau, c'est protéger la vie.",
-    "L'assainissement est la clé d'un environnement sain.",
-    "L'eau propre est un droit fondamental.",
-    "Ensemble pour une meilleure gestion de l'eau.",
-    "La propreté de l'eau est notre responsabilité collective."
-]
 
 def admin_required(f):
     @wraps(f)
@@ -117,7 +104,7 @@ def unit_required(f):
 def index():
     if current_user.is_authenticated:
         return redirect(url_for(MAIN_DASHBOARD))
-    return render_template('landing.html')
+    return render_template('dashboard/landing.html')
 
 @app.route('/main')
 @login_required
@@ -138,7 +125,7 @@ def main_dashboard():
         resolved_incidents = Incident.query.filter_by(author=current_user, status='Résolu').count()
         pending_incidents = Incident.query.filter_by(author=current_user, status='En cours').count()
     
-    return render_template('main_dashboard.html',
+    return render_template('dashboard/main_dashboard.html',
                          recent_incidents=recent_incidents,
                          total_incidents=total_incidents,
                          resolved_incidents=resolved_incidents,
@@ -214,7 +201,7 @@ def get_dashboard_data():
 @unit_required
 def dashboard():
     dashboard_data = get_dashboard_data()
-    return render_template('main_dashboard.html', **dashboard_data)
+    return render_template('dashboard/main_dashboard.html', **dashboard_data)
 
 @app.route('/services')
 @login_required
@@ -422,7 +409,7 @@ def list_units():
             units = []
             zones = []
     
-    return render_template('list_units.html', units=units, zones=zones)
+    return render_template('dashboard/list_units.html', units=units, zones=zones)
 
 @app.route('/zones')
 @login_required
@@ -631,7 +618,7 @@ def select_unit():
     else:
         zones = []
         
-    return render_template('select_unit.html', zones=zones)
+    return render_template('incidents/select_unit.html', zones=zones)
 
 @app.route('/api/units/<int:zone_id>')
 @login_required
@@ -645,6 +632,15 @@ def get_zone_units(zone_id):
             
     units = Unit.query.filter_by(zone_id=zone_id).all()
     return jsonify([{'id': unit.id, 'name': unit.name} for unit in units])
+
+@app.route('/login')
+def login():
+    return render_template('auth/login.html')
+
+@app.route('/new-incident')
+@login_required
+def new_incident():
+    return render_template('incidents/new_incident.html')
 
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist
