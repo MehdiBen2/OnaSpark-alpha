@@ -28,6 +28,7 @@ from routes.incidents import incidents
 from routes.units import units
 from routes.users import users
 from routes.database_admin import database_admin
+from routes.water_quality import water_quality
 from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
@@ -59,6 +60,7 @@ app.register_blueprint(incidents)
 app.register_blueprint(units)
 app.register_blueprint(users)
 app.register_blueprint(database_admin)
+app.register_blueprint(water_quality)
 
 @app.cli.command("init-db")
 @with_appcontext
@@ -293,99 +295,8 @@ def rapports():
 def statistiques():
     return render_template('departement/statistiques.html', datetime=datetime)
 
-# Water Quality Assessment Routes
-@app.route('/reuse/water-quality')
-@login_required
-def water_quality_route():
-    return render_template('departement/reuse/water_quality.html', 
-                         active_page='water_quality',
-                         parameter_metadata=get_parameter_metadata())
-
-@app.route('/reuse/water-quality/assess', methods=['POST'])
-@login_required
-def assess_water_quality_route():
-    # Get form data
-    data = request.form.to_dict()
-    
-    # Convert string values to appropriate types
-    for key, value in data.items():
-        try:
-            data[key] = float(value)
-        except ValueError:
-            pass
-    
-    # Perform water quality assessment
-    result = assess_water_quality(data)
-    return jsonify(result)
-
-@app.route('/reuse/water-quality/results')
-@login_required
-def water_quality_results_route():
-    # Get parameters from query string
-    params = request.args.to_dict()
-    
-    # Convert string values to appropriate types
-    for key, value in params.items():
-        try:
-            params[key] = float(value)
-        except ValueError:
-            pass
-    
-    # Perform water quality assessment
-    result = assess_water_quality(params)
-    
-    # Add metadata for UI rendering
-    result['parameter_metadata'] = get_parameter_metadata()
-    
-    return render_template('departement/reuse/water_quality_results.html', **result)
-
-@app.route('/reuse/water-quality/download-pdf')
-@login_required
-def download_water_quality_pdf():
-    try:
-        # Get parameters from query string
-        params = request.args.to_dict()
-        
-        # Convert string values to appropriate types
-        for key, value in params.items():
-            try:
-                params[key] = float(value)
-            except ValueError:
-                pass
-        
-        # Perform water quality assessment
-        result = assess_water_quality(params)
-        
-        # Add metadata for UI rendering
-        result['parameter_metadata'] = get_parameter_metadata()
-        
-        # Generate PDF with timestamp
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'Rapport_Qualite_Eau_{timestamp}.pdf'
-        pdf_path = generate_water_quality_pdf(result)
-        
-        try:
-            # Send file for download with proper headers
-            response = send_file(
-                pdf_path,
-                mimetype='application/pdf',
-                as_attachment=True,
-                download_name=filename
-            )
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
-            return response
-        finally:
-            # Clean up the temporary file after sending
-            try:
-                os.unlink(pdf_path)
-            except:
-                pass
-    except Exception as e:
-        app.logger.error(f"Error generating water quality PDF: {str(e)}")
-        flash("Une erreur s'est produite lors de la génération du PDF.", "error")
-        return redirect(url_for('water_quality_route'))
+# Remove Water Quality Assessment Routes
+# These routes have been moved to routes/water_quality.py
 
 @app.route('/units')
 @login_required
