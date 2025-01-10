@@ -102,6 +102,36 @@ def unit_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def get_user_incident_counts(user, include_author=False):
+    """
+    Retrieve incident counts based on user role and permissions.
+    
+    Args:
+        user: Currently logged-in user
+        include_author: If True, use author for filtering instead of unit_id
+    
+    Returns:
+        Tuple of (total_incidents, resolved_incidents)
+    """
+    if user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+        total_incidents = Incident.query.count()
+        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
+    elif user.role == UserRole.EMPLOYEUR_ZONE:
+        zone_units = Unit.query.filter_by(zone_id=user.zone_id).all()
+        unit_ids = [unit.id for unit in zone_units]
+        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
+        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
+    else:
+        # Use either unit_id or author based on the include_author flag
+        if include_author:
+            total_incidents = Incident.query.filter_by(author=user).count()
+            resolved_incidents = Incident.query.filter_by(author=user, status='Résolu').count()
+        else:
+            total_incidents = Incident.query.filter_by(unit_id=user.unit_id).count()
+            resolved_incidents = Incident.query.filter_by(unit_id=user.unit_id, status='Résolu').count()
+    
+    return total_incidents, resolved_incidents
+
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -118,14 +148,8 @@ def main_dashboard():
         recent_incidents = Incident.query.filter_by(author=current_user).order_by(Incident.date_incident.desc()).limit(5).all()
     
     # Get statistics
-    if current_user.role == UserRole.ADMIN:
-        total_incidents = Incident.query.count()
-        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
-        pending_incidents = Incident.query.filter_by(status='En cours').count()
-    else:
-        total_incidents = Incident.query.filter_by(author=current_user).count()
-        resolved_incidents = Incident.query.filter_by(author=current_user, status='Résolu').count()
-        pending_incidents = Incident.query.filter_by(author=current_user, status='En cours').count()
+    total_incidents, resolved_incidents = get_user_incident_counts(current_user)
+    pending_incidents = total_incidents - resolved_incidents
     
     return render_template('dashboard/main_dashboard.html',
                          recent_incidents=recent_incidents,
@@ -150,9 +174,8 @@ def get_dashboard_data():
 
     if current_user.role == UserRole.ADMIN:
         # Admin sees everything
-        total_incidents = Incident.query.count()
-        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
-        pending_incidents = Incident.query.filter_by(status='En cours').count()
+        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
+        pending_incidents = total_incidents - resolved_incidents
         recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
         
         total_users = User.query.count()
@@ -162,25 +185,20 @@ def get_dashboard_data():
         
     elif current_user.role == UserRole.EMPLOYEUR_ZONE:
         # Zone employer sees all incidents in their zone
-        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-        unit_ids = [unit.id for unit in zone_units]
-        
-        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
-        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
-        pending_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='En cours').count()
-        recent_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).limit(5).all()
+        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
+        pending_incidents = total_incidents - resolved_incidents
+        recent_incidents = Incident.query.filter(Incident.unit_id.in_([unit.id for unit in Unit.query.filter_by(zone_id=current_user.zone_id).all()])).order_by(Incident.date_incident.desc()).limit(5).all()
         
         # Zone statistics
         total_users = User.query.filter_by(zone_id=current_user.zone_id).count()
-        total_units = len(zone_units)
+        total_units = len(Unit.query.filter_by(zone_id=current_user.zone_id).all())
         total_zones = 1  # Their own zone
         total_centers = Center.query.join(Unit).filter(Unit.zone_id == current_user.zone_id).count()
         
     elif current_user.role in [UserRole.EMPLOYEUR_UNITE, UserRole.UTILISATEUR]:
         # Unit employers and regular users see their unit's incidents
-        total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
-        resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
-        pending_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='En cours').count()
+        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
+        pending_incidents = total_incidents - resolved_incidents
         recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
     
     return {
@@ -213,22 +231,7 @@ def services():
 @login_required
 @unit_required
 def listes_dashboard():
-    def get_incidents_count():
-        if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-            total_incidents = Incident.query.count()
-            resolved_incidents = Incident.query.filter_by(status='Résolu').count()
-        elif current_user.role == UserRole.EMPLOYEUR_ZONE:
-            zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-            unit_ids = [unit.id for unit in zone_units]
-            total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
-            resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
-        else:
-            total_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).count()
-            resolved_incidents = Incident.query.filter_by(unit_id=current_user.unit_id, status='Résolu').count()
-        
-        return total_incidents, resolved_incidents
-
-    total_incidents, resolved_incidents = get_incidents_count()
+    total_incidents, resolved_incidents = get_user_incident_counts(current_user)
     return render_template('listes_dashboard.html',
                          total_incidents=total_incidents,
                          resolved_incidents=resolved_incidents)
