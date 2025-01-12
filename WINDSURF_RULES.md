@@ -1,7 +1,7 @@
 # Windsurf Workplace Coding Guidelines
 
 ## 1. Project Structure and Organization
-### 1.1 Context-Aware Cascade and Compatibility : IMPORTANT!
+### 1.1 Cascade must always be Context-Aware : IMPORTANT!
 
 - Always be mindful of the context of the codebase, including existing features and new features being added
 - Ensure that new features are compatible with old features and that nothing is broken

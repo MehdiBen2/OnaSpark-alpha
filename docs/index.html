@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Technique OnaSpark</title>
+    <link rel="icon" type="image/png" href="../static/images/SPARK.png">
+    <style>
+        :root {
+            /* Light theme variables */
+            --ona-blue-light: #0066cc;
+            --ona-blue-dark: #4d94ff;
+            --ona-green: #28a745;
+            --ona-orange: #ff6b00;
+
+            --primary-color: var(--ona-blue-light);
+            --secondary-color: var(--ona-green);
+            --accent-color: var(--ona-orange);
+            --text-color: #2c3e50;
+            --bg-color: #f8f9fa;
+            --header-bg: #fff;
+            --sidebar-bg: #fff;
+            --border-color: #e9ecef;
+            --code-bg: #f8f9fa;
+            --link-color: #0056b3;
+            --link-hover: #003d82;
+            --card-bg: #fff;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: var(--ona-blue-dark);
+            --secondary-color: #2ecc71;
+            --accent-color: #ff8533;
+            
+            /* Deep, professional dark mode palette */
+            --text-color: #e4e6eb;
+            --bg-color: #121212;
+            --header-bg: #1a1a1a;
+            --sidebar-bg: #1a1a1a;
+            --border-color: #2c2c2c;
+            --code-bg: #1f1f1f;
+            --link-color: var(--ona-blue-dark);
+            --link-hover: #66b3ff;
+            --card-bg: #1e1e1e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-color);
+        }
+
+        .content {
+            margin-left: 300px;
+            width: calc(100% - 300px);
+            background: var(--bg-color);
+            padding: 2rem;
+        }
+
+        .section {
+            background: var(--bg-color);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        /* Ensure no white backgrounds in dark mode */
+        [data-theme="dark"] h1,
+        [data-theme="dark"] h2,
+        [data-theme="dark"] h3,
+        [data-theme="dark"] h4,
+        [data-theme="dark"] p,
+        [data-theme="dark"] span,
+        [data-theme="dark"] div {
+            background: transparent !important;
+            color: var(--text-color);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--bg-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .sidebar-logo {
+            margin-bottom: 2rem;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .nav-section-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        [data-theme="dark"] .sidebar-logo {
+            border-bottom-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .nav-section {
+            border-top-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .nav-section-title {
+            color: var(--primary-color);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .theme-toggle:hover {
+            background: var(--link-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .theme-toggle::before {
+            content: '🌓';
+            margin-right: 0.5rem;
+        }
+
+        [data-theme="dark"] .theme-toggle::before {
+            content: '🌞';
+        }
+
+        /* Scrollbar Styles */
+        * {
+            scrollbar-color: var(--primary-color) var(--bg-color);
+            scrollbar-width: thin;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--primary-color);
+            margin: 1.5rem 0 1rem;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        h4 {
+            font-size: 1.25rem;
+            color: var(--secondary-color);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-color);
+        }
+
+        /* Code Block Styles */
+        pre {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        code {
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--primary-color);
+        }
+
+        /* List Styles */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        /* Parameter Styles */
+        .parameter {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .parameter-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .parameter-value {
+            color: var(--secondary-color);
+            font-family: 'Consolas', monospace;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-left-color: var(--primary-color);
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-left-color: var(--accent-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                padding: 1rem;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .nav-link {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 0;
+            }
+            .section {
+                break-inside: avoid;
+            }
+        }
+
+        /* Logo Styles */
+        .ona-logo {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 250px;
+            margin: 0 auto 1rem;
+            display: block;
+            object-fit: contain;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .ona-logo path {
+            transition: fill 0.3s ease;
+        }
+
+        [data-theme="dark"] .ona-logo path {
+            fill: var(--primary-color);
+        }
+
+        .component-grid, .feature-grid, .database-schema {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .component, .feature, .table {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .component:hover, .feature:hover, .table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .component h3, .feature h3, .table h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .component ul, .feature ul, .table ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .component ul li, .feature ul li, .table ul li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .component ul li:last-child, 
+        .feature ul li:last-child, 
+        .table ul li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../static/images/SPARK.png" alt="OnaSpark Logo" class="ona-logo">
+                <h1>OnaSpark</h1>
+                <p>Documentation Technique</p>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#introduction" class="nav-link">Introduction</a></li>
+                    <li class="nav-item"><a href="#architecture" class="nav-link">Architecture</a></li>
+                    <li class="nav-item"><a href="#components" class="nav-link">Composants Principaux</a></li>
+                    <li class="nav-item"><a href="#features" class="nav-link">Fonctionnalités</a></li>
+                    <li class="nav-item"><a href="#database" class="nav-link">Base de Données</a></li>
+                    <li class="nav-item"><a href="#api" class="nav-link">API</a></li>
+                    <li class="nav-item"><a href="#i18n" class="nav-link">Internationalisation</a></li>
+                    <li class="nav-item"><a href="#security" class="nav-link">Sécurité</a></li>
+                    <li class="nav-section">
+                        <a href="#water-quality" class="nav-link">Gestion Qualité des Eaux</a>
+                        <ul class="nav-submenu">
+                            <li><a href="#parameters" class="nav-link">Paramètres</a></li>
+                            <li><a href="#evaluation" class="nav-link">Système d'Évaluation</a></li>
+                            <li><a href="#recommendations" class="nav-link">Recommandations</a></li>
+                            <li><a href="#monitoring" class="nav-link">Surveillance</a></li>
+                            <li><a href="#interface" class="nav-link">Interface Utilisateur</a></li>
+                            <li><a href="#future" class="nav-link">Perspectives</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <section id="introduction" class="section">
+                <div class="card">
+                    <h2 class="card-title">Introduction</h2>
+                    <p>OnaSpark est un système complet de gestion de l'eau et de suivi des incidents développé avec Flask. L'application offre des fonctionnalités pour la gestion de la qualité de l'eau, le signalement des incidents et la gestion des unités organisationnelles à travers différentes zones et centres.</p>
+                </div>
+            </section>
+
+            <section id="architecture" class="section">
+                <h2>Architecture du Système</h2>
+                <div class="card">
+                    <h3 class="card-title">Stack Technologique</h3>
+                    <ul>
+                        <li><strong>Framework Backend:</strong> Flask</li>
+                        <li><strong>Base de Données:</strong> SQLAlchemy avec SQLite</li>
+                        <li><strong>Authentification:</strong> Flask-Login</li>
+                        <li><strong>Migration:</strong> Flask-Migrate</li>
+                        <li><strong>Frontend:</strong> HTML/CSS avec templates Jinja2</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Structure du Projet</h3>
+                    <pre><code>OnaSpark/
+├── app.py                 # Point d'entrée principal
+├── models/               # Modèles de base de données
+├── routes/              # Routes des blueprints
+│   ├── auth.py         # Routes d'authentification
+│   ├── profiles.py     # Gestion des profils
+│   ├── incidents.py    # Gestion des incidents
+│   └── water_quality.py # Évaluation qualité eau
+├── utils/              # Fonctions utilitaires
+└── templates/          # Templates HTML</code></pre>
+                </div>
+            </section>
+
+            <section id="components" class="section">
+                <div class="card">
+                    <h2 class="card-title">Composants Principaux</h2>
+                    <div class="component-grid">
+                        <div class="component">
+                            <h3>Système d'Authentification</h3>
+                            <ul>
+                                <li>Connexion sécurisée</li>
+                                <li>Contrôle d'accès basé sur les rôles</li>
+                                <li>Gestion des sessions</li>
+                            </ul>
+                        </div>
+                        <div class="component">
+                            <h3>Gestion des Utilisateurs</h3>
+                            <ul>
+                                <li>Création de profils</li>
+                                <li>Attribution des rôles</li>
+                                <li>Contrôle des permissions</li>
+                            </ul>
+                        </div>
+                        <div class="component">
+                            <h3>Gestion des Unités</h3>
+                            <ul>
+                                <li>Structure hiérarchique</li>
+                                <li>Assignation des zones</li>
+                                <li>Suivi des centres</li>
+                            </ul>
+                        </div>
+                        <div class="component">
+                            <h3>Suivi des Incidents</h3>
+                            <ul>
+                                <li>Création d'incidents</li>
+                                <li>Suivi des statuts</li>
+                                <li>Reporting détaillé</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="features" class="section">
+                <div class="card">
+                    <h2 class="card-title">Fonctionnalités</h2>
+                    <div class="feature-grid">
+                        <div class="feature">
+                            <h3>Tableau de Bord</h3>
+                            <ul>
+                                <li>Statistiques en temps réel</li>
+                                <li>Métriques de performance</li>
+                                <li>Alertes et notifications</li>
+                            </ul>
+                        </div>
+                        <div class="feature">
+                            <h3>Système de Reporting</h3>
+                            <ul>
+                                <li>Rapports d'incidents</li>
+                                <li>Analyse de la qualité de l'eau</li>
+                                <li>Exports personnalisables</li>
+                            </ul>
+                        </div>
+                        <div class="feature">
+                            <h3>Outils Administratifs</h3>
+                            <ul>
+                                <li>Gestion de base de données</li>
+                                <li>Administration des utilisateurs</li>
+                                <li>Configuration système</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="database" class="section">
+                <div class="card">
+                    <h2 class="card-title">Schéma de la Base de Données</h2>
+                    <div class="database-schema">
+                        <div class="table">
+                            <h3>Utilisateurs</h3>
+                            <ul>
+                                <li>ID Utilisateur</li>
+                                <li>Nom d'utilisateur</li>
+                                <li>Rôle</li>
+                                <li>Zone assignée</li>
+                                <li>Unité assignée</li>
+                            </ul>
+                        </div>
+                        <div class="table">
+                            <h3>Incidents</h3>
+                            <ul>
+                                <li>ID Incident</li>
+                                <li>Date</li>
+                                <li>Type</li>
+                                <li>Statut</li>
+                                <li>Unité concernée</li>
+                            </ul>
+                        </div>
+                        <div class="table">
+                            <h3>Qualité de l'Eau</h3>
+                            <ul>
+                                <li>ID Mesure</li>
+                                <li>Date</li>
+                                <li>Paramètres</li>
+                                <li>Valeurs</li>
+                                <li>Unité de mesure</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="water-quality" class="section">
+                <div class="card">
+                    <h2 class="card-title">Système de Gestion de la Qualité des Eaux</h2>
+                    <h3>Vue d'Ensemble</h3>
+                    <p>Le Système de Gestion de la Qualité des Eaux est une solution complète conçue pour évaluer et surveiller les paramètres de qualité des eaux usées traitées destinées à la réutilisation agricole. Ce système implémente les normes et réglementations algériennes en matière d'évaluation de la qualité de l'eau, assurant une conformité totale avec les exigences nationales.</p>
+                </div>
+
+                <div id="parameters" class="card">
+                    <h3>Catégories de Paramètres</h3>
+                    <h4>Paramètres Microbiologiques</h4>
+                    <ul>
+                        <li>Coliformes Fécaux:</li>
+                        <ul>
+                            <li>Classe A: ≤ 100 UFC/100ml</li>
+                            <li>Classe B: ≤ 1000 UFC/100ml</li>
+                        </ul>
+                        <li>Nématodes:</li>
+                        <ul>
+                            <li>Classe A: ≤ 0,1 œufs/L</li>
+                            <li>Classe B: ≤ 1,0 œufs/L</li>
+                        </ul>
+                    </ul>
+                    <h4>Paramètres Physiques</h4>
+                    <ul>
+                        <li>pH:</li>
+                        <ul>
+                            <li>6,5 - 8,5</li>
+                        </ul>
+                        <li>MES:</li>
+                        <ul>
+                            <li>≤ 30 mg/L</li>
+                        </ul>
+                        <li>Conductivité Électrique:</li>
+                        <ul>
+                            <li>≤ 3 dS/m</li>
+                        </ul>
+                    </ul>
+                    <h4>Paramètres Chimiques</h4>
+                    <ul>
+                        <li>Chlorures:</li>
+                        <ul>
+                            <li>≤ 600 mg/L</li>
+                        </ul>
+                        <li>Sulfates:</li>
+                        <ul>
+                            <li>≤ 1000 mg/L</li>
+                        </ul>
+                        <li>Nitrates:</li>
+                        <ul>
+                            <li>≤ 50 mg/L</li>
+                        </ul>
+                    </ul>
+                    <h4>Éléments Toxiques</h4>
+                    <ul>
+                        <li>Plomb:</li>
+                        <ul>
+                            <li>≤ 0,1 mg/L</li>
+                        </ul>
+                        <li>Cuivre:</li>
+                        <ul>
+                            <li>≤ 2 mg/L</li>
+                        </ul>
+                        <li>Zinc:</li>
+                        <ul>
+                            <li>≤ 5 mg/L</li>
+                        </ul>
+                    </ul>
+                </div>
+
+                <div id="evaluation" class="card">
+                    <h3>Système d'Évaluation</h3>
+                    <p>Le système d'évaluation est basé sur les normes et réglementations algériennes en matière d'évaluation de la qualité de l'eau. Il prend en compte les paramètres microbiologiques, physiques et chimiques pour déterminer la qualité de l'eau.</p>
+                </div>
+
+                <div id="recommendations" class="card">
+                    <h3>Recommandations et Restrictions d'Usage</h3>
+                    <p>Les recommandations et restrictions d'usage sont basées sur les résultats de l'évaluation de la qualité de l'eau. Elles visent à assurer une utilisation sûre et efficace de l'eau pour les activités agricoles.</p>
+                </div>
+
+                <div id="monitoring" class="card">
+                    <h3>Système de Surveillance et de Contrôle</h3>
+                    <p>Le système de surveillance et de contrôle est conçu pour suivre et contrôler la qualité de l'eau en temps réel. Il utilise des capteurs et des systèmes de détection pour détecter les anomalies et les variations de la qualité de l'eau.</p>
+                </div>
+
+                <div id="interface" class="card">
+                    <h3>Interface Utilisateur et Fonctionnalités</h3>
+                    <p>L'interface utilisateur est conçue pour être intuitive et facile à utiliser. Elle offre des fonctionnalités pour la visualisation des données, la configuration des paramètres et la génération de rapports.</p>
+                </div>
+
+                <div id="future" class="card">
+                    <h3>Perspectives d'Évolution</h3>
+                    <p>Le système de gestion de la qualité des eaux est conçu pour être évolutif et adaptable aux besoins futurs. Il peut être intégré à d'autres systèmes et technologies pour améliorer sa performance et son efficacité.</p>
+                </div>
+            </section>
+
+            <section id="api" class="section">
+                <h2>Documentation API</h2>
+                
+                <div class="card">
+                    <h3 class="card-title">Points d'Accès Authentification</h3>
+                    <pre><code>POST /auth/login
+Content-Type: application/json
+{
+    "username": string,
+    "password": string
+}</code></pre>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Points d'Accès Gestion des Unités</h3>
+                    <pre><code>GET /units/
+Authorization: Bearer {token}
+
+POST /units/create
+Content-Type: application/json
+{
+    "name": string,
+    "zone_id": number,
+    "type": string
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="security" class="section">
+                <h2>Sécurité</h2>
+                
+                <div class="alert alert-warning">
+                    <strong>Important:</strong> Suivez toujours les meilleures pratiques de sécurité lors de l'implémentation de nouvelles fonctionnalités.
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Authentification et Autorisation</h3>
+                    <ul>
+                        <li>Hachage des mots de passe avec bcrypt</li>
+                        <li>Contrôle d'accès basé sur les rôles (RBAC)</li>
+                        <li>Sessions sécurisées</li>
+                        <li>Protection CSRF</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        function toggleTheme() {
+            const body = document.documentElement;
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</body>
+</html>

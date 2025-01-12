@@ -6,21 +6,8 @@ from werkzeug.security import check_password_hash
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-from urllib.parse import urlparse
-from utils.pdf_generator import create_incident_pdf
 import random
 from functools import wraps
-from openpyxl import Workbook
-from io import BytesIO
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.units import inch, mm
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.fonts import addMapping
-from reportlab.lib.enums import TA_RIGHT, TA_CENTER
 from models import db, User, Unit, Incident, Zone, Center
 from routes.auth import auth
 from routes.profiles import profiles
@@ -33,7 +20,6 @@ from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
 from utils.roles import UserRole
-from utils.water_quality import assess_water_quality, get_parameter_metadata, generate_pdf_report
 
 # Load environment variables
 load_dotenv()
@@ -73,7 +59,6 @@ def init_db_command():
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
 
 def admin_required(f):
     @wraps(f)
@@ -248,41 +233,30 @@ def exploitation():
 def departements():
     return render_template('departement/departement.html')
 
+REUSE_SECTIONS = {
+    'introduction': 'departement/reuse/introduction.html',
+    'regulations': 'departement/reuse/regulations.html',
+    'methods': 'departement/reuse/methods.html',
+    'case-studies': 'departement/reuse/case_studies.html',
+    'documentation': 'departement/reuse/documentation.html'
+}
+
 @app.route('/departements/reuse')
 @login_required
 @unit_required
 def reuse():
-    return redirect(url_for(REUSE_INTRODUCTION))
+    return redirect(url_for('reuse_section', section='introduction'))
 
-@app.route('/departements/reuse/introduction')
+@app.route('/departements/reuse/<section>')
 @login_required
 @unit_required
-def reuse_introduction():
-    return render_template('departement/reuse/introduction.html')
-
-@app.route('/departements/reuse/regulations')
-@login_required
-@unit_required
-def reuse_regulations():
-    return render_template('departement/reuse/regulations.html')
-
-@app.route('/departements/reuse/methods')
-@login_required
-@unit_required
-def reuse_methods():
-    return render_template('departement/reuse/methods.html')
-
-@app.route('/departements/reuse/case-studies')
-@login_required
-@unit_required
-def reuse_case_studies():
-    return render_template('departement/reuse/case_studies.html')
-
-@app.route('/departements/reuse/documentation')
-@login_required
-@unit_required
-def reuse_documentation():
-    return render_template('departement/reuse/documentation.html')
+def reuse_section(section):
+    if section not in REUSE_SECTIONS:
+        flash('Section non trouvée.', 'danger')
+        return redirect(url_for('reuse_section', section='introduction'))
+    
+    template = REUSE_SECTIONS[section]
+    return render_template(template, active_page=section)
 
 @app.route('/departements/reuse/rapports')
 @login_required
@@ -553,6 +527,10 @@ def login():
 @login_required
 def new_incident():
     return render_template('incidents/new_incident.html')
+
+@app.route('/docs')
+def serve_docs():
+    return send_file('docs/index.html')
 
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist

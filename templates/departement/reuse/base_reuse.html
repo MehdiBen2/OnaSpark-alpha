@@ -8,27 +8,27 @@
             <div class="position-sticky pt-3">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'introduction' %}active{% endif %}" href="{{ url_for('reuse_introduction') }}">
+                        <a class="nav-link {% if active_page == 'introduction' %}active{% endif %}" href="{{ url_for('reuse_section', section='introduction') }}">
                             <i class="fas fa-info-circle"></i> Introduction
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'regulations' %}active{% endif %}" href="{{ url_for('reuse_regulations') }}">
+                        <a class="nav-link {% if active_page == 'regulations' %}active{% endif %}" href="{{ url_for('reuse_section', section='regulations') }}">
                             <i class="fas fa-book"></i> Réglementations
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'methods' %}active{% endif %}" href="{{ url_for('reuse_methods') }}">
+                        <a class="nav-link {% if active_page == 'methods' %}active{% endif %}" href="{{ url_for('reuse_section', section='methods') }}">
                             <i class="fas fa-vial"></i> Méthodes de Réutilisation
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'case_studies' %}active{% endif %}" href="{{ url_for('reuse_case_studies') }}">
+                        <a class="nav-link {% if active_page == 'case-studies' %}active{% endif %}" href="{{ url_for('reuse_section', section='case-studies') }}">
                             <i class="fas fa-microscope"></i> Études de Cas
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'documentation' %}active{% endif %}" href="{{ url_for('reuse_documentation') }}">
+                        <a class="nav-link {% if active_page == 'documentation' %}active{% endif %}" href="{{ url_for('reuse_section', section='documentation') }}">
                             <i class="fas fa-file-alt"></i> Documentation
                         </a>
                     </li>
@@ -47,7 +47,6 @@
             </div>
         </div>
         
-
         <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             {% block reuse_content %}{% endblock %}
