@@ -189,22 +189,27 @@
         }
 
         /* Theme Toggle */
-        .theme-toggle {
+        .top-buttons-container {
             position: fixed;
             top: 1rem;
             right: 1rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .theme-toggle, .go-back-button {
             padding: 0.5rem 1rem;
             background: var(--primary-color);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            z-index: 1000;
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .theme-toggle:hover {
+        .theme-toggle:hover, .go-back-button:hover {
             background: var(--link-hover);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
@@ -497,7 +502,12 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+    <div class="button-container">
+        <div class="top-buttons-container">
+            <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+            <button class="go-back-button" onclick="window.location.href='/'">Go Back to Site</button>
+        </div>
+    </div>
     <div class="container">
         <aside class="sidebar">
             <div class="sidebar-logo">
