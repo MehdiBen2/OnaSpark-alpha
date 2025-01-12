@@ -1,5 +1,6 @@
 # ONA SPARK - User Management Documentation
 
+![SPARK](https://github.com/user-attachments/assets/56dfc6c7-8d4e-40e5-9847-648df49d03bc)
 ## Système de Rôles et Permissions
 
 ### Types de Rôles
@@ -25,6 +26,7 @@
    - Accès limité à une unité spécifique dans une zone
    - L'administrateur doit assigner l'utilisateur à une zone puis à une unité
    - Les données sont récupérées depuis la base de données onadb.db
+
    - Restreint aux données de son unité uniquement
 
 5. **Utilisateur**
@@ -159,3 +161,4 @@
    - [ ] Affichage correct des champs
    - [ ] Messages d'erreur appropriés
    - [ ] Réactivité de l'interface
+![onaBnotext](https://github.com/user-attachments/assets/685584d7-e3bc-4a82-924e-59dfe0d419fb)
