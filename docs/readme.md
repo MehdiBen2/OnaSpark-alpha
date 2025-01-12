@@ -1,161 +1,134 @@
-# ONA SPARK - User Management Documentation
+# OnaSpark: Advanced Water Management and Incident Tracking Platform
 
-## Système de Rôles et Permissions
+## Project Overview
 
-### Types de Rôles
+OnaSpark is a comprehensive water management system designed to provide robust solutions for water quality assessment, incident tracking, and organizational management. Developed with a focus on precision, efficiency, and scalability, the platform addresses critical challenges in water resource management.
 
-1. **Admin**
-   - Rôle administrateur standard avec accès complet
-   - Peut assigner des rôles et des permissions aux utilisateurs
-   - Peut choisir les zones et les unités pour les autres utilisateurs
-   - Aucune restriction de zone ou d'unité
+## Core Functionalities
 
-2. **Employeur DG**
-   - Accès global à toutes les données
-   - Peut voir toutes les zones et unités
-   - Aucune restriction de zone ou d'unité requise
+### Water Quality Evaluation System
 
-3. **Employeur Zone**
-   - Accès limité à une zone spécifique
-   - L'administrateur doit assigner l'utilisateur à une zone
-   - Les données de zone sont récupérées depuis la base de données dbona.db
-   - Ne peut pas accéder aux données d'autres zones
+The water quality evaluation module is the cornerstone of OnaSpark, offering a sophisticated approach to monitoring and analyzing water parameters:
 
-4. **Employeur Unité**
-   - Accès limité à une unité spécifique dans une zone
-   - L'administrateur doit assigner l'utilisateur à une zone puis à une unité
-   - Les données sont récupérées depuis la base de données onadb.db
-   - Restreint aux données de son unité uniquement
+#### Comprehensive Parameter Tracking
 
-5. **Utilisateur**
-   - Accès très restreint
-   - Limité à une zone et une unité spécifiques
-   - L'administrateur doit assigner à la fois la zone et l'unité
+OnaSpark monitors four critical categories of water quality parameters:
 
-## Panneau de Création/Modification d'Utilisateur
+1. **Microbiological Parameters**
+   - Detailed tracking of fecal coliforms
+   - Nematode egg count analysis
+   - Precise microbiological risk assessment
 
-### Champs du Formulaire
+2. **Physical Parameters**
+   - pH level monitoring
+   - Suspended matter (MES) analysis
+   - Electrical conductivity (CE) measurements
 
-1. **Nom d'utilisateur (Obligatoire)**
-   - Identifiant unique de l'utilisateur
-   - Doit être unique dans le système
-   - Minimum 3 caractères
+3. **Chemical Parameters**
+   - Biochemical Oxygen Demand (DBO5)
+   - Chemical Oxygen Demand (DCO)
+   - Chloride concentration tracking
 
-2. **Nom d'affichage (Obligatoire)**
-   - Nom affiché dans l'interface
-   - Minimum 2 caractères
+4. **Toxic Element Detection**
+   - Heavy metal monitoring
+   - Trace element analysis
+   - Comprehensive toxicity assessment
 
-3. **Mot de passe**
-   - Obligatoire pour la création
-   - Optionnel lors de la modification
-   - Minimum 6 caractères
-   - Toggle pour afficher/masquer
+#### Classification and Reporting
 
-4. **Rôle (Obligatoire)**
-   - Détermine les permissions de l'utilisateur
-   - Options disponibles selon le rôle de l'administrateur
+- Multi-tier water quality classification
+- Automated reporting system
+- Detailed trend analysis
+- Customizable visualization of water quality metrics
 
-5. **Zone (Conditionnel)**
-   - Obligatoire pour : Employeur Zone, Employeur Unité, Utilisateur
-   - Liste des zones disponibles
-   - Source : dbona.db
+### Zone and Organizational Management
 
-6. **Unité (Conditionnel)**
-   - Obligatoire pour : Employeur Unité, Utilisateur
-   - Liste dynamique basée sur la zone sélectionnée
-   - Source : onadb.db
+OnaSpark provides a robust framework for managing complex organizational structures:
 
-### Affichage des Champs selon le Rôle
+#### Hierarchical Structure Management
 
-| Rôle           | Zone         | Unité        |
-|----------------|--------------|--------------|
-| Admin          | Masqué       | Masqué       |
-| Employeur DG   | Masqué       | Masqué       |
-| Employeur Zone | Obligatoire  | Masqué       |
-| Employeur Unité| Obligatoire  | Obligatoire  |
-| Utilisateur    | Obligatoire  | Obligatoire  |
+- Flexible zone and unit organization
+- Multi-level administrative hierarchy
+- Granular access control
+- Dynamic unit and zone assignment
 
-### Validation et Sécurité
+#### Key Management Features
 
-1. **Validation des Champs**
-   - Tous les champs obligatoires doivent être remplis
-   - Validation en temps réel des entrées
-   - Messages d'erreur explicites
+- Centralized zone configuration
+- Detailed unit tracking
+- Geographic and administrative mapping
+- Scalable organizational modeling
 
-2. **Sécurité**
-   - Vérification des permissions de l'administrateur
-   - Validation des relations zone/unité
-   - Protection contre les injections SQL
+### Incident Management and Tracking
 
-3. **Gestion des Erreurs**
-   - Affichage des messages d'erreur clairs
-   - Maintien des données en cas d'erreur
-   - Log des erreurs pour le débogage
+A comprehensive incident management system designed for rapid response and detailed documentation:
 
-### Workflow de Création/Modification
+#### Incident Lifecycle Management
 
-1. **Création d'Utilisateur**
-   - Remplir tous les champs obligatoires
-   - Sélectionner le rôle approprié
-   - Assigner zone/unité si nécessaire
-   - Validation et création
+- Incident creation and categorization
+- Real-time status tracking
+- Detailed reporting mechanisms
+- Performance metrics and analytics
 
-2. **Modification d'Utilisateur**
-   - Chargement des données existantes
-   - Modification des champs nécessaires
-   - Mot de passe optionnel
-   - Validation et mise à jour
+#### Advanced Incident Features
 
-### API Endpoints
+- Multi-level priority setting
+- Automated notification systems
+- Historical incident analysis
+- Integrated resolution workflows
 
-1. **Création d'Utilisateur**
-   ```
-   POST /admin/users/create
-   Content-Type: application/json
-   {
-     "username": string,
-     "nickname": string,
-     "password": string,
-     "role": string,
-     "zone_id": number (optional),
-     "unit_id": number (optional)
-   }
-   ```
+## Technical Architecture
 
-2. **Modification d'Utilisateur**
-   ```
-   POST /admin/users/<user_id>/edit
-   Content-Type: application/json
-   {
-     "username": string,
-     "nickname": string,
-     "password": string (optional),
-     "role": string,
-     "zone_id": number (optional),
-     "unit_id": number (optional)
-   }
-   ```
+### Backend Technologies
+- Framework: Flask
+- Database: SQLAlchemy with SQLite
+- Authentication: Flask-Login
+- Migration: Flask-Migrate
 
-3. **Récupération des Unités par Zone**
-   ```
-   GET /api/zones/<zone_id>/units
-   Returns: Array of units
-   ```
+### Frontend
+- Templating: Jinja2
+- Responsive Design
+- Multilingual Support
 
-### Tests et Vérifications
+## User Roles and Permissions
 
-1. **Tests Fonctionnels**
-   - [ ] Création d'utilisateurs pour chaque rôle
-   - [ ] Modification d'utilisateurs existants
-   - [ ] Validation des champs obligatoires
-   - [ ] Chargement dynamique des unités
+1. **System Administrator**
+   - Full system access
+   - User and role management
+   - Global configuration
 
-2. **Tests de Sécurité**
-   - [ ] Vérification des permissions
-   - [ ] Protection contre les injections
-   - [ ] Validation des données
+2. **Zone Manager**
+   - Area-specific administrative rights
+   - Comprehensive zone oversight
+   - Incident and water quality management within assigned zones
 
-3. **Tests d'Interface**
-   - [ ] Affichage correct des champs
-   - [ ] Messages d'erreur appropriés
-   - [ ] Réactivité de l'interface
+3. **Unit Manager**
+   - Detailed unit-level control
+   - Localized incident tracking
+   - Water quality monitoring for specific units
+
+4. **Standard User**
+   - Limited access
+   - Restricted to assigned zones and units
+   - Basic reporting and tracking capabilities
+
+
+## Key Differentiators
+
+- Precision-driven water quality assessment
+- Flexible organizational management
+- Comprehensive incident tracking
+- Advanced multilevel access control
+- Scalable and extensible architecture
+
+## Future Roadmap
+
+- Advanced predictive analytics
+- IoT sensor integration
+- Machine learning-based anomaly detection
+- Enhanced reporting capabilities
+- Cloud synchronization
+
+
+Mehdi Benhenni
+
