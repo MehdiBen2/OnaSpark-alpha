@@ -20,6 +20,7 @@ from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
 from utils.roles import UserRole
+from routes.landing import landing
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +41,7 @@ login_manager.login_message = 'Veuillez vous connecter pour accéder à cette pa
 login_manager.login_message_category = 'warning'
 
 # Register blueprints
+app.register_blueprint(landing)
 app.register_blueprint(auth)
 app.register_blueprint(profiles)
 app.register_blueprint(incidents)
@@ -116,12 +118,6 @@ def get_user_incident_counts(user, include_author=False):
             resolved_incidents = Incident.query.filter_by(unit_id=user.unit_id, status='Résolu').count()
     
     return total_incidents, resolved_incidents
-
-@app.route('/')
-def index():
-    if current_user.is_authenticated:
-        return redirect(url_for(MAIN_DASHBOARD))
-    return render_template('dashboard/landing.html')
 
 @app.route('/main')
 @login_required
