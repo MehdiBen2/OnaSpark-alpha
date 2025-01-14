@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONA - Office National de l'Assainissement</title>
+    <link rel="shortcut icon" href="static/favicon.ico" /> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
@@ -75,6 +76,173 @@
             opacity: 0;
             transform: translateY(-50px);
         }
+
+        /* Mobile Responsiveness Enhancements */
+        @media (max-width: 768px) {
+            /* Navbar Adjustments */
+            .navbar {
+                background-color: rgba(0, 0, 0, 0.8) !important;
+                padding: 10px 0;
+            }
+
+            .navbar-brand {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .navbar-brand .nav-logo {
+                max-width: 120px;
+            }
+
+            .navbar-toggler {
+                border-color: white;
+            }
+
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+            }
+
+            /* Hero Section Mobile */
+            .hero {
+                padding: 60px 0;
+                text-align: center;
+            }
+
+            .hero .container {
+                padding: 0 15px;
+            }
+
+            .hero-logo {
+                max-width: 250px !important;
+                margin-top: 30px;
+            }
+
+            .animated-text {
+                height: 100px;
+            }
+
+            .display-4 {
+                font-size: 2rem;
+            }
+
+            .lead {
+                font-size: 1rem;
+            }
+
+            .hero-buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            /* Services Section Mobile */
+            .services .row {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .service-card {
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            /* About Section Mobile */
+            .about .row {
+                flex-direction: column-reverse;
+            }
+
+            .about-image {
+                margin-bottom: 30px;
+            }
+
+            /* Contact Section Mobile */
+            .contact-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .contact-item {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            /* Footer Mobile */
+            .footer {
+                text-align: center;
+            }
+
+            .footer .row {
+                flex-direction: column;
+            }
+
+            .footer .col-md-6 {
+                margin-bottom: 15px;
+            }
+
+            /* Desktop Optimization Notice */
+            .desktop-notice {
+                background-color: #d1e8d5;  
+                color: #2c5e34;  
+                text-align: center;
+                padding: 15px;
+                font-size: 0.95rem;
+                width: calc(100% - 30px);
+                margin: 20px auto;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                display: none;
+                position: relative;
+                max-width: 500px;
+                border-left: 5px solid #8bc34a;  
+                font-weight: 500;
+                line-height: 1.4;
+                animation: slideIn 0.5s ease-out;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .desktop-notice::before {
+                content: '💻';  
+                position: absolute;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.5rem;
+            }
+
+            .desktop-notice-content {
+                margin-left: 40px;
+                text-align: left;
+            }
+        }
+
+        /* Small Mobile Devices */
+        @media (max-width: 480px) {
+            .display-4 {
+                font-size: 1.5rem;
+            }
+
+            .hero-logo {
+                max-width: 200px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -129,6 +297,11 @@
                     <div class="animated-text">
                         <h1 class="display-4 fw-bold text-slide active" id="text1">Office National de l'Assainissement</h1>
                         <h1 class="display-4 fw-bold text-slide" id="text2">L'eau lave tous, L'ONA épure l'eau</h1>
+                    </div>
+                    <div class="desktop-notice">
+                        <div class="desktop-notice-content">
+                            Ce site est optimisé pour les ordinateurs de bureau. Pour une expérience optimale, veuillez utiliser un ordinateur de bureau.
+                        </div>
                     </div>
                     <p class="lead mb-4">Plateforme interne dédiée aux employés de l'ONA pour consulter les informations, gérer les archives, accéder aux données et rédiger des bilans</p>
                     <div class="hero-buttons">
@@ -275,6 +448,20 @@
 
             // Change text every 5.5 seconds
             setInterval(nextText, 5500);
+
+            // Show desktop notice only on mobile
+            const desktopNotice = document.querySelector('.desktop-notice');
+            function checkMobileView() {
+                if (window.innerWidth <= 768) {
+                    desktopNotice.style.display = 'block';
+                } else {
+                    desktopNotice.style.display = 'none';
+                }
+            }
+
+            // Check on load and resize
+            checkMobileView();
+            window.addEventListener('resize', checkMobileView);
         });
     </script>
 </body>
