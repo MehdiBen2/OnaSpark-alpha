@@ -1,14 +1,244 @@
 {% extends "departement/reuse/base_reuse.html" %}
 
 {% block reuse_content %}
+<style>
+.svg-logo-container {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 1;
+    width: 100px;
+    height: 100px;
+    pointer-events: none;
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.classification-card-good .svg-logo-container {
+    color: #28a745;
+}
+
+.classification-card-moderate .svg-logo-container {
+    color: #ffc107;
+}
+
+.classification-card-poor .svg-logo-container {
+    color: #dc3545;
+}
+
+.subtle-logo {
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.subtle-logo path {
+    fill: currentColor;
+}
+
+.classification-card-moderate .svg-logo-container {
+    color: #ffc107;
+}
+
+.classification-card-poor .svg-logo-container {
+    color: #dc3545;
+}
+
+/* Dynamic Classification Card Colors - Forced Override */
+.classification-card.classification-card-good {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    background: rgba(40, 167, 69, 0.1) !important;
+    border-color: rgba(40, 167, 69, 0.3) !important;
+}
+
+.classification-card.classification-card-moderate {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    background: rgba(255, 193, 7, 0.1) !important;
+    border-color: rgba(255, 193, 7, 0.3) !important;
+}
+
+.classification-card.classification-card-poor {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+}
+
+.classification-card {
+    background: transparent !important;
+    border: 2px solid transparent !important;
+    transition: all 0.3s ease;
+}
+
+.classification-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    transition: transform 0.3s ease;
+}
+
+.classification-card:hover .classification-icon {
+    transform: scale(1.1);
+}
+
+.download-btn {
+    padding: 15px 20px;
+    text-decoration: none;
+    height: 100%;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #2196f3, #1565c0);
+    color: white;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.download-btn .btn-label {
+    font-weight: 700;
+    font-size: 1.2rem;
+    line-height: 1.2;
+    display: block;
+}
+
+.download-btn .btn-sublabel {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    line-height: 1;
+    display: block;
+    margin-top: 3px;
+}
+
+.download-btn i {
+    font-size: 2rem;
+    margin-left: 10px;
+}
+
+.download-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #1e88e5, #0d47a1);
+}
+
+.parameter-card, .allowed-crops-card, .restrictions-card, .violations-card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.parameter-title {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.parameter-list .list-group-item {
+    transition: background-color 0.3s ease;
+}
+
+.parameter-list .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.parameter-badge {
+    font-weight: 500;
+    padding: 0.4em 0.6em;
+}
+
+.crop-item, .restriction-item, .violation-item {
+    transition: transform 0.2s ease;
+}
+
+.crop-item:hover, .restriction-item:hover, .violation-item:hover {
+    transform: translateX(10px);
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+:root {
+    --primary-color: #1976d2;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+}
+
+body {
+    background-color: #f4f6f9;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #42a5f5, #1976d2);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #66bb6a, #2e7d32);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffd54f, #ffa000);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef5350, #c62828);
+}
+
+.classification-card {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.classification-icon {
+    background: var(--primary-color);
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .download-btn {
+        flex-direction: column;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 15px;
+    }
+
+    .download-btn i {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+</style>
+
 <div class="container-fluid py-4">
     <div class="row align-items-stretch mb-4">
         <!-- General Classification Card -->
         <div class="col-md-8">
-            <div class="card classification-card shadow-sm h-100 
+            <div class="card classification-card shadow-sm h-100 position-relative 
                 {% if rating_info.severity == 'good' %}classification-card-good 
                 {% elif rating_info.severity == 'moderate' %}classification-card-moderate 
                 {% else %}classification-card-poor{% endif %}">
+                <!-- Add SVG Logo -->
+                <div class="svg-logo-container">
+                    <svg viewBox="0 0 200 200" class="subtle-logo">
+                        <path d="M132.37 35.26c-11.79 0-22.84 3.16-32.37 8.66-9.52-5.5-20.58-8.66-32.37-8.66C31.88 35.26 2.9 64.25 2.9 100s28.98 64.73 64.73 64.73c11.79 0 22.85-3.15 32.37-8.66 9.52 5.51 20.58 8.66 32.37 8.66 35.75 0 64.73-28.98 64.73-64.73s-28.98-64.74-64.73-64.74zm0 124.7c-10.02 0-19.47-2.46-27.77-6.81-19.14-10.02-32.19-30.06-32.19-53.15s13.05-43.14 32.19-53.15c8.3-4.35 17.75-6.81 27.77-6.81 33.11 0 59.96 26.85 59.96 59.96s-26.85 59.96-59.96 59.96z"/>
+                        <path d="M117.09 101.62l-3.52-28.05-3.52 28.05-28.04 3.52 28.04 3.51 3.52 28.05 3.52-28.05 28.05-3.51z"/>
+                        <path d="M148.05 94.98l2.39-19.02 19.01-2.39-19.01-2.38-2.39-19.02-2.39 19.02-19.01 2.38 19.01 2.39z"/>
+                        <path d="M151.13 110.08l-2.05 16.34-16.34 2.05 16.34 2.05 2.05 16.34 2.05-16.34 16.34-2.05-16.34-2.05z"/>
+                    </svg>
+                </div>
                 <div class="card-body d-flex align-items-center">
                     <div class="classification-icon me-3 
                         {% if rating_info.severity == 'good' %}bg-success 
@@ -150,179 +380,4 @@
     </div>
 </div>
 
-<style>
-:root {
-    --primary-color: #1976d2;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --warning-color: #ffc107;
-    --danger-color: #dc3545;
-}
-
-body {
-    background-color: #f4f6f9;
-    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-}
-
-.bg-gradient-info {
-    background: linear-gradient(135deg, #42a5f5, #1976d2);
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #66bb6a, #2e7d32);
-}
-
-.bg-gradient-warning {
-    background: linear-gradient(135deg, #ffd54f, #ffa000);
-}
-
-.bg-gradient-danger {
-    background: linear-gradient(135deg, #ef5350, #c62828);
-}
-
-.classification-card {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    border: none;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-}
-
-.classification-icon {
-    background: var(--primary-color);
-    color: white;
-    width: 56px;
-    height: 56px;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    transition: transform 0.3s ease;
-}
-
-.download-btn {
-    padding: 15px 20px;
-    text-decoration: none;
-    height: 100%;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #2196f3, #1565c0);
-    color: white;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.download-btn .btn-label {
-    font-weight: 700;
-    font-size: 1.2rem;
-    line-height: 1.2;
-    display: block;
-}
-
-.download-btn .btn-sublabel {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    line-height: 1;
-    display: block;
-    margin-top: 3px;
-}
-
-.download-btn i {
-    font-size: 2rem;
-    margin-left: 10px;
-}
-
-.download-btn:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, #1e88e5, #0d47a1);
-}
-
-.parameter-card, .allowed-crops-card, .restrictions-card, .violations-card {
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.parameter-title {
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.parameter-list .list-group-item {
-    transition: background-color 0.3s ease;
-}
-
-.parameter-list .list-group-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.parameter-badge {
-    font-weight: 500;
-    padding: 0.4em 0.6em;
-}
-
-.crop-item, .restriction-item, .violation-item {
-    transition: transform 0.2s ease;
-}
-
-.crop-item:hover, .restriction-item:hover, .violation-item:hover {
-    transform: translateX(10px);
-    background-color: rgba(0, 0, 0, 0.03);
-}
-
-/* Dynamic Classification Card Colors - Forced Override */
-.classification-card.classification-card-good {
-    background-color: rgba(40, 167, 69, 0.1) !important;
-    background: rgba(40, 167, 69, 0.1) !important;
-    border-color: rgba(40, 167, 69, 0.3) !important;
-}
-
-.classification-card.classification-card-moderate {
-    background-color: rgba(255, 193, 7, 0.1) !important;
-    background: rgba(255, 193, 7, 0.1) !important;
-    border-color: rgba(255, 193, 7, 0.3) !important;
-}
-
-.classification-card.classification-card-poor {
-    background-color: rgba(220, 53, 69, 0.1) !important;
-    background: rgba(220, 53, 69, 0.1) !important;
-    border-color: rgba(220, 53, 69, 0.3) !important;
-}
-
-.classification-card {
-    background: transparent !important;
-    border: 2px solid transparent !important;
-    transition: all 0.3s ease;
-}
-
-.classification-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 28px;
-    transition: transform 0.3s ease;
-}
-
-.classification-card:hover .classification-icon {
-    transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-    .download-btn {
-        flex-direction: column;
-        align-items: center !important;
-        text-align: center !important;
-        padding: 15px;
-    }
-
-    .download-btn i {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-}
-</style>
 {% endblock %}
