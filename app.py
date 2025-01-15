@@ -528,6 +528,32 @@ def new_incident():
 def serve_docs():
     return send_file('docs/index.html')
 
+@app.route('/test_error')
+def test_error():
+    # This will deliberately cause a 500 error
+    return 1 / 0
+
+# Add error handling for common HTTP errors and exceptions
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', error_code=404, error_message="Page non trouvée"), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    # Log the error for debugging
+    app.logger.error(f"Internal Server Error: {str(error)}")
+    return render_template('error.html', error_code=500, error_message="Erreur interne du serveur"), 500
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    return render_template('error.html', error_code=403, error_message="Accès non autorisé"), 403
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    # Log all unhandled exceptions
+    app.logger.error(f"Unhandled Exception: {str(error)}")
+    return render_template('error.html', error_code=500, error_message="Une erreur inattendue s'est produite"), 500
+
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist
     with app.app_context():

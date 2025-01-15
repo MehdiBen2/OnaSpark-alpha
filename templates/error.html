@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="static/favicon.ico" />
+    <title>Erreur - Ona Spark</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .bg-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .bg-image {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            background-image: url('static/images/onab/landingpagebg3.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.7);
+            will-change: transform;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            will-change: transform;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        .content-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: #e5e5e5;
+            font-size: 2rem;
+        }
+
+        .description {
+            font-size: 1.25rem;
+            color: #e5e5e5;
+            max-width: 600px;
+            margin-bottom: 1rem;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 400px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+            will-change: transform;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.5rem;
+            }
+
+            .logo {
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-wrapper">
+        <div class="bg-image"></div>
+        <div class="bg-overlay"></div>
+    </div>
+    <div class="container">
+        <div class="content-grid">
+            <div>
+                <img src="static/images/404.png" alt="Erreur de Connexion" class="logo" loading="eager">
+            </div>
+            <div class="content-left">
+                <div>
+                    <h1 class="title">Erreur {{ error_code }}</h1>
+                    <h2 class="subtitle">{{ error_message }}</h2>
+                </div>
+                <p class="description">
+                    La plateforme rencontre actuellement des difficultés techniques.<br>Ona Spark s'occupe de résoudre le problème pour vous.
+                </p>
+                <div class="buttons">
+                    <a href="/" class="btn btn-primary">Retour à l'Accueil</a>
+                    <a href="mailto:support@onaspark.com" class="btn btn-glass">Contacter le Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
