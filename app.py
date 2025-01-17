@@ -26,7 +26,7 @@ from routes.landing import landing
 load_dotenv()
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///OnaDB.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -536,23 +536,23 @@ def test_error():
 # Add error handling for common HTTP errors and exceptions
 @app.errorhandler(404)
 def not_found_error(error):
-    return render_template('error.html', error_code=404, error_message="Page non trouvée"), 404
+    return render_template('errors/error.html', error_code=404, error_message="Page non trouvée"), 404
 
 @app.errorhandler(500)
 def internal_error(error):
     # Log the error for debugging
     app.logger.error(f"Internal Server Error: {str(error)}")
-    return render_template('error.html', error_code=500, error_message="Erreur interne du serveur"), 500
+    return render_template('errors/error.html', error_code=500, error_message="Erreur interne du serveur"), 500
 
 @app.errorhandler(403)
 def forbidden_error(error):
-    return render_template('error.html', error_code=403, error_message="Accès non autorisé"), 403
+    return render_template('errors/error.html', error_code=403, error_message="Accès non autorisé"), 403
 
 @app.errorhandler(Exception)
 def handle_exception(error):
     # Log all unhandled exceptions
     app.logger.error(f"Unhandled Exception: {str(error)}")
-    return render_template('error.html', error_code=500, error_message="Une erreur inattendue s'est produite"), 500
+    return render_template('errors/error.html', error_code=500, error_message="Une erreur inattendue s'est produite"), 500
 
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist

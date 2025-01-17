@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="static/favicon.ico" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
     <title>Erreur - Ona Spark</title>
     <style>
         * {
@@ -39,7 +39,7 @@
             left: -10px;
             width: calc(100% + 20px);
             height: calc(100% + 20px);
-            background-image: url('static/images/onab/landingpagebg3.jpg');
+            background-image: url('{{ url_for('static', filename='images/onab/landingpagebg3.jpg') }}');
             background-size: cover;
             background-position: center;
             filter: blur(8px) brightness(0.7);
@@ -184,7 +184,7 @@
     <div class="container">
         <div class="content-grid">
             <div>
-                <img src="static/images/404.png" alt="Erreur de Connexion" class="logo" loading="eager">
+                <img src="{{ url_for('static', filename='images/404.png') }}" alt="Erreur de Connexion" class="logo" loading="eager">
             </div>
             <div class="content-left">
                 <div>
