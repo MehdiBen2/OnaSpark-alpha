@@ -254,6 +254,40 @@
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: var(--ona-secondary);
         }
+
+        @media (max-width: 768px) {
+            .chat-input {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            #chatInput {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+                font-size: 16px; /* Prevent iOS zoom on input focus */
+            }
+
+            .btn-send {
+                width: 100%;
+                height: 50px;
+                border-radius: 10px;
+            }
+
+            .spark-agent-container {
+                overflow-y: auto;
+            }
+
+            .chat-window {
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+
+            .chat-messages {
+                max-height: calc(100vh - 150px);
+                overflow-y: auto;
+            }
+        }
     </style>
 </head>
 <body>
