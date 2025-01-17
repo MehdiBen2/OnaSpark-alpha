@@ -85,12 +85,26 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
+            position: relative;
+            padding-left:50px;
+        }
+
+        .content-left::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #3b82f6, #2563eb);
+            border-radius: 2px;
         }
 
         .title {
             font-size: 4rem;
             font-weight: bold;
             line-height: 1.2;
+            position: relative;
         }
 
         .subtitle {
@@ -143,7 +157,28 @@
             width: 100%;
             max-width: 400px;
             filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-            will-change: transform;
+            will-change: transform, filter;
+            animation: 
+                logoFloat 4s ease-in-out infinite alternate,
+                logoGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoFloat {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes logoGlow {
+            0% {
+                filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+            }
+            100% {
+                filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.6));
+            }
         }
 
         .side-panel {
@@ -304,6 +339,78 @@
             }
         }
 
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a192f, #112240);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-screen.fade-in {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-balls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .loading-ball {
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: ballBounce 1s ease-in-out infinite alternate;
+            opacity: 0.7;
+        }
+
+        .loading-screen.fade-out {
+            opacity: 0;
+        }
+
+        .loading-ball:nth-child(1) {
+            background-image: url('{{ url_for('static', filename='images/onab/Ball1.png') }}');
+            animation-delay: 0s;
+        }
+
+        .loading-ball:nth-child(2) {
+            background-image: url('{{ url_for('static', filename='images/onab/ball2.png') }}');
+            animation-delay: 0.2s;
+        }
+
+        .loading-ball:nth-child(3) {
+            background-image: url('{{ url_for('static', filename='images/onab/ball3.png') }}');
+            animation-delay: 0.4s;
+        }
+
+        @keyframes ballBounce {
+            0% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-40px);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -326,9 +433,19 @@
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen fade-out" id="loadingScreen">
+        <div class="loading-balls">
+            <div class="loading-ball"></div>
+            <div class="loading-ball"></div>
+            <div class="loading-ball"></div>
+        </div>
+    </div>
     <div class="bg-wrapper">
         <div class="bg-image"></div>
-        <div class="bg-overlay"></div>
+        <div class="bg-overlay">
+            <div class="bg-glow-ball"></div>
+        </div>
     </div>
     <div class="container">
         <div class="content-grid">
@@ -343,8 +460,8 @@
                     </p>
                 </div>
                 <div class="buttons">
-                    <button class="btn btn-glass" onclick="window.location.href='{{ url_for('landing.main_landing') }}'">Commencer</button>
-                    <button class="btn btn-primary" onclick="window.location.href='{{ url_for('serve_docs') }}'">Documentation</button>
+                    <button class="btn btn-glass" onclick="showLoadingAndRedirect('{{ url_for('landing.main_landing') }}')">Commencer</button>
+                    <button class="btn btn-primary" onclick="showLoadingAndRedirect('{{ url_for('serve_docs') }}')">Documentation</button>
                 </div>
             </div>
             <div>
@@ -418,6 +535,24 @@
             buttonText.textContent = sidePanel.classList.contains('open') 
                 ? 'Fermer le panneau' 
                 : 'Ouvrir le panneau';
+        }
+
+        function showLoadingAndRedirect(url) {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.remove('fade-out');
+            loadingScreen.classList.add('fade-in');
+            
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                // Open the new page in the same window
+                window.location.href = url;
+            }, 2000);
+            
+            // Add fade-out effect
+            setTimeout(() => {
+                loadingScreen.classList.remove('fade-in');
+                loadingScreen.classList.add('fade-out');
+            }, 1900);
         }
     </script>
 </body>
