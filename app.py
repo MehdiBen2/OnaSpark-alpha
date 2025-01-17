@@ -533,6 +533,10 @@ def test_error():
     # This will deliberately cause a 500 error
     return 1 / 0
 
+@app.route('/spark-agent')
+def spark_agent():
+    return render_template('sparkagent/spark_agent.html')
+
 # Add error handling for common HTTP errors and exceptions
 @app.errorhandler(404)
 def not_found_error(error):
@@ -540,9 +544,9 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    # Log the error for debugging
-    app.logger.error(f"Internal Server Error: {str(error)}")
-    return render_template('errors/error.html', error_code=500, error_message="Erreur interne du serveur"), 500
+    import traceback
+    error_details = traceback.format_exc()
+    return render_template('errors/error.html', error_code=500, error_message="Erreur interne du serveur", error_details=error_details), 500
 
 @app.errorhandler(403)
 def forbidden_error(error):
@@ -550,9 +554,9 @@ def forbidden_error(error):
 
 @app.errorhandler(Exception)
 def handle_exception(error):
-    # Log all unhandled exceptions
-    app.logger.error(f"Unhandled Exception: {str(error)}")
-    return render_template('errors/error.html', error_code=500, error_message="Une erreur inattendue s'est produite"), 500
+    import traceback
+    error_details = traceback.format_exc()
+    return render_template('errors/error.html', error_code=500, error_message="Une erreur inattendue s'est produite", error_details=error_details), 500
 
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist

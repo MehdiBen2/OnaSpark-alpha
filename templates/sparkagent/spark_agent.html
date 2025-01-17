@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <title>Spark ONA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ona-primary: #356ee7;     /* Modern bright blue */
+            --ona-secondary: #173aaa;   /* Deep blue */
+            --ona-accent: #95C11F;      /* ONA Green */
+            --ona-dark: #121212;        /* Very dark background */
+            --ona-dark-secondary: #1E1E1E;  /* Slightly lighter dark */
+            --ona-light: #f8f9fa;
+            --transition: all 0.3s ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--ona-dark);
+        }
+
+        .spark-agent-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background-color: var(--ona-dark-secondary);
+            box-shadow: none;
+            border: none;
+            border-radius: 0;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .chat-header h4 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .chat-header h4 i {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-actions .btn {
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease-in-out;
+            font-size: 1rem;
+        }
+
+        .header-actions .btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .header-actions .btn i {
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--ona-dark);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            display: flex;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.agent {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-content {
+            background-color: var(--ona-primary);
+            color: white;
+            margin-right: 10px;
+        }
+
+        .message.agent .message-content {
+            background-color: var(--ona-dark-secondary);
+            color: var(--ona-light);
+            margin-left: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px 20px;
+            background-color: var(--ona-dark-secondary);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #chatInput {
+            flex-grow: 1;
+            border: 1px solid rgba(255,255,255,0.1);
+            background-color: var(--ona-dark);
+            color: var(--ona-light);
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin-right: 10px;
+        }
+
+        .btn-send {
+            background-color: var(--ona-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .btn-send:hover {
+            background-color: var(--ona-secondary);
+        }
+
+        .typing-indicator {
+            display: none;
+            text-align: center;
+            color: var(--ona-primary);
+            font-style: italic;
+            padding: 20px;
+            align-self: center;
+            width: 100%;
+        }
+
+        .loading-balls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+        }
+
+        .loading-ball {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            animation: ballBounce 0.5s alternate infinite;
+        }
+
+        .loading-ball:nth-child(1) {
+            animation-delay: 0s;
+            background-image: url('{{ url_for('static', filename='images/onab/Ball1.png') }}');
+        }
+
+        .loading-ball:nth-child(2) {
+            animation-delay: 0.2s;
+            background-image: url('{{ url_for('static', filename='images/onab/ball2.png') }}');
+        }
+
+        .loading-ball:nth-child(3) {
+            animation-delay: 0.4s;
+            background-image: url('{{ url_for('static', filename='images/onab/ball3.png') }}');
+        }
+
+        @keyframes ballBounce {
+            0% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-60px);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--ona-dark);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--ona-primary);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--ona-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="spark-agent-container">
+        <div class="chat-window">
+            <div class="chat-header">
+                <h4>
+                    <i class="fas fa-bolt me-2"></i>Spark ONA
+                </h4>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-outline-light me-2" id="dashboardBtn" onclick="window.location.href='{{ url_for('main_dashboard') }}'">
+                        <i class="fas fa-home me-1"></i>Accueil
+                    </button>
+                    <button class="btn btn-sm btn-outline-light" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message agent">
+                    <div class="message-avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" width="40" height="40" class="coolshapes moon-9 "><g clip-path="url(#cs_clip_1_moon-9)"><mask id="cs_mask_1_moon-9" style="mask-type:alpha" width="201" height="200" x="-1" y="0" maskUnits="userSpaceOnUse"><path fill="#fff" d="M100 200a100.001 100.001 0 000-200v200zM0 200a100.002 100.002 0 00100-100A100 100 0 000 0v200z"></path></mask><g mask="url(#cs_mask_1_moon-9)"><path fill="#fff" d="M200 0H0v200h200V0z"></path><path fill="url(#paint0_linear_748_4479)" d="M200 0H0v200h200V0z"></path><g filter="url(#filter0_f_748_4479)"><path fill="#FFE500" d="M180-41H-11v141h191V-41z"></path><path fill="#18A0FB" d="M256 63H113v157h143V63z"></path></g></g></g><defs><filter id="filter0_f_748_4479" width="407" height="401" x="-81" y="-111" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur result="effect1_foregroundBlur_748_4479" stdDeviation="35"></feGaussianBlur></filter><linearGradient id="paint0_linear_748_4479" x1="158.5" x2="29" y1="12.5" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0E6FFF"></stop><stop offset="1" stop-color="#00F0FF"></stop></linearGradient><clipPath id="cs_clip_1_moon-9"><path fill="#fff" d="M0 0H200V200H0z"></path></clipPath></defs><g style="mix-blend-mode:overlay" mask="url(#cs_mask_1_moon-9)"><path fill="gray" stroke="transparent" d="M200 0H0v200h200V0z" filter="url(#cs_noise_1_moon-9)"></path></g><defs><filter id="cs_noise_1_moon-9" width="100%" height="100%" x="0%" y="0%" filterUnits="objectBoundingBox"><feTurbulence baseFrequency="0.6" numOctaves="5" result="out1" seed="4"></feTurbulence><feComposite in="out1" in2="SourceGraphic" operator="in" result="out2"></feComposite><feBlend in="SourceGraphic" in2="out2" mode="overlay" result="out3"></feBlend></filter></defs></svg>
+                    </div>
+                    <div class="message-content">
+                        Hey, je suis Spark, ici pour faciliter vos tâches a l office national de l'assainissement. Comment puis-je vous aider aujourd'hui ?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="loading-balls">
+                    <div class="loading-ball"></div>
+                    <div class="loading-ball"></div>
+                    <div class="loading-ball"></div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" class="form-control" id="chatInput" placeholder="Posez votre question...">
+                <button class="btn btn-send" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Paramètres de SparkAgent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="apiKeyInput" class="form-label">Clé API Mistral</label>
+                        <input type="password" class="form-control" id="apiKeyInput" placeholder="Entrez votre clé API">
+                        <small class="form-text text-muted">Votre clé API est stockée localement et de manière sécurisée.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelSelect" class="form-label">Modèle IA</label>
+                        <select class="form-select" id="modelSelect">
+                            <option value="mistral-small-latest">Mistral Small</option>
+                            <option value="mistral-medium-latest">Mistral Medium</option>
+                            <option value="mistral-large-latest">Mistral Large</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="temperatureSlider" class="form-label">Créativité (Température)</label>
+                        <input type="range" class="form-range" id="temperatureSlider" min="0" max="1" step="0.1" value="0.7">
+                        <small class="form-text text-muted">Contrôle la randomness des réponses</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const modelSelect = document.getElementById('modelSelect');
+            const temperatureSlider = document.getElementById('temperatureSlider');
+
+            // Load settings from localStorage
+            const loadSettings = () => {
+                const apiKey = localStorage.getItem('mistralApiKey');
+                const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
+                const temperature = localStorage.getItem('mistralTemperature') || 0.7;
+
+                apiKeyInput.value = apiKey || '';
+                modelSelect.value = model;
+                temperatureSlider.value = temperature;
+            };
+
+            // Save settings to localStorage
+            const saveSettings = () => {
+                const apiKey = apiKeyInput.value.trim();
+                const model = modelSelect.value;
+                const temperature = temperatureSlider.value;
+
+                if (apiKey) {
+                    localStorage.setItem('mistralApiKey', apiKey);
+                    localStorage.setItem('mistralModel', model);
+                    localStorage.setItem('mistralTemperature', temperature);
+                    settingsModal.hide();
+                } else {
+                    alert('Veuillez entrer une clé API valide');
+                }
+            };
+
+            // Open settings modal
+            settingsBtn.addEventListener('click', () => {
+                loadSettings();
+                settingsModal.show();
+            });
+
+            // Save settings
+            saveSettingsBtn.addEventListener('click', saveSettings);
+
+            // Enhanced markdown-like parsing
+            const parseMarkdown = (content) => {
+                // Escape HTML to prevent XSS
+                const escapeHtml = (unsafe) => {
+                    return unsafe
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                };
+
+                // Code block parsing
+                content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+                    const escapedCode = escapeHtml(code.trim());
+                    return `<pre class="code-block ${lang ? `language-${lang}` : ''}"><code>${escapedCode}</code></pre>`;
+                });
+
+                // Bold parsing
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Italic parsing
+                content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                // Unordered list parsing
+                content = content.replace(/^- (.*)/gm, '<li>$1</li>');
+                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+                // Ordered list parsing
+                content = content.replace(/^\d+\. (.*)/gm, '<li>$1</li>');
+                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ol>$&</ol>');
+
+                // Headings
+                content = content.replace(/^# (.*)/gm, '<h3>$1</h3>');
+                content = content.replace(/^## (.*)/gm, '<h4>$1</h4>');
+
+                return content;
+            };
+
+            // Fetch system prompt
+            const fetchSystemPrompt = async () => {
+                try {
+                    const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
+                    const systemPrompt = await response.text();
+                    return systemPrompt.trim();
+                } catch (error) {
+                    console.error("Erreur lors du chargement du système de prompt:", error);
+                    return 'Tu es SparkAgent, un assistant de l\'Office National de l\'Assainissement en Algérie. Donne des informations précises et professionnelles.';
+                }
+            };
+
+            // Send message function
+            const sendMessage = async () => {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+
+                // Add user message to chat
+                const userMessageEl = createMessageElement('user', userMessage);
+                chatMessages.appendChild(userMessageEl);
+                chatInput.value = '';
+                scrollToBottom();
+
+                // Show typing indicator
+                typingIndicator.style.display = 'block';
+
+                try {
+                    // Retrieve settings
+                    const apiKey = localStorage.getItem('mistralApiKey');
+                    const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
+                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || 0.7);
+
+                    if (!apiKey) {
+                        throw new Error('Clé API Mistral non configurée');
+                    }
+
+                    // Fetch system prompt
+                    const systemPrompt = await fetchSystemPrompt();
+
+                    // Send request to Mistral API
+                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                {role: 'system', content: systemPrompt},
+                                {role: 'user', content: userMessage}
+                            ],
+                            temperature: temperature,
+                            max_tokens: 1000,
+                            top_p: 1,
+                            stream: false
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Erreur de communication avec l\'API');
+                    }
+
+                    const data = await response.json();
+                    const agentResponse = data.choices[0].message.content.trim();
+
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+
+                    // Add agent message to chat
+                    const agentMessageEl = createMessageElement('agent', agentResponse);
+                    chatMessages.appendChild(agentMessageEl);
+                    scrollToBottom();
+
+                } catch (error) {
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+
+                    // Add error message
+                    const errorMessageEl = createMessageElement('agent', `Erreur: ${error.message}`);
+                    chatMessages.appendChild(errorMessageEl);
+                    scrollToBottom();
+                }
+            };
+
+            // Create message element
+            const createMessageElement = (type, content) => {
+                const messageEl = document.createElement('div');
+                messageEl.classList.add('message', type);
+
+                const avatarEl = document.createElement('div');
+                avatarEl.classList.add('message-avatar');
+                if (type === 'user') {
+                    avatarEl.innerHTML = '<i class="fas fa-user"></i>';
+                } else {
+                    avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" width="40" height="40" class="coolshapes moon-9 "><g clip-path="url(#cs_clip_1_moon-9)"><mask id="cs_mask_1_moon-9" style="mask-type:alpha" width="201" height="200" x="-1" y="0" maskUnits="userSpaceOnUse"><path fill="#fff" d="M100 200a100.001 100.001 0 000-200v200zM0 200a100.002 100.002 0 00100-100A100 100 0 000 0v200z"></path></mask><g mask="url(#cs_mask_1_moon-9)"><path fill="#fff" d="M200 0H0v200h200V0z"></path><path fill="url(#paint0_linear_748_4479)" d="M200 0H0v200h200V0z"></path><g filter="url(#filter0_f_748_4479)"><path fill="#FFE500" d="M180-41H-11v141h191V-41z"></path><path fill="#18A0FB" d="M256 63H113v157h143V63z"></path></g></g></g><defs><filter id="filter0_f_748_4479" width="407" height="401" x="-81" y="-111" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur result="effect1_foregroundBlur_748_4479" stdDeviation="35"></feGaussianBlur></filter><linearGradient id="paint0_linear_748_4479" x1="158.5" x2="29" y1="12.5" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0E6FFF"></stop><stop offset="1" stop-color="#00F0FF"></stop></linearGradient><clipPath id="cs_clip_1_moon-9"><path fill="#fff" d="M0 0H200V200H0z"></path></clipPath></defs><g style="mix-blend-mode:overlay" mask="url(#cs_mask_1_moon-9)"><path fill="gray" stroke="transparent" d="M200 0H0v200h200V0z" filter="url(#cs_noise_1_moon-9)"></path></g><defs><filter id="cs_noise_1_moon-9" width="100%" height="100%" x="0%" y="0%" filterUnits="objectBoundingBox"><feTurbulence baseFrequency="0.6" numOctaves="5" result="out1" seed="4"></feTurbulence><feComposite in="out1" in2="SourceGraphic" operator="in" result="out2"></feComposite><feBlend in="SourceGraphic" in2="out2" mode="overlay" result="out3"></feBlend></filter></defs></svg>`;
+                }
+
+                const contentEl = document.createElement('div');
+                contentEl.classList.add('message-content');
+                
+                // Parse markdown-like content
+                if (type === 'agent') {
+                    contentEl.innerHTML = parseMarkdown(content);
+                } else {
+                    contentEl.textContent = content;
+                }
+
+                if (type === 'user') {
+                    messageEl.appendChild(contentEl);
+                    messageEl.appendChild(avatarEl);
+                } else {
+                    messageEl.appendChild(avatarEl);
+                    messageEl.appendChild(contentEl);
+                }
+
+                return messageEl;
+            };
+
+            // Scroll to bottom of chat
+            const scrollToBottom = () => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            // Event listeners
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            // Initial settings load
+            loadSettings();
+            
+            // Ensure typing indicator is hidden on page load
+            typingIndicator.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

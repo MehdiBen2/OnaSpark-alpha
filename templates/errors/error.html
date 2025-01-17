@@ -174,6 +174,91 @@
                 justify-content: center;
             }
         }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-height: 70%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: black;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .error-details-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(220, 53, 69, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .error-details-fab i {
+            color: white;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .error-details-fab:hover {
+            background: rgba(220, 53, 69, 0.9);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        .error-details-fab:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -198,8 +283,45 @@
                     <a href="/" class="btn btn-primary">Retour à l'Accueil</a>
                     <a href="mailto:support@onaspark.com" class="btn btn-glass">Contacter le Support</a>
                 </div>
+                {% if error_details %}
+                <div id="error-details-fab" class="error-details-fab">
+                    <i class="fas fa-bug"></i>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
+    {% if error_details %}
+    <div id="error-details-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Détails Complets de l'Erreur</h3>
+            <pre>{{ error_details | safe }}</pre>
+        </div>
+    </div>
+    {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorDetailsFab = document.getElementById('error-details-fab');
+            const modal = document.getElementById('error-details-modal');
+            const closeModal = document.querySelector('.close-modal');
+
+            if (errorDetailsFab && modal) {
+                errorDetailsFab.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                });
+
+                closeModal.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+
+                window.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
