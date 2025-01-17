@@ -20,6 +20,8 @@
             display: flex;
             align-items: center;
             position: relative;
+            -webkit-text-stroke: 0;
+        
         }
 
         .bg-wrapper {
@@ -112,6 +114,12 @@
             cursor: pointer;
             transition: background-color 0.2s;
             white-space: nowrap;
+            outline: none;
+            text-decoration: none;
+        }
+
+        .btn:focus {
+            outline: none;
         }
 
         .btn-glass {
@@ -131,6 +139,11 @@
 
         .btn-primary:hover {
             background: #2563eb;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 2rem;
         }
 
         @keyframes fadeIn {
