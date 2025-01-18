@@ -521,7 +521,7 @@ def get_ai_explanation():
             payload = {
                 'model': 'mistral-large-latest',
                 'messages': [
-                    {'role': 'system', 'content': """Règles Strictes pour l'Analyse d'Incident ONA:
+                    {'role': 'system', 'content': """Règles Strictes pour l'Analyse d'Incident :
 - INTERDICTION ABSOLUE D'INVENTER DES INFORMATIONS
 - Utilise UNIQUEMENT les faits fournis
 - Ne pas ajouter de détails non mentionnés

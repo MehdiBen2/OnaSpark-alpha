@@ -463,7 +463,7 @@ function startAIExplanationAnimation(card) {
                 <span></span>
                 <span></span>
             </div>
-            <p class="loading-text">Spark analyse vos données d'incident</p>
+            <p class="loading-text">Spark analyse vos données d'incident...</p>
         </div>
     `;
     card.appendChild(overlay);
@@ -544,8 +544,37 @@ if (aiExplanationBtn) {
             // Display AI explanation with enhanced formatting
             if (aiExplanationResult) {
                 aiExplanationResult.innerHTML = `
-                    <div class="alert alert-info">
-                        ${parseMarkdown(data.explanation || 'Aucune explication disponible.')}
+                    <div class="card ai-explanation-card" style="
+                        background-image: url('/static/images/onabg/cardbg.png');
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        <div class="card-body-overlay" style="
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.3);
+                            z-index: 1;
+                        "></div>
+                        <div class="card-body" style="
+                            position: relative;
+                            z-index: 2;
+                            color: white;
+                        ">
+                            <h5 class="card-title" style="font-size: 1.25rem;">Analyse Spark</h5>
+                            <p class="card-text" style="
+                                font-size: 3rem; 
+                                line-height: 1.2;
+                                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                            ">
+                                ${parseMarkdown(data.explanation || 'Aucune explication disponible.')}
+                            </p>
+                        </div>
                     </div>
                 `;
             } else {
