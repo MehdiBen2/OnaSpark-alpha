@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - ONA SPARK</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Light Mode Colors */
+            --ona-primary: #356ee7;
+            --ona-secondary: #173aaa;
+            --ona-accent: #95C11F;
+            --ona-dark: #2b2d42;
+            --ona-light: #f8f9fa;
+            --background-color: #ffffff;
+            --text-color: #2b2d42;
+            --card-bg: #ffffff;
+            --sidebar-width: 280px;
+            --header-height: 64px;
+            --transition: all 0.3s ease-in-out;
+        }
+
+        /* Dark Mode Colors */
+        [data-theme="dark"] {
+            --ona-primary: #4a7cf0;
+            --ona-secondary: #2d50c1;
+            --background-color: #1a1a1a;
+            --text-color: #e1e1e1;
+            --card-bg: #2d2d2d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            transition: var(--transition);
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+            color: white;
+            padding: 0;
+            overflow-y: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 2rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-logo h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .sidebar-nav {
+            list-style-type: none;
+            padding: 0 1rem;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-nav a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .sidebar-nav a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding-left: 1.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            max-width: calc(100% - var(--sidebar-width));
+        }
+
+        .content-section {
+            background-color: var(--card-bg);
+            margin-bottom: 2.5rem;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .content-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2, h3 {
+            color: var(--ona-primary);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--ona-accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: var(--ona-primary);
+            color: white;
+        }
+
+        .breadcrumb {
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            background: none;
+            padding: 0;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle, .go-back-button {
+            position: fixed;
+            top: 1rem;
+            z-index: 1001;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .theme-toggle {
+            right: 1rem;
+            background: var(--ona-primary);
+        }
+
+        .go-back-button {
+            right: 10rem;  
+            background: var(--ona-secondary);
+        }
+
+        .theme-toggle:hover, .go-back-button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .theme-toggle:hover {
+            background: var(--ona-secondary);
+        }
+
+        .go-back-button:hover {
+            background: var(--ona-primary);
+        }
+
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                max-width: 100%;
+                padding: 1rem;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 1001;
+                background: var(--ona-primary);
+                border: none;
+                color: white;
+                padding: 0.5rem;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h1>OnaSpark</h1>
+                <p>Documentation</p>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li><a href="#accueil">Accueil</a></li>
+                    <li><a href="#gestion-incidents">Gestion des Incidents</a>
+                        <ul>
+                            <li><a href="#creation-incident">Création d'Incident</a></li>
+                            <li><a href="#vue-incident">Vue Détaillée</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#qualite-eau">Qualité de l'Eau</a>
+                        <ul>
+                            <li><a href="#surveillance">Surveillance</a></li>
+                            <li><a href="#analyse">Analyse</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#utilisateurs">Gestion des Utilisateurs</a>
+                        <ul>
+                            <li><a href="#profil">Profil</a></li>
+                            <li><a href="#authentification">Authentification</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#rapports">Rapports et Tableaux de Bord</a></li>
+                    <li><a href="#internationalisation">Internationalisation</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section id="accueil" class="content-section">
+                <div class="breadcrumb">Accueil</div>
+                <h2>Bienvenue sur OnaSpark</h2>
+                <p>OnaSpark est une plateforme complète de gestion des incidents et de surveillance de la qualité de l'eau, conçue pour les professionnels du secteur de l'eau.</p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Gestion des Incidents</h3>
+                        <p>Système complet de suivi et de résolution des incidents</p>
+                        <div class="tags">
+                            <span class="tag">Rapports</span>
+                            <span class="tag">Suivi</span>
+                            <span class="tag">Analytics</span>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Qualité de l'Eau</h3>
+                        <p>Surveillance en temps réel et analyses détaillées</p>
+                        <div class="tags">
+                            <span class="tag">Monitoring</span>
+                            <span class="tag">Analyses</span>
+                            <span class="tag">Rapports</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="gestion-incidents" class="content-section">
+                <div class="breadcrumb">Gestion des Incidents</div>
+                <h2>Système de Gestion des Incidents</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Création d'Incidents</h3>
+                        <ul>
+                            <li>Interface intuitive de création</li>
+                            <li>Catégorisation automatique</li>
+                            <li>Support multimédia (photos, documents)</li>
+                            <li>Géolocalisation des incidents</li>
+                            <li>IA pour l'analyse des causes</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Suivi des Incidents</h3>
+                        <ul>
+                            <li>Tableau de bord en temps réel</li>
+                            <li>Historique complet</li>
+                            <li>Notifications automatiques</li>
+                            <li>Rapports d'intervention</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Résolution et Analytics</h3>
+                        <ul>
+                            <li>Workflow de résolution</li>
+                            <li>Analyses statistiques</li>
+                            <li>Rapports PDF exportables</li>
+                            <li>Indicateurs de performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="qualite-eau" class="content-section">
+                <div class="breadcrumb">Qualité de l'Eau</div>
+                <h2>Surveillance de la Qualité de l'Eau</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Paramètres Surveillés</h3>
+                        <ul>
+                            <li>pH et température</li>
+                            <li>Conductivité électrique</li>
+                            <li>Oxygène dissous</li>
+                            <li>Turbidité</li>
+                            <li>Chlore résiduel</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Analyses et Rapports</h3>
+                        <ul>
+                            <li>Graphiques interactifs</li>
+                            <li>Tendances historiques</li>
+                            <li>Alertes automatiques</li>
+                            <li>Rapports personnalisables</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="utilisateurs" class="content-section">
+                <div class="breadcrumb">Gestion des Utilisateurs</div>
+                <h2>Administration des Utilisateurs</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Gestion des Profils</h3>
+                        <ul>
+                            <li>Création de comptes</li>
+                            <li>Gestion des rôles</li>
+                            <li>Permissions personnalisées</li>
+                            <li>Historique des actions</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Zones et Unités</h3>
+                        <ul>
+                            <li>Attribution des zones</li>
+                            <li>Gestion des unités</li>
+                            <li>Hiérarchie organisationnelle</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="rapports" class="content-section">
+                <div class="breadcrumb">Rapports et Analytics</div>
+                <h2>Système de Reporting</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Types de Rapports</h3>
+                        <ul>
+                            <li>Rapports d'incidents</li>
+                            <li>Analyses de qualité d'eau</li>
+                            <li>Performance des équipes</li>
+                            <li>Statistiques globales</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Formats d'Export</h3>
+                        <ul>
+                            <li>PDF interactif</li>
+                            <li>Excel pour analyses</li>
+                            <li>Graphiques vectoriels</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="internationalisation" class="content-section">
+                <div class="breadcrumb">Internationalisation</div>
+                <h2>Support Multilingue</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Langues Supportées</h3>
+                        <ul>
+                            <li>Français (par défaut)</li>
+                            <li>Arabe</li>
+                            <li>Interface RTL pour l'arabe</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Système de Traduction</h3>
+                        <ul>
+                            <li>Fichiers de traduction</li>
+                            <li>Détection automatique</li>
+                            <li>Changement dynamique</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <button class="theme-toggle">
+        <i class="fas fa-moon"></i>
+        <span>Thème</span>
+    </button>
+    <a href="{{ url_for('dashboard') }}" class="go-back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Retour à l'Accueil</span>
+    </a>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.querySelector('.theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            const icon = themeToggle.querySelector('i');
+            if (theme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.createElement('button');
+        mobileMenuToggle.classList.add('mobile-menu-toggle');
+        mobileMenuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        document.body.appendChild(mobileMenuToggle);
+
+        mobileMenuToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -257,6 +257,11 @@
                     </li>
                     {% endif %}
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'documentation' %}active{% endif %}" href="{{ url_for('documentation.view_documentation') }}">
+                            <i class="fas fa-book"></i> Documentation
+                        </a>
+                    </li>
                 </ul>
                 <div class="user-section">
                     <div class="d-flex align-items-center">

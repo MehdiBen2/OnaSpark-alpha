@@ -16,6 +16,7 @@ from routes.units import units
 from routes.users import users
 from routes.database_admin import database_admin
 from routes.water_quality import water_quality
+from routes.documentation import documentation
 from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
@@ -49,6 +50,7 @@ app.register_blueprint(units)
 app.register_blueprint(users)
 app.register_blueprint(database_admin)
 app.register_blueprint(water_quality)
+app.register_blueprint(documentation)
 
 @app.cli.command("init-db")
 @with_appcontext
