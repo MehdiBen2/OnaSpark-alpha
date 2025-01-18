@@ -63,6 +63,7 @@
                 {% endif %}
 
                 <!-- Zone Management Section -->
+                {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
                 <div class="collapsible-section">
                     <div class="collapsible-header">
                         <span><i class="fas fa-map-marked-alt me-2"></i>Gestion des Zones</span>
@@ -87,6 +88,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Incident Management Section -->
                 <div class="collapsible-section">
