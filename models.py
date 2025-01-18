@@ -3,6 +3,8 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from utils.roles import UserRole
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, JSON
 
 db = SQLAlchemy()
 
@@ -158,9 +160,82 @@ class Incident(db.Model):
     unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
     center_id = db.Column(db.Integer, db.ForeignKey('centers.id'))
     
+    # New column for storing drawn shapes
+    drawn_shapes = db.Column(JSON, nullable=True)
+    
+    # Optional: Latitude and Longitude can be derived from drawn shapes
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __init__(self, *args, **kwargs):
+        # If drawn_shapes are provided, attempt to extract representative coordinates
+        drawn_shapes = kwargs.pop('drawn_shapes', None)
+        
+        # Call the parent class's __init__
+        super().__init__(*args, **kwargs)
+        
+        # Process drawn shapes if provided
+        if drawn_shapes:
+            self.drawn_shapes = drawn_shapes
+            
+            # Extract representative coordinates (e.g., center of the first shape)
+            if drawn_shapes and len(drawn_shapes) > 0:
+                first_shape = drawn_shapes[0]
+                
+                # For polygon and rectangle, use the first coordinate set
+                if first_shape['type'] in ['Polygon', 'Rectangle'] and first_shape['coordinates']:
+                    # Assuming coordinates are in GeoJSON format
+                    coords = first_shape['coordinates'][0]
+                    if coords and len(coords) > 0:
+                        self.latitude = coords[0][1]  # Latitude
+                        self.longitude = coords[0][0]  # Longitude
+                
+                # For circle, use the center coordinates
+                elif first_shape['type'] == 'Circle' and first_shape['coordinates']:
+                    self.latitude = first_shape['coordinates'][1]
+                    self.longitude = first_shape['coordinates'][0]
+    
+    def to_dict(self):
+        """
+        Convert incident to dictionary representation
+        Includes drawn shapes if present
+        """
+        incident_dict = super().to_dict()
+        
+        # Add drawn shapes to dictionary
+        if self.drawn_shapes:
+            incident_dict['drawn_shapes'] = self.drawn_shapes
+        
+        return incident_dict
+    
+    def get_representative_location(self):
+        """
+        Get a representative location for the incident
+        
+        Returns:
+            tuple: (latitude, longitude) or (None, None)
+        """
+        # Priority: 1. Explicit lat/lon 2. Drawn shapes 3. None
+        if self.latitude and self.longitude:
+            return (self.latitude, self.longitude)
+        
+        # If no explicit coordinates, try to extract from drawn shapes
+        if self.drawn_shapes:
+            first_shape = self.drawn_shapes[0]
+            
+            if first_shape['type'] in ['Polygon', 'Rectangle'] and first_shape['coordinates']:
+                coords = first_shape['coordinates'][0]
+                if coords and len(coords) > 0:
+                    return (coords[0][1], coords[0][0])
+            
+            elif first_shape['type'] == 'Circle' and first_shape['coordinates']:
+                return (first_shape['coordinates'][1], first_shape['coordinates'][0])
+        
+        return (None, None)
 
     def __repr__(self):
         return f'<Incident {self.id}>'

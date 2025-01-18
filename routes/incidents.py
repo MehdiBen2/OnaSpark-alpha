@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
 from flask_login import login_required, current_user
 from models import db, Incident, Unit, UserRole
 from datetime import datetime
@@ -7,8 +7,52 @@ from utils.decorators import admin_required, unit_required
 from utils.pdf_generator import create_incident_pdf
 from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, MERGE_INCIDENT, BATCH_MERGE
 import os
+import json
+from typing import Dict, Any, Optional
+import requests
 
 incidents = Blueprint('incidents', __name__)
+
+def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, Any]]:
+    """
+    Parse and validate drawn shapes from JSON input.
+    
+    Args:
+        drawn_shapes_json (str): JSON string representing drawn shapes
+    
+    Returns:
+        Dict or None: Parsed and validated shapes, or None if invalid
+    """
+    if not drawn_shapes_json:
+        return None
+    
+    try:
+        shapes = json.loads(drawn_shapes_json)
+        
+        # Validate shapes
+        validated_shapes = []
+        for shape in shapes:
+            if not isinstance(shape, dict):
+                continue
+            
+            # Validate shape type and coordinates
+            if shape.get('type') not in ['Polygon', 'Rectangle', 'Circle']:
+                continue
+            
+            if not shape.get('coordinates'):
+                continue
+            
+            validated_shapes.append({
+                'type': shape['type'],
+                'coordinates': shape['coordinates']
+            })
+        
+        return validated_shapes if validated_shapes else None
+    
+    except (json.JSONDecodeError, TypeError):
+        # Log the error for debugging
+        current_app.logger.warning(f"Invalid drawn shapes JSON: {drawn_shapes_json}")
+        return None
 
 @incidents.route('/incidents')
 @login_required
@@ -52,30 +96,60 @@ def new_incident():
 
     if request.method == 'POST':
         try:
+            # Check if it's an AJAX request
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+            # Log all form data for debugging
+            current_app.logger.info(f"Incident Creation Form Data: {dict(request.form)}")
+
             # Get the unit_id from the form
-            unit_id = request.form.get('unit_id')
+            unit_id = request.form.get('unit_id', current_user.assigned_unit.id)
             
             # Validate unit_id
             if not unit_id:
-                flash('Une unité est requise pour créer un incident.', 'error')
+                error_msg = 'Une unité est requise pour créer un incident.'
+                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                if is_ajax:
+                    return jsonify({'status': 'error', 'message': error_msg}), 400
+                flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
             # For non-admin users, verify they're creating an incident for their own unit
             if current_user.role != UserRole.ADMIN and str(current_user.assigned_unit.id) != str(unit_id):
-                flash('Vous ne pouvez créer des incidents que pour votre unité.', 'error')
+                error_msg = 'Vous ne pouvez créer des incidents que pour votre unité.'
+                current_app.logger.warning(f"Incident creation unauthorized: {error_msg}")
+                if is_ajax:
+                    return jsonify({'status': 'error', 'message': error_msg}), 403
+                flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
             # Validate date_incident
             date_incident_str = request.form.get('date_incident')
             if not date_incident_str:
-                flash('Vous devez spécifier la date de l\'incident.', 'error')
+                error_msg = 'Vous devez spécifier la date de l\'incident.'
+                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                if is_ajax:
+                    return jsonify({'status': 'error', 'message': error_msg}), 400
+                flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
             try:
                 date_incident = datetime.strptime(date_incident_str, '%Y-%m-%dT%H:%M')
             except ValueError:
-                flash('Le format de la date de l\'incident est invalide.', 'error')
+                error_msg = 'Le format de la date de l\'incident est invalide.'
+                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                if is_ajax:
+                    return jsonify({'status': 'error', 'message': error_msg}), 400
+                flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
+
+            # New fields for map selection
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+
+            # Extract drawn shapes
+            drawn_shapes_json = request.form.get('drawn-shapes')
+            drawn_shapes = parse_drawn_shapes(drawn_shapes_json)
 
             # Create the incident
             incident = Incident(
@@ -91,15 +165,50 @@ def new_incident():
                 gravite=request.form.get('gravite').lower(),
                 status='Nouveau',
                 user_id=current_user.id,
-                unit_id=unit_id
+                unit_id=unit_id,
+                latitude=float(latitude) if latitude else None,
+                longitude=float(longitude) if longitude else None,
+                drawn_shapes=drawn_shapes
             )
             db.session.add(incident)
             db.session.commit()
-            flash('Incident signalé avec succès.', 'success')
+
+            # Log successful incident creation
+            current_app.logger.info(f"Incident created successfully: ID {incident.id}")
+
+            # Success response
+            success_msg = 'Incident signalé avec succès.'
+            if is_ajax:
+                return jsonify({
+                    'status': 'success', 
+                    'message': success_msg,
+                    'redirect_url': url_for(INCIDENT_LIST)
+                }), 201
+            
+            flash(success_msg, 'success')
             return redirect(url_for(INCIDENT_LIST))
+
         except Exception as e:
+            # Rollback the session to prevent any partial commits
             db.session.rollback()
-            flash(f'Une erreur est survenue lors de la création de l\'incident: {str(e)}', 'error')
+
+            # Log the full error details
+            current_app.logger.error(f"Incident creation error: {str(e)}", exc_info=True)
+            
+            # Prepare error message
+            error_msg = f'Une erreur est survenue lors de la création de l\'incident: {str(e)}'
+            
+            # Detailed logging of request data for debugging
+            current_app.logger.error(f"Request Form Data: {dict(request.form)}")
+            
+            # Differentiate between AJAX and traditional form submission
+            if is_ajax:
+                return jsonify({
+                    'status': 'error', 
+                    'message': error_msg
+                }), 500
+            
+            flash(error_msg, 'error')
             return render_template('incidents/new_incident.html', units=units)
 
     return render_template('incidents/new_incident.html', units=units)
@@ -358,3 +467,163 @@ def batch_merge():
             return redirect(url_for(BATCH_MERGE))
     
     return render_template('incidents/batch_merge.html', units=units)
+
+@incidents.route('/get_ai_explanation', methods=['GET', 'POST'])
+@login_required
+def get_ai_explanation():
+    """
+    Generate AI explanation for incident nature and cause using Mistral API.
+    
+    Returns:
+        JSON response with AI-generated explanation and solutions
+    """
+    # Add a simple GET handler to help with debugging
+    if request.method == 'GET':
+        return jsonify({
+            'message': 'AI Explanation endpoint. Use POST method with incident details.'
+        }), 200
+
+    try:
+        # Log the incoming request data for debugging
+        current_app.logger.info(f"Received AI explanation request: {request.get_json()}")
+        
+        data = request.get_json()
+        nature_cause = data.get('nature_cause', '')
+        incident_id = data.get('incident_id')
+
+        # Validate input
+        if not nature_cause:
+            current_app.logger.warning('No incident description provided')
+            return jsonify({
+                'error': 'Aucune description de l\'incident fournie'
+            }), 400
+
+        # Get Mistral API key from environment
+        mistral_api_key = os.environ.get('MISTRAL_API_KEY') or current_app.config.get('MISTRAL_API_KEY')
+        
+        # Log key retrieval details (without exposing full key)
+        current_app.logger.info(f'Mistral API key retrieved: {bool(mistral_api_key)}')
+        current_app.logger.info(f'Key length: {len(mistral_api_key) if mistral_api_key else 0}')
+        
+        # Validate API key format
+        if not mistral_api_key or len(mistral_api_key) < 10:
+            current_app.logger.error('Mistral API key is invalid or missing')
+            return jsonify({
+                'error': 'Clé API Mistral invalide ou manquante'
+            }), 400
+
+        # Call Mistral API
+        try:
+            # Prepare request payload following AI explanation rules
+            payload = {
+                'model': 'mistral-large-latest',
+                'messages': [
+                    {'role': 'system', 'content': """Règles Strictes pour l'Analyse d'Incident ONA:
+- INTERDICTION ABSOLUE D'INVENTER DES INFORMATIONS
+- Utilise UNIQUEMENT les faits fournis
+- Ne pas ajouter de détails non mentionnés
+- Analyse technique basée strictement sur le contexte donné
+- Langage technique précis et factuel
+- Rapporter exactement ce qui est communiqué
+- Aucune supposition ou extrapolation non fondée
+- Format clair et professionnel
+- Concentre-toi sur les informations disponibles"""}, 
+                    {'role': 'user', 'content': f"""# Incident Hydraulique ONA
+
+## Contexte Détaillé
+{nature_cause}
+INTERDICTION ABSOLUE D'INVENTER DES INFORMATIONS
+- Utilise UNIQUEMENT les faits fournis
+- Ne pas ajouter de détails non mentionnés
+- Analyse technique basée strictement sur le contexte donné
+- Langage technique précis et factuel
+- Rapporter exactement ce qui est communiqué
+- Aucune supposition ou extrapolation non fondée
+- Format clair et professionnel
+- Concentre-toi sur les informations disponibles
+- le message dois etre bien formater
+- Explique directement l'incident et les causes possibles
+- Évite les détails superflus
+- Langage technique et concis
+- Solutions pratiques et immédiates
+"""},
+                ],
+                'temperature': 0.7,
+                'max_tokens': 1000
+            }
+
+            # Log request details (without sensitive info)
+            current_app.logger.info(f'Preparing Mistral API request')
+            current_app.logger.info(f'Model: {payload["model"]}')
+            current_app.logger.info(f'Prompt length: {len(payload["messages"][1]["content"])} characters')
+
+            # Detailed API request logging
+            try:
+                response = requests.post(
+                    'https://api.mistral.ai/v1/chat/completions',
+                    headers={
+                        'Content-Type': 'application/json',
+                        'Authorization': f'Bearer {mistral_api_key}'
+                    },
+                    json=payload,
+                    timeout=10  # Add timeout to prevent hanging
+                )
+
+                # Log full response details
+                current_app.logger.info(f"Mistral API Response Status: {response.status_code}")
+                
+                # Log response headers for authentication insights
+                current_app.logger.info(f"Response Headers: {dict(response.headers)}")
+
+                # Attempt to parse and log response body
+                try:
+                    response_json = response.json()
+                    current_app.logger.info(f"Response JSON keys: {list(response_json.keys())}")
+                    
+                    # If there's an error in the response, log it
+                    if 'error' in response_json:
+                        current_app.logger.error(f"Mistral API Error Details: {response_json['error']}")
+                except Exception as json_err:
+                    current_app.logger.error(f'Could not parse JSON response: {str(json_err)}')
+                    current_app.logger.error(f'Raw response text: {response.text[:500]}')  # Log first 500 chars
+
+            except requests.RequestException as req_err:
+                current_app.logger.error(f'Request to Mistral API failed: {str(req_err)}')
+                return jsonify({
+                    'error': 'Erreur de connexion à l\'API Mistral'
+                }), 500
+
+            # Process Mistral API response
+            if response.status_code == 200:
+                result = response.json()
+                ai_response = result['choices'][0]['message']['content']
+
+                # Split AI response into explanation and solutions
+                parts = ai_response.split('Solutions:', 1)
+                explanation = parts[0].replace('Explication:', '').strip()
+                solutions = parts[1].strip() if len(parts) > 1 else 'Aucune solution spécifique trouvée.'
+
+                return jsonify({
+                    'explanation': explanation,
+                    'solutions': solutions
+                })
+            else:
+                # Log detailed error information
+                current_app.logger.error(f'Mistral API Error: Status {response.status_code}, Body: {response.text}')
+                return jsonify({
+                    'error': f'Erreur API Mistral: {response.status_code}'
+                }), response.status_code
+
+        except Exception as e:
+            # Log the full stack trace for internal server errors
+            current_app.logger.exception(f'Unexpected error in AI explanation: {str(e)}')
+            return jsonify({
+                'error': 'Une erreur inattendue s\'est produite'
+            }), 500
+
+    except Exception as e:
+        # Log the full stack trace for internal server errors
+        current_app.logger.exception(f'Unexpected error in AI explanation: {str(e)}')
+        return jsonify({
+            'error': 'Une erreur inattendue s\'est produite'
+        }), 500

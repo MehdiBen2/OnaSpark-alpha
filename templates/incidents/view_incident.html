@@ -2,83 +2,11 @@
 
 {% block title %}Détails de l'Incident{% endblock %}
 
-{% block content %}
-<style>
-    body {
-        background-color: #e9e9e9da;
-    }
-    .incident-header {
-        background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .info-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        padding: 1.5rem;
-        height: 100%;
-        transition: all 0.3s ease;
-    }
-    .info-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .info-title {
-        color: #1565c0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .info-title i {
-        font-size: 1.2rem;
-        opacity: 0.8;
-    }
-    .info-item {
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: baseline;
-    }
-    .info-label {
-        font-weight: 600;
-        min-width: 120px;
-        color: #444;
-    }
-    .info-value {
-        flex: 1;
-    }
-    .action-btn {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-    .action-btn:hover {
-        transform: translateY(-1px);
-    }
-    .map-btn {
-        background: white;
-        color: #1565c0;
-        border: 1px solid #1565c0;
-        padding: 0.4rem 1rem;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-    }
-    .map-btn:hover {
-        background: #1565c0;
-        color: white;
-    }
-    .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
-    }
-</style>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/view_incident.css') }}">
+{% endblock %}
 
+{% block content %}
 <div class="container-fluid py-4">
     <!-- Header Section -->
     <div class="incident-header">
@@ -120,7 +48,7 @@
     <div class="row g-4">
         <!-- Location Card -->
         <div class="col-md-6">
-            <div class="info-card">
+            <div class="info-card position-relative">
                 <h6 class="info-title">
                     <i class="fas fa-map-marker-alt"></i>
                     Localisation
@@ -137,8 +65,13 @@
                     <span class="info-label">Localité:</span>
                     <span class="info-value">{{ incident.localite }}</span>
                 </div>
-                <button type="button" class="map-btn mt-3" 
-                        onclick="showLocationMap('{{ incident.wilaya }}', '{{ incident.commune }}', '{{ incident.localite }}')">
+                {% if incident.latitude and incident.longitude %}
+                <div class="info-item">
+                    <span class="info-label">Coordonnées:</span>
+                    <span class="info-value">{{ incident.latitude }}, {{ incident.longitude }}</span>
+                </div>
+                {% endif %}
+                <button type="button" class="map-btn mt-3" data-bs-toggle="modal" data-bs-target="#mapModal">
                     <i class="fas fa-map-marker-alt me-1"></i>Voir sur la carte
                 </button>
             </div>
@@ -146,12 +79,21 @@
 
         <!-- Nature & Cause Card -->
         <div class="col-md-6">
-            <div class="info-card">
+            <div class="info-card position-relative nature-cause-card">
+                <button id="ai-explanation-btn" class="btn">
+                    <div class="d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap text-warning me-2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        Expliquer avec SPARK
+                    </div>
+                </button>
                 <h6 class="info-title">
                     <i class="fas fa-exclamation-circle"></i>
                     Nature et cause de l'incident
                 </h6>
-                <p class="mb-0">{{ incident.nature_cause }}</p>
+                <p class="mb-0" id="incident-nature-cause">{{ incident.nature_cause }}</p>
+                <div id="ai-explanation-result" class="mt-2 text-muted small"></div>
             </div>
         </div>
 
@@ -190,11 +132,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- Drawn Shapes Card -->
+        {% if incident.drawn_shapes %}
+        <div class="col-12">
+            <div class="info-card">
+                <h6 class="info-title">
+                    <i class="fas fa-draw-polygon"></i>
+                    Zones délimitées
+                </h6>
+                <div class="drawn-shapes-info">
+                    <p>Des zones spécifiques ont été délimitées pour cet incident.</p>
+                    <button type="button" class="map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
+                        <i class="fas fa-map-marker-alt me-1"></i>Visualiser les zones
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Map Modal -->
-<div class="modal fade map-modal" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -235,14 +195,393 @@
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap modal
+    // Incident map initialization
+    let incidentMap = null;
     const mapModal = document.getElementById('mapModal');
+    
+    // Comprehensive coordinate extraction and validation
+    function validateAndExtractCoordinates(coords) {
+        console.group('Coordinate Validation');
+        console.log('Input coordinates:', coords);
+        console.log('Type of coordinates:', typeof coords);
+        console.log('Is array:', Array.isArray(coords));
+        
+        if (!coords) {
+            console.error('No coordinates provided');
+            console.groupEnd();
+            return null;
+        }
+
+        // Deep inspection of coordinate structure
+        function inspectCoordinateStructure(arr, depth = 0) {
+            if (!Array.isArray(arr)) {
+                console.warn(`Not an array at depth ${depth}:`, arr);
+                return false;
+            }
+
+            console.log(`Depth ${depth} - Array length:`, arr.length);
+            console.log(`Depth ${depth} - First element type:`, typeof arr[0]);
+
+            if (arr.length === 0) {
+                console.warn(`Empty array at depth ${depth}`);
+                return false;
+            }
+
+            // Extract coordinates from potential object structure
+            function extractCoordinate(item) {
+                // If it's already a coordinate pair
+                if (Array.isArray(item) && item.length === 2 && 
+                    typeof item[0] === 'number' && typeof item[1] === 'number') {
+                    return item;
+                }
+                
+                // If it's an object with lat/lng or coordinates
+                if (typeof item === 'object') {
+                    if ('lat' in item && 'lng' in item) {
+                        return [item.lat, item.lng];
+                    }
+                    if ('coordinates' in item && Array.isArray(item.coordinates) && item.coordinates.length === 2) {
+                        return item.coordinates;
+                    }
+                }
+                
+                return null;
+            }
+
+            // Try to extract coordinates
+            const extractedCoords = arr.map(extractCoordinate).filter(coord => coord !== null);
+
+            if (extractedCoords.length > 0) {
+                console.log(`Valid coordinate array found at depth ${depth}:`, extractedCoords);
+                return extractedCoords;
+            }
+
+            // Recursively inspect nested arrays
+            for (let item of arr) {
+                if (Array.isArray(item)) {
+                    const result = inspectCoordinateStructure(item, depth + 1);
+                    if (result) return result;
+                }
+            }
+
+            console.warn(`No valid coordinates found at depth ${depth}`);
+            return false;
+        }
+
+        const validCoords = inspectCoordinateStructure(coords);
+        
+        console.groupEnd();
+        return validCoords || null;
+    }
+
     mapModal.addEventListener('shown.bs.modal', function () {
-        if (incidentMap) {
+        // Initialize map if not already initialized
+        if (!incidentMap) {
+            // Default to Algeria's center if no specific coordinates
+            const defaultLat = {{ incident.latitude or 36.7538 }};
+            const defaultLng = {{ incident.longitude or 3.0588 }};
+            
+            console.log('Initializing map with coordinates:', defaultLat, defaultLng);
+            
+            incidentMap = L.map('incident-map').setView([defaultLat, defaultLng], 10);
+            
+            // Add base map layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(incidentMap);
+
+            // Add marker for incident location
+            {% if incident.latitude and incident.longitude %}
+            L.marker([{{ incident.latitude }}, {{ incident.longitude }}])
+                .addTo(incidentMap)
+                .bindPopup('Localisation de l\'incident')
+                .openPopup();
+            {% endif %}
+
+            // Add drawn shapes if they exist
+            {% if incident.drawn_shapes %}
+            const drawnShapes = {{ incident.drawn_shapes | tojson | safe }};
+            
+            console.group('Drawn Shapes Processing');
+            console.log('Raw Drawn Shapes:', drawnShapes);
+            
+            // Function to add drawn shapes to the map
+            function addDrawnShapesToMap(shapes) {
+                console.log('Processing drawn shapes:', shapes);
+                
+                if (!Array.isArray(shapes)) {
+                    console.error('Drawn shapes is not an array:', shapes);
+                    return;
+                }
+                
+                // Array to collect all drawn shapes for bounds calculation
+                const allDrawnShapes = [];
+                
+                shapes.forEach((shape, index) => {
+                    console.group(`Shape ${index}`);
+                    console.log('Shape details:', shape);
+                    
+                    let drawnShape = null;
+                    try {
+                        const validCoords = validateAndExtractCoordinates(shape.coordinates);
+                        
+                        if (!validCoords) {
+                            console.error(`Invalid coordinates for shape ${index}`);
+                            console.groupEnd();
+                            return;
+                        }
+
+                        if (shape.type === 'Polygon') {
+                            console.log('Creating Polygon with coordinates:', validCoords);
+                            
+                            // Swap longitude and latitude for Leaflet
+                            const polygonCoords = validCoords.map(coord => {
+                                // If coordinate is [lon, lat], swap to [lat, lon]
+                                return coord.length === 2 ? [coord[1], coord[0]] : coord;
+                            });
+
+                            drawnShape = L.polygon(polygonCoords, {
+                                color: 'red',
+                                fillColor: '#f03',
+                                fillOpacity: 0.2
+                            }).addTo(incidentMap);
+                        } else if (shape.type === 'Rectangle') {
+                            console.log('Creating Rectangle with coordinates:', validCoords);
+                            
+                            // Swap longitude and latitude for Leaflet
+                            const rectangleCoords = validCoords.map(coord => {
+                                // If coordinate is [lon, lat], swap to [lat, lon]
+                                return coord.length === 2 ? [coord[1], coord[0]] : coord;
+                            });
+
+                            drawnShape = L.rectangle(rectangleCoords, {
+                                color: 'blue',
+                                fillColor: '#30f',
+                                fillOpacity: 0.2
+                            }).addTo(incidentMap);
+                        } else if (shape.type === 'Circle') {
+                            console.log('Creating Circle with coordinates:', validCoords, 'Radius:', shape.radius);
+                            
+                            // Find the center coordinate and swap lon/lat
+                            const centerCoord = validCoords[0];
+                            const circleCenter = centerCoord.length === 2 
+                                ? [centerCoord[1], centerCoord[0]]  // Swap lon/lat
+                                : centerCoord;
+
+                            drawnShape = L.circle(circleCenter, {
+                                radius: shape.radius || 100,  // Default radius if not specified
+                                color: 'green',
+                                fillColor: '#3f0',
+                                fillOpacity: 0.2
+                            }).addTo(incidentMap);
+                        } else {
+                            console.warn('Unknown shape type:', shape.type);
+                        }
+                        
+                        if (drawnShape) {
+                            drawnShape.bindPopup(`Type: ${shape.type}`);
+                            allDrawnShapes.push(drawnShape);
+                        }
+                    } catch (error) {
+                        console.error(`Error processing shape ${index}:`, error);
+                    }
+                    
+                    console.groupEnd();
+                });
+
+                // Fit map to bounds of drawn shapes if any exist
+                if (allDrawnShapes.length > 0) {
+                    const group = new L.featureGroup(allDrawnShapes);
+                    incidentMap.fitBounds(group.getBounds().pad(0.1));
+                }
+            }
+
+            // Call function to add drawn shapes
+            addDrawnShapesToMap(drawnShapes);
+            console.groupEnd();
+            {% else %}
+            console.log('No drawn shapes found');
+            {% endif %}
+
+            // Fit map to bounds of all layers
             incidentMap.invalidateSize();
+            incidentMap.fitBounds(incidentMap.getBounds().pad(0.2));
         }
     });
+
+    // Ensure map resizes when modal is shown
+    mapModal.addEventListener('show.bs.modal', function () {
+        setTimeout(() => {
+            if (incidentMap) {
+                incidentMap.invalidateSize();
+            }
+        }, 200);
+    });
 });
+
+const aiExplanationBtn = document.getElementById('ai-explanation-btn');
+const aiExplanationResult = document.getElementById('ai-explanation-result');
+const incidentNatureCause = document.getElementById('incident-nature-cause');
+
+// Ensure incidentId is available
+const incidentId = {{ incident.id }};
+
+// Function to parse markdown with improved handling
+function parseMarkdown(text) {
+    if (!text) return 'Aucune explication disponible.';
+    
+    // More robust markdown parsing
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic
+        .replace(/### (.*)/g, '<h3>$1</h3>')   // H3 headers
+        .replace(/## (.*)/g, '<h2>$1</h2>')    // H2 headers
+        .replace(/# (.*)/g, '<h1>$1</h1>')     // H1 headers
+        .replace(/- (.*)/g, '<li>$1</li>')     // List items
+        .replace(/<\/li><li>/g, '</li>\n<li>') // Separate list items
+        .replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>') // Wrap list items in ul
+        .replace(/\n\n/g, '</p><p>')  // Paragraph breaks
+        .replace(/^(.+)$/gm, '<p>$1</p>');  // Wrap each line in paragraph
+}
+
+// Function to handle AI explanation card animation
+function startAIExplanationAnimation(card) {
+    card.classList.add('loading');
+    
+    // Add overlay with enhanced loading animation
+    const overlay = document.createElement('div');
+    overlay.className = 'ai-explanation-overlay';
+    overlay.innerHTML = `
+        <div class="loading-content">
+            <div class="loading-spark">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spark-icon">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <p class="loading-text">Spark analyse vos données d'incident</p>
+        </div>
+    `;
+    card.appendChild(overlay);
+
+    // Add subtle scale animation to card content
+    const content = card.querySelector('.card-body');
+    if (content) {
+        content.style.transform = 'scale(0.98)';
+        content.style.transition = 'transform 0.5s ease';
+    }
+}
+
+function stopAIExplanationAnimation(card) {
+    // Restore card content scale
+    const content = card.querySelector('.card-body');
+    if (content) {
+        content.style.transform = 'scale(1)';
+    }
+
+    // Remove loading state with fade out
+    const overlay = card.querySelector('.ai-explanation-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.3s ease';
+        
+        setTimeout(() => {
+            card.classList.remove('loading');
+            overlay.remove();
+        }, 300);
+    } else {
+        card.classList.remove('loading');
+    }
+}
+
+// Modify the existing event listener
+if (aiExplanationBtn) {
+    aiExplanationBtn.addEventListener('click', async function() {
+        try {
+            // Get the nature and cause card
+            const natureCard = document.querySelector('.nature-cause-card');
+            
+            // Start animation
+            if (natureCard) {
+                startAIExplanationAnimation(natureCard);
+            }
+
+            console.log('Sending AI explanation request:', {
+                nature_cause: incidentNatureCause ? incidentNatureCause.textContent.trim() : 'No nature cause found',
+                incident_id: incidentId
+            });
+
+            // Disable button during request
+            aiExplanationBtn.disabled = true;
+
+            const response = await fetch('/get_ai_explanation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nature_cause: incidentNatureCause ? incidentNatureCause.textContent.trim() : '',
+                    incident_id: incidentId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('AI Explanation data:', data);
+
+            // Stop animation
+            if (natureCard) {
+                stopAIExplanationAnimation(natureCard);
+            }
+
+            // Display AI explanation with enhanced formatting
+            if (aiExplanationResult) {
+                aiExplanationResult.innerHTML = `
+                    <div class="alert alert-info">
+                        ${parseMarkdown(data.explanation || 'Aucune explication disponible.')}
+                    </div>
+                `;
+            } else {
+                console.error('AI explanation result container not found');
+            }
+        } catch (error) {
+            console.error('Error in AI explanation:', error);
+            
+            // Stop animation
+            const natureCard = document.querySelector('.nature-cause-card');
+            if (natureCard) {
+                stopAIExplanationAnimation(natureCard);
+            }
+
+            // Display error message
+            if (aiExplanationResult) {
+                aiExplanationResult.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Erreur:</strong> Impossible de générer l'explication AI. 
+                        Veuillez réessayer ou contacter le support technique.
+                        <details>
+                            <summary>Détails de l'erreur</summary>
+                            ${error.message}
+                        </details>
+                    </div>
+                `;
+            }
+        } finally {
+            // Re-enable button
+            if (aiExplanationBtn) {
+                aiExplanationBtn.disabled = false;
+            }
+        }
+    });
+} else {
+    console.error('AI explanation button not found');
+}
 </script>
 {% endblock %}
-

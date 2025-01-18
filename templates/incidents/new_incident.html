@@ -3,9 +3,9 @@
 {% block title %}Nouvel Incident{% endblock %}
 
 {% block extra_css %}
-<link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
-<link href="{{ url_for('static', filename='css/incident-form.css') }}" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{{ super() }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
 <style>
     .incident-form {
         max-width: 1200px;
@@ -145,6 +145,71 @@
         font-size: 0.75rem;
         color: #757575;
     }
+
+    /* Map related styles */
+    #location-map {
+        height: 400px;
+        width: 100%;
+        border-radius: 10px;
+        margin-top: 1rem;
+    }
+
+    .map-toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 1rem;
+    }
+
+    .map-toggle-container .form-check {
+        margin-right: 1rem;
+    }
+
+    .map-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+
+    #locate-me-btn, #map-selection-mode-label, #draw-shape-btn {
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.3s ease;
+    }
+
+    #locate-me-btn:hover, #map-selection-mode-label:hover, #draw-shape-btn:hover {
+        background-color: #1976d2;
+    }
+
+    .map-mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    #drawn-shapes-list {
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .shape-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+    }
 </style>
 {% endblock %}
 
@@ -225,6 +290,15 @@
                     <h5 class="form-section-title">
                         <i class="fas fa-map-marked-alt me-2"></i>Localisation
                     </h5>
+                    <div class="map-toggle-container">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enable-map-selection">
+                            <label class="form-check-label" for="enable-map-selection">
+                                Sélectionner la localisation sur la carte
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="wilaya" class="form-label required-field">
@@ -247,6 +321,33 @@
                             <input type="text" class="form-control" id="localite" name="localite" required>
                             <div class="invalid-feedback">Veuillez spécifier la localité</div>
                         </div>
+                    </div>
+
+                    <!-- Hidden inputs for latitude and longitude -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    <input type="hidden" id="drawn-shapes" name="drawn-shapes">
+
+                    <!-- Optional Map Section -->
+                    <div id="map-selection-section" style="display: none;">
+                        <div class="map-controls">
+                            <button type="button" id="locate-me-btn" class="btn">
+                                <i class="fas fa-map-marker-alt"></i> Me localiser
+                            </button>
+                            <div class="map-mode-toggle">
+                                <input type="checkbox" class="btn-check" id="map-selection-mode" autocomplete="off">
+                                <label class="btn" id="map-selection-mode-label" for="map-selection-mode">
+                                    <i class="fas fa-hand-pointer"></i> Sélection manuelle
+                                </label>
+                                <button type="button" id="draw-shape-btn" class="btn">
+                                    <i class="fas fa-draw-polygon"></i> Dessiner une zone
+                                </button>
+                            </div>
+                        </div>
+                        <div id="location-map"></div>
+                        
+                        <!-- Drawn Shapes List -->
+                        <div id="drawn-shapes-list" class="mt-3"></div>
                     </div>
                 </div>
 
@@ -333,6 +434,25 @@
 {% endblock %}
 
 {% block page_scripts %}
+{{ super() }}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script>
+    // Debug logging for map initialization
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapToggle = document.getElementById('enable-map-selection');
+        const mapSection = document.getElementById('map-selection-section');
+        const mapContainer = document.getElementById('location-map');
+
+        console.log('Map toggle element:', mapToggle);
+        console.log('Map section element:', mapSection);
+        console.log('Map container element:', mapContainer);
+
+        if (!mapToggle || !mapSection || !mapContainer) {
+            console.error('One or more required map elements are missing!');
+        }
+    });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Select2 for all select elements
@@ -347,51 +467,148 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('newIncidentForm');
     if (form) {
         form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        });
+            // Prevent default form submission
+            event.preventDefault();
+            event.stopPropagation();
 
-        // Character counters
-        const textAreas = ['nature_cause', 'mesures_prises', 'impact'];
-        textAreas.forEach(function(id) {
-            const textarea = document.getElementById(id);
-            const counter = document.getElementById(id + '_count');
-            
-            if (textarea && counter) {
-                textarea.addEventListener('input', function() {
-                    const count = textarea.value.length;
-                    counter.textContent = count;
-                    counter.style.color = count > 450 ? '#dc3545' : '#6c757d';
-                });
-                
-                // Initialize counter
-                counter.textContent = textarea.value.length;
-            }
-        });
+            // Validate required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
 
-        // Draft saving functionality
-        const draftBtn = document.getElementById('draftBtn');
-        if (draftBtn) {
-            draftBtn.addEventListener('click', function() {
-                const formData = new FormData(form);
-                const draftData = {};
-                
-                for (let [key, value] of formData.entries()) {
-                    draftData[key] = value;
-                }
-                
-                try {
-                    localStorage.setItem('incidentDraft', JSON.stringify(draftData));
-                    showNotification('success', 'Brouillon sauvegardé avec succès');
-                } catch (error) {
-                    console.error('Error saving draft:', error);
-                    showNotification('error', 'Erreur lors de la sauvegarde du brouillon');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
                 }
             });
+
+            // Additional specific validations
+            const dateIncident = document.getElementById('date_incident');
+            if (dateIncident && !dateIncident.value) {
+                dateIncident.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const graviteSelect = document.getElementById('gravite');
+            if (graviteSelect && !graviteSelect.value) {
+                graviteSelect.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // Validate map coordinates if map selection is enabled
+            const mapToggle = document.getElementById('enable-map-selection');
+            const latitudeInput = document.getElementById('latitude');
+            const longitudeInput = document.getElementById('longitude');
+
+            if (mapToggle && mapToggle.checked) {
+                if (!latitudeInput.value || !longitudeInput.value) {
+                    showNotification('warning', 'Veuillez sélectionner un emplacement sur la carte.');
+                    isValid = false;
+                }
+            }
+
+            // If form is valid, submit via AJAX
+            if (isValid) {
+                const formData = new FormData(form);
+
+                // Log form data for debugging
+                for (let [key, value] of formData.entries()) {
+                    console.log(`Form Data - ${key}: ${value}`);
+                }
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    
+                    // Log full response text for debugging
+                    return response.text().then(text => {
+                        console.log('Response text:', text);
+                        
+                        // Try to parse as JSON, fallback to text
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error(`Non-JSON response: ${text}`);
+                        }
+                    });
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('success', data.message || 'Incident créé avec succès');
+                        // Redirect or reset form
+                        window.location.href = data.redirect_url || '/incidents';
+                    } else {
+                        showNotification('error', data.message || 'Une erreur est survenue lors de la création de l\'incident');
+                    }
+                })
+                .catch(error => {
+                    console.error('Full error object:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    
+                    // More detailed error logging
+                    if (error instanceof TypeError) {
+                        console.error('Network error or fetch failure');
+                    } else if (error instanceof SyntaxError) {
+                        console.error('JSON parsing error');
+                    }
+                    
+                    showNotification('error', 'Une erreur réseau est survenue. Veuillez réessayer. Consultez la console pour plus de détails.');
+                });
+            } else {
+                showNotification('warning', 'Veuillez remplir tous les champs obligatoires.');
+            }
+
+            form.classList.add('was-validated');
+        });
+    }
+
+    // Character counters
+    const textAreas = ['nature_cause', 'mesures_prises', 'impact'];
+    textAreas.forEach(function(id) {
+        const textarea = document.getElementById(id);
+        const counter = document.getElementById(id + '_count');
+        
+        if (textarea && counter) {
+            textarea.addEventListener('input', function() {
+                const count = textarea.value.length;
+                counter.textContent = count;
+                counter.style.color = count > 450 ? '#dc3545' : '#6c757d';
+            });
+            
+            // Initialize counter
+            counter.textContent = textarea.value.length;
         }
+    });
+
+    // Draft saving functionality
+    const draftBtn = document.getElementById('draftBtn');
+    if (draftBtn) {
+        draftBtn.addEventListener('click', function() {
+            const formData = new FormData(form);
+            const draftData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                draftData[key] = value;
+            }
+            
+            try {
+                localStorage.setItem('incidentDraft', JSON.stringify(draftData));
+                showNotification('success', 'Brouillon sauvegardé avec succès');
+            } catch (error) {
+                console.error('Error saving draft:', error);
+                showNotification('error', 'Erreur lors de la sauvegarde du brouillon');
+            }
+        });
     }
 
     // Utility function for notifications
@@ -435,4 +652,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script src="{{ url_for('static', filename='js/incident_map_selector.js') }}"></script>
 {% endblock %}
