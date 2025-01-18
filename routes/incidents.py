@@ -513,6 +513,9 @@ def get_ai_explanation():
             }), 400
 
         # Call Mistral API
+        import requests
+        import traceback
+        
         try:
             # Prepare request payload following AI explanation rules
             payload = {
@@ -527,98 +530,78 @@ def get_ai_explanation():
 - Rapporter exactement ce qui est communiqué
 - Aucune supposition ou extrapolation non fondée
 - Format clair et professionnel
-- Concentre-toi sur les informations disponibles"""}, 
-                    {'role': 'user', 'content': f"""# Incident Hydraulique ONA
-
-## Contexte Détaillé
+- Concentre-toi sur les informations disponibles"""},
+                    {'role': 'user', 'content': f"""Incident ID: {incident_id}
 {nature_cause}
-INTERDICTION ABSOLUE D'INVENTER DES INFORMATIONS
-- Utilise UNIQUEMENT les faits fournis
-- Ne pas ajouter de détails non mentionnés
-- Analyse technique basée strictement sur le contexte donné
-- Langage technique précis et factuel
-- Rapporter exactement ce qui est communiqué
-- Aucune supposition ou extrapolation non fondée
-- Format clair et professionnel
-- Concentre-toi sur les informations disponibles
-- le message dois etre bien formater
+
+INSTRUCTIONS:
 - Explique directement l'incident et les causes possibles
 - Évite les détails superflus
 - Langage technique et concis
-- Solutions pratiques et immédiates
-"""},
+- Solutions pratiques et immédiates"""}
                 ],
                 'temperature': 0.7,
-                'max_tokens': 1000
+                'max_tokens': 750
             }
 
-            # Log request details (without sensitive info)
-            current_app.logger.info(f'Preparing Mistral API request')
-            current_app.logger.info(f'Model: {payload["model"]}')
-            current_app.logger.info(f'Prompt length: {len(payload["messages"][1]["content"])} characters')
+            # Log full payload for debugging
+            current_app.logger.info(f"Mistral API Payload: {payload}")
 
-            # Detailed API request logging
+            # Validate API key
+            if not mistral_api_key:
+                current_app.logger.error("Mistral API key is missing")
+                return jsonify({
+                    'error': 'Clé API Mistral manquante',
+                    'details': 'Aucune clé API trouvée pour Mistral'
+                }), 400
+
+            # Make API request
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {mistral_api_key}'
+            }
+
             try:
                 response = requests.post(
-                    'https://api.mistral.ai/v1/chat/completions',
-                    headers={
-                        'Content-Type': 'application/json',
-                        'Authorization': f'Bearer {mistral_api_key}'
-                    },
-                    json=payload,
-                    timeout=10  # Add timeout to prevent hanging
+                    'https://api.mistral.ai/v1/chat/completions', 
+                    json=payload, 
+                    headers=headers
                 )
-
-                # Log full response details
-                current_app.logger.info(f"Mistral API Response Status: {response.status_code}")
                 
-                # Log response headers for authentication insights
-                current_app.logger.info(f"Response Headers: {dict(response.headers)}")
+                # Log full response for debugging
+                current_app.logger.info(f"Mistral API Response Status: {response.status_code}")
+                current_app.logger.info(f"Mistral API Response Body: {response.text}")
 
-                # Attempt to parse and log response body
-                try:
-                    response_json = response.json()
-                    current_app.logger.info(f"Response JSON keys: {list(response_json.keys())}")
-                    
-                    # If there's an error in the response, log it
-                    if 'error' in response_json:
-                        current_app.logger.error(f"Mistral API Error Details: {response_json['error']}")
-                except Exception as json_err:
-                    current_app.logger.error(f'Could not parse JSON response: {str(json_err)}')
-                    current_app.logger.error(f'Raw response text: {response.text[:500]}')  # Log first 500 chars
+                # Check response
+                if response.status_code != 200:
+                    current_app.logger.error(f"Mistral API Error: {response.text}")
+                    return jsonify({
+                        'error': 'Erreur lors de la génération de l\'explication',
+                        'details': response.text
+                    }), 500
+
+                # Parse response
+                result = response.json()
+                explanation = result['choices'][0]['message']['content']
+
+                return jsonify({
+                    'explanation': explanation
+                }), 200
 
             except requests.RequestException as req_err:
-                current_app.logger.error(f'Request to Mistral API failed: {str(req_err)}')
+                current_app.logger.error(f"Request Exception: {req_err}")
+                current_app.logger.error(traceback.format_exc())
                 return jsonify({
-                    'error': 'Erreur de connexion à l\'API Mistral'
+                    'error': 'Erreur de connexion à l\'API Mistral',
+                    'details': str(req_err)
                 }), 500
 
-            # Process Mistral API response
-            if response.status_code == 200:
-                result = response.json()
-                ai_response = result['choices'][0]['message']['content']
-
-                # Split AI response into explanation and solutions
-                parts = ai_response.split('Solutions:', 1)
-                explanation = parts[0].replace('Explication:', '').strip()
-                solutions = parts[1].strip() if len(parts) > 1 else 'Aucune solution spécifique trouvée.'
-
-                return jsonify({
-                    'explanation': explanation,
-                    'solutions': solutions
-                })
-            else:
-                # Log detailed error information
-                current_app.logger.error(f'Mistral API Error: Status {response.status_code}, Body: {response.text}')
-                return jsonify({
-                    'error': f'Erreur API Mistral: {response.status_code}'
-                }), response.status_code
-
         except Exception as e:
-            # Log the full stack trace for internal server errors
-            current_app.logger.exception(f'Unexpected error in AI explanation: {str(e)}')
+            current_app.logger.error(f"Unexpected Error: {e}")
+            current_app.logger.error(traceback.format_exc())
             return jsonify({
-                'error': 'Une erreur inattendue s\'est produite'
+                'error': 'Erreur inattendue lors de la génération de l\'explication',
+                'details': str(e)
             }), 500
 
     except Exception as e:
