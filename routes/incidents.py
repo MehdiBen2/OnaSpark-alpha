@@ -65,6 +65,18 @@ def new_incident():
                 flash('Vous ne pouvez créer des incidents que pour votre unité.', 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
+            # Validate date_incident
+            date_incident_str = request.form.get('date_incident')
+            if not date_incident_str:
+                flash('Vous devez spécifier la date de l\'incident.', 'error')
+                return render_template('incidents/new_incident.html', units=units)
+
+            try:
+                date_incident = datetime.strptime(date_incident_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                flash('Le format de la date de l\'incident est invalide.', 'error')
+                return render_template('incidents/new_incident.html', units=units)
+
             # Create the incident
             incident = Incident(
                 title=request.form.get('title'),
@@ -73,7 +85,7 @@ def new_incident():
                 localite=request.form.get('localite'),
                 structure_type=request.form.get('structure_type'),
                 nature_cause=request.form.get('nature_cause'),
-                date_incident=datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M'),
+                date_incident=date_incident,
                 mesures_prises=request.form.get('mesures_prises'),
                 impact=request.form.get('impact'),
                 gravite=request.form.get('gravite').lower(),
