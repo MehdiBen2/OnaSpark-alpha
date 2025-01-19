@@ -7,6 +7,7 @@
 - Each feature should have its dedicated feature-specific file (e.g., `water_quality.py` for water quality-related functionality)
 - Maintain a clear and logical directory structure
 
+
 ## 2. Coding Practices
 
 ### 2.1 Hard Coding Prohibition

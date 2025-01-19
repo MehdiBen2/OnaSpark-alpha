@@ -89,10 +89,18 @@ def new_incident():
     if current_user.role == UserRole.ADMIN:
         units = Unit.query.all()
     else:
+        # Robust check for unit assignment
         if not current_user.unit_id:
             flash('Vous devez être assigné à une unité pour signaler un incident.', 'warning')
             return redirect(url_for(SELECT_UNIT))
-        units = [current_user.assigned_unit] if current_user.assigned_unit else []
+        
+        # Fetch the unit directly to ensure it exists
+        assigned_unit = Unit.query.get(current_user.unit_id)
+        if not assigned_unit:
+            flash('Votre unité assignée est introuvable. Veuillez contacter un administrateur.', 'danger')
+            return redirect(url_for(SELECT_UNIT))
+        
+        units = [assigned_unit]
 
     if request.method == 'POST':
         try:
@@ -102,9 +110,12 @@ def new_incident():
             # Log all form data for debugging
             current_app.logger.info(f"Incident Creation Form Data: {dict(request.form)}")
 
-            # Get the unit_id from the form
-            unit_id = request.form.get('unit_id', current_user.assigned_unit.id)
-            
+            # Get the unit_id from the form or use the user's assigned unit
+            unit_id = request.form.get('unit_id')
+            if not unit_id and current_user.role != UserRole.ADMIN:
+                # Fallback to user's unit if no unit is specified
+                unit_id = current_user.unit_id
+
             # Validate unit_id
             if not unit_id:
                 error_msg = 'Une unité est requise pour créer un incident.'
@@ -114,32 +125,22 @@ def new_incident():
                 flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
+            # Verify the unit exists
+            unit = Unit.query.get(unit_id)
+            if not unit:
+                error_msg = 'L\'unité spécifiée est invalide.'
+                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                if is_ajax:
+                    return jsonify({'status': 'error', 'message': error_msg}), 400
+                flash(error_msg, 'error')
+                return render_template('incidents/new_incident.html', units=units)
+
             # For non-admin users, verify they're creating an incident for their own unit
-            if current_user.role != UserRole.ADMIN and str(current_user.assigned_unit.id) != str(unit_id):
+            if current_user.role != UserRole.ADMIN and str(current_user.unit_id) != str(unit_id):
                 error_msg = 'Vous ne pouvez créer des incidents que pour votre unité.'
                 current_app.logger.warning(f"Incident creation unauthorized: {error_msg}")
                 if is_ajax:
                     return jsonify({'status': 'error', 'message': error_msg}), 403
-                flash(error_msg, 'error')
-                return render_template('incidents/new_incident.html', units=units)
-
-            # Validate date_incident
-            date_incident_str = request.form.get('date_incident')
-            if not date_incident_str:
-                error_msg = 'Vous devez spécifier la date de l\'incident.'
-                current_app.logger.warning(f"Incident creation failed: {error_msg}")
-                if is_ajax:
-                    return jsonify({'status': 'error', 'message': error_msg}), 400
-                flash(error_msg, 'error')
-                return render_template('incidents/new_incident.html', units=units)
-
-            try:
-                date_incident = datetime.strptime(date_incident_str, '%Y-%m-%dT%H:%M')
-            except ValueError:
-                error_msg = 'Le format de la date de l\'incident est invalide.'
-                current_app.logger.warning(f"Incident creation failed: {error_msg}")
-                if is_ajax:
-                    return jsonify({'status': 'error', 'message': error_msg}), 400
                 flash(error_msg, 'error')
                 return render_template('incidents/new_incident.html', units=units)
 
@@ -159,7 +160,7 @@ def new_incident():
                 localite=request.form.get('localite'),
                 structure_type=request.form.get('structure_type'),
                 nature_cause=request.form.get('nature_cause'),
-                date_incident=date_incident,
+                date_incident=datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M'),
                 mesures_prises=request.form.get('mesures_prises'),
                 impact=request.form.get('impact'),
                 gravite=request.form.get('gravite').lower(),
@@ -609,4 +610,169 @@ INSTRUCTIONS:
         current_app.logger.exception(f'Unexpected error in AI explanation: {str(e)}')
         return jsonify({
             'error': 'Une erreur inattendue s\'est produite'
+        }), 500
+
+@incidents.route('/incidents/deep_analysis', methods=['POST'])
+@login_required
+def deep_incident_analysis():
+    """
+    Perform a deep analysis of an incident using AI.
+    
+    Returns:
+        JSON response with comprehensive incident analysis
+    """
+    try:
+        # Validate request
+        if not request.is_json:
+            current_app.logger.error('Deep Analysis: Invalid request format')
+            return jsonify({
+                'error': 'Format de requête invalide',
+                'details': 'La requête doit être au format JSON'
+            }), 400
+        
+        data = request.get_json()
+        incident_id = data.get('incident_id')
+        
+        if not incident_id:
+            current_app.logger.error('Deep Analysis: No incident ID provided')
+            return jsonify({
+                'error': 'ID de l\'incident manquant',
+                'details': 'Un ID d\'incident valide est requis'
+            }), 400
+        
+        # Fetch the incident
+        incident = Incident.query.get(incident_id)
+        
+        if not incident:
+            current_app.logger.error(f'Deep Analysis: Incident not found - ID {incident_id}')
+            return jsonify({
+                'error': 'Incident non trouvé',
+                'details': f'Aucun incident trouvé avec l\'ID {incident_id}'
+            }), 404
+        
+        # Prepare comprehensive context for deep analysis
+        context = {
+            'incident_details': {
+                'id': incident.id,
+                'title': incident.title or 'Aucun titre',
+                'nature_cause': incident.nature_cause or 'Non spécifié',
+                'impact': incident.impact or 'Non évalué',
+                'mesures_prises': incident.mesures_prises or 'Aucune mesure',
+                'gravite': incident.gravite or 'Non définie',
+                'location': {
+                    'wilaya': incident.wilaya or 'Non spécifiée',
+                    'commune': incident.commune or 'Non spécifiée',
+                    'localite': incident.localite or 'Non spécifiée',
+                    'coordinates': f"{incident.latitude}, {incident.longitude}" if incident.latitude and incident.longitude else 'Coordonnées non disponibles'
+                }
+            }
+        }
+        
+        # Use Mistral API for deep analysis
+        api_key = os.getenv('MISTRAL_API_KEY') or current_app.config.get('MISTRAL_API_KEY')
+        if not api_key:
+            current_app.logger.error('Deep Analysis: Mistral API key not configured')
+            return jsonify({
+                'error': 'Erreur de configuration du service IA',
+                'details': 'La clé API Mistral n\'est pas configurée'
+            }), 500
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}'
+        }
+        
+        payload = {
+            'model': 'mistral-large-latest',
+            'messages': [
+                {
+                    'role': 'system', 
+                    'content': """Vous êtes un analyste d'incidents expert. Fournissez une analyse approfondie, 
+                    structurée et exploitable de l'incident. 
+                    Votre analyse doit inclure :
+                    1. Analyse détaillée des causes racines
+                    2. Implications potentielles à long terme
+                    3. Mesures préventives recommandées
+                    4. Stratégies d'atténuation des risques
+                    5. Améliorations systémiques potentielles
+                    6. ne pas trop ecrire et tjr essayer de donner une conclusion au bout de 3 titres
+                    Utilisez le formatage markdown pour une sortie claire et lisible.
+                    Si les informations sont insuffisantes, indiquez-le explicitement."""
+                },
+                {
+                    'role': 'user', 
+                    'content': f"""Réalisez une analyse approfondie de cet incident :
+                    
+                    Contexte de l'incident :
+                    {json.dumps(context, indent=2, ensure_ascii=False)}
+                    
+                    Fournissez une analyse comprehensive et nuancée qui va au-delà des détails superficiels.
+                    Si les informations sont limitées, basez votre analyse sur ce qui est disponible."""
+                }
+            ],
+            'temperature': 0.7,
+            'max_tokens': 1500  # Increased token limit for more comprehensive analysis
+        }
+        
+        # Make API call to Mistral
+        try:
+            # Configure more robust request parameters
+            response = requests.post(
+                'https://api.mistral.ai/v1/chat/completions', 
+                headers=headers, 
+                json=payload,
+                timeout=(10, 45),  # (connect timeout, read timeout)
+                verify=True,  # Ensure SSL certificate verification
+            )
+        except requests.exceptions.Timeout as timeout_error:
+            current_app.logger.error(f'Deep Analysis: Request timeout - {str(timeout_error)}')
+            return jsonify({
+                'error': 'Délai de réponse dépassé',
+                'details': 'Le service d\'analyse IA n\'a pas répondu dans le temps imparti. Veuillez réessayer plus tard.'
+            }), 504  # Gateway Timeout status code
+        
+        except requests.exceptions.ConnectionError as conn_error:
+            current_app.logger.error(f'Deep Analysis: Connection error - {str(conn_error)}')
+            return jsonify({
+                'error': 'Erreur de connexion',
+                'details': 'Impossible de se connecter au service d\'analyse IA. Vérifiez votre connexion internet.'
+            }), 503  # Service Unavailable status code
+        
+        except requests.exceptions.RequestException as req_error:
+            current_app.logger.error(f'Deep Analysis: Request error - {str(req_error)}')
+            return jsonify({
+                'error': 'Erreur de communication',
+                'details': 'Une erreur inattendue s\'est produite lors de la communication avec le service IA.'
+            }), 500
+        
+        # Check response
+        if response.status_code != 200:
+            current_app.logger.error(f"Mistral API Error: {response.status_code} - {response.text}")
+            return jsonify({
+                'error': 'Échec de la génération de l\'analyse approfondie',
+                'details': f'Code de statut : {response.status_code}',
+                'raw_response': response.text
+            }), 500
+        
+        # Extract the AI-generated analysis
+        try:
+            result = response.json()
+            deep_analysis = result['choices'][0]['message']['content']
+        except (KeyError, json.JSONDecodeError) as parse_error:
+            current_app.logger.error(f'Deep Analysis: Parsing error - {str(parse_error)}')
+            return jsonify({
+                'error': 'Erreur de traitement de la réponse IA',
+                'details': str(parse_error),
+                'raw_response': response.text
+            }), 500
+        
+        return jsonify({
+            'deep_analysis': deep_analysis
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Deep Analysis Unexpected Error: {str(e)}", exc_info=True)
+        return jsonify({
+            'error': 'Une erreur inattendue est survenue lors de l\'analyse approfondie',
+            'details': str(e)
         }), 500

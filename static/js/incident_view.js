@@ -1,5 +1,22 @@
 // incident_view.js: Handles incident view page interactions
 
+// Utility function to retrieve cookie value
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 // Utility function to parse markdown with improved handling
 function parseMarkdown(text) {
     if (!text) return 'Aucune explication disponible.';
@@ -258,6 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const aiExplanationResult = document.getElementById('ai-explanation-result');
     const incidentNatureCause = document.getElementById('incident-nature-cause');
     const incidentId = window.incidentId; // Passed from server-side template
+    const deepAnalysisSPARKBtn = document.getElementById('deep-analysis-spark-btn');
+    const incidentHeader = document.querySelector('.incident-header');
 
     let incidentMap = null;
 
@@ -388,5 +407,172 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.error('AI explanation button not found');
+    }
+
+    // Deep Analysis SPARK button handler
+    if (deepAnalysisSPARKBtn) {
+        deepAnalysisSPARKBtn.addEventListener('click', async function() {
+            try {
+                // Start loading animation
+                if (incidentHeader) {
+                    incidentHeader.classList.add('loading');
+                }
+                
+                // Disable the button during processing
+                this.disabled = true;
+                this.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Analyse en cours...
+                `;
+
+                // Prepare the request payload
+                const payload = {
+                    incident_id: window.incidentId,
+                    analysis_type: 'deep'
+                };
+
+                // Send request to backend for deep analysis
+                const response = await fetch('/incidents/deep_analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrf_token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // Enhanced error handling
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Deep Analysis Server Error:', errorData);
+                    
+                    // Create a user-friendly error message
+                    const errorMessage = errorData.details 
+                        ? `${errorData.error}\n\n${errorData.details}`
+                        : errorData.error || 'Une erreur inattendue est survenue';
+                    
+                    // Show error in a modal
+                    const errorModalHtml = `
+                        <div class="modal fade" id="deepAnalysisErrorModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>Erreur d'analyse
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="text-danger">${errorMessage}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Append modal to body and show it
+                    document.body.insertAdjacentHTML('beforeend', errorModalHtml);
+                    const deepAnalysisErrorModal = new bootstrap.Modal(document.getElementById('deepAnalysisErrorModal'));
+                    deepAnalysisErrorModal.show();
+
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+
+                showDeepAnalysisModal(result);
+            } catch (error) {
+                console.error('Deep Analysis Error:', error);
+                alert('Impossible de générer l\'analyse approfondie. Veuillez réessayer.');
+            } finally {
+                // Remove loading state
+                if (incidentHeader) {
+                    incidentHeader.classList.remove('loading');
+                }
+                
+                // Restore button state
+                this.disabled = false;
+                this.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap text-warning me-2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Analyse approfondie avec SPARK
+                `;
+            }
+        });
+    }
+
+    function showDeepAnalysisModal(result) {
+        // Get incident data from the page
+        const incidentData = {
+            date: document.querySelector('[data-incident-date]')?.getAttribute('data-incident-date') || 'Non spécifié',
+            location: document.querySelector('[data-incident-location]')?.getAttribute('data-incident-location') || 'Non spécifié',
+            type: document.querySelector('[data-incident-type]')?.getAttribute('data-incident-type') || 'Non catégorisé',
+            description: document.querySelector('[data-incident-description]')?.textContent?.trim() || 'Aucune description fournie'
+        };
+
+        // Create and show modal with deep analysis results
+        const modalHtml = `
+            <div class="modal fade" id="deepAnalysisModal" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content analysis-modal">
+                        <div class="modal-header">
+                            <div class="modal-title-wrapper">
+                                <h5 class="modal-title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap me-2">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                    </svg>
+                                    Analyse approfondie SPARK
+                                </h5>
+                                <span class="modal-subtitle">Rapport d'analyse détaillé de l'incident</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body analysis-content">
+                            <div class="incident-summary">
+                                <div class="summary-header">
+                                    <h3>Détails de l'incident</h3>
+                                    <div class="incident-meta">
+                                        <span class="meta-item">
+                                            <i class="fas fa-calendar me-2"></i>
+                                            ${incidentData.date}
+                                        </span>
+                                        <span class="meta-item">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            ${incidentData.location}
+                                        </span>
+                                        <span class="meta-item">
+                                            <i class="fas fa-tag me-2"></i>
+                                            ${incidentData.type}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="summary-content">
+                                    <p class="incident-description">${incidentData.description}</p>
+                                </div>
+                            </div>
+                            <div class="analysis-separator"></div>
+                            ${parseMarkdown(result.deep_analysis)}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Fermer
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i>Imprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Append modal to body and show it
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const deepAnalysisModal = new bootstrap.Modal(document.getElementById('deepAnalysisModal'));
+        deepAnalysisModal.show();
     }
 });
