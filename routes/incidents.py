@@ -695,9 +695,15 @@ def deep_incident_analysis():
                     3. Mesures préventives recommandées
                     4. Stratégies d'atténuation des risques
                     5. Améliorations systémiques potentielles
-                    6. ne pas trop ecrire et tjr essayer de donner une conclusion au bout de 3 titres
-                    Utilisez le formatage markdown pour une sortie claire et lisible.
-                    Si les informations sont insuffisantes, indiquez-le explicitement."""
+                    6. Analyser les données récupérées de la page :
+                       - Nature et cause de l'incident
+                       - Impact
+                       - Mesures prises
+                    7. Suggérer des solutions et expliquer les impacts
+                    8. Fournir une conclusion
+                    Limitez votre réponse à 800 tokens maximum.
+                    Utilisez un formatage clair avec des titres et des listes à puces."""
+                 
                 },
                 {
                     'role': 'user', 
@@ -711,7 +717,7 @@ def deep_incident_analysis():
                 }
             ],
             'temperature': 0.7,
-            'max_tokens': 1500  # Increased token limit for more comprehensive analysis
+            'max_tokens': 1800  # Increased token limit for more comprehensive analysis
         }
         
         # Make API call to Mistral

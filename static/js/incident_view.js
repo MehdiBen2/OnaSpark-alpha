@@ -273,10 +273,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapModal = document.getElementById('mapModal');
     const aiExplanationBtn = document.getElementById('ai-explanation-btn');
     const aiExplanationResult = document.getElementById('ai-explanation-result');
-    const incidentNatureCause = document.getElementById('incident-nature-cause');
-    const incidentId = window.incidentId; // Passed from server-side template
     const deepAnalysisSPARKBtn = document.getElementById('deep-analysis-spark-btn');
     const incidentHeader = document.querySelector('.incident-header');
+    
+    // Get incident ID from URL
+    const urlParts = window.location.pathname.split('/');
+    const incidentId = urlParts[urlParts.length - 1];
 
     let incidentMap = null;
 
@@ -326,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        nature_cause: incidentNatureCause ? incidentNatureCause.textContent.trim() : '',
+                        nature_cause: document.querySelector('.nature-cause-card .incident-description')?.textContent.trim() || '',
                         incident_id: incidentId
                     })
                 });
