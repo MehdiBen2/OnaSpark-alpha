@@ -4,10 +4,139 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/view_incident.css') }}">
+<style>
+    :root {
+        --primary-color: #2196f3;
+        --secondary-color: #28a745;
+        --bg-light: #f4f6f9;
+        --text-dark: #37474f;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .incident-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .incident-header {
+        background: linear-gradient(145deg, var(--primary-color), #1976d2);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .info-title {
+        color: var(--primary-color);
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        background-color: var(--bg-light);
+        border-radius: 8px;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        opacity: 0.7;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .map-btn {
+        background: var(--secondary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+    }
+
+    .map-btn:hover {
+        background: #218838;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+
+    .nature-cause-card {
+        position: relative;
+    }
+
+    #ai-explanation-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(145deg, #ff9800, #f57c00);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    #ai-explanation-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .drawn-shapes-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    @media (max-width: 768px) {
+        .incident-container {
+            padding: 1rem;
+        }
+        
+        .info-card {
+            padding: 1rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 incident-container">
     <!-- Header Section -->
     <div class="incident-header">
         <div class="d-flex justify-content-between align-items-center">
@@ -48,9 +177,9 @@
     <div class="row g-4">
         <!-- Location Card -->
         <div class="col-md-6">
-            <div class="info-card position-relative">
+            <div class="info-card">
                 <h6 class="info-title">
-                    <i class="fas fa-map-marker-alt"></i>
+                    <i class="fas fa-map-marker-alt me-2"></i>
                     Localisation
                 </h6>
                 <div class="info-item">
@@ -79,17 +208,15 @@
 
         <!-- Nature & Cause Card -->
         <div class="col-md-6">
-            <div class="info-card position-relative nature-cause-card">
-                <button id="ai-explanation-btn" class="btn">
-                    <div class="d-flex align-items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap text-warning me-2">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                        </svg>
-                        Expliquer avec SPARK
-                    </div>
+            <div class="info-card nature-cause-card position-relative">
+                <button id="ai-explanation-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap text-warning me-2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Expliquer avec SPARK
                 </button>
                 <h6 class="info-title">
-                    <i class="fas fa-exclamation-circle"></i>
+                    <i class="fas fa-exclamation-circle me-2"></i>
                     Nature et cause de l'incident
                 </h6>
                 <p class="mb-0" id="incident-nature-cause">{{ incident.nature_cause }}</p>
@@ -101,7 +228,7 @@
         <div class="col-md-6">
             <div class="info-card">
                 <h6 class="info-title">
-                    <i class="fas fa-chart-line"></i>
+                    <i class="fas fa-chart-line me-2"></i>
                     Impact
                 </h6>
                 <p class="mb-0">{{ incident.impact }}</p>
@@ -112,7 +239,7 @@
         <div class="col-md-6">
             <div class="info-card">
                 <h6 class="info-title">
-                    <i class="fas fa-tools"></i>
+                    <i class="fas fa-tools me-2"></i>
                     Mesures prises
                 </h6>
                 <p class="mb-0">{{ incident.mesures_prises }}</p>
@@ -123,7 +250,7 @@
         <div class="col-md-6">
             <div class="info-card">
                 <h6 class="info-title">
-                    <i class="fas fa-user"></i>
+                    <i class="fas fa-user me-2"></i>
                     Information de signalement
                 </h6>
                 <div class="info-item">
@@ -138,11 +265,11 @@
         <div class="col-12">
             <div class="info-card">
                 <h6 class="info-title">
-                    <i class="fas fa-draw-polygon"></i>
+                    <i class="fas fa-draw-polygon me-2"></i>
                     Zones délimitées
                 </h6>
                 <div class="drawn-shapes-info">
-                    <p>Des zones spécifiques ont été délimitées pour cet incident.</p>
+                    <p class="mb-0">Des zones spécifiques ont été délimitées pour cet incident.</p>
                     <button type="button" class="map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
                         <i class="fas fa-map-marker-alt me-1"></i>Visualiser les zones
                     </button>
