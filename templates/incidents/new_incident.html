@@ -161,10 +161,6 @@
         gap: 1rem;
     }
 
-    .map-toggle-container .form-check {
-        margin-right: 1rem;
-    }
-
     .map-controls {
         display: flex;
         justify-content: space-between;
@@ -209,6 +205,66 @@
         background-color: #f8f9fa;
         border-radius: 4px;
         margin-bottom: 0.5rem;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        background: #28a745;
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.25rem;
+    }
+
+    .modal-title i {
+        color: #ffffff !important;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .instruction-step {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #28a745;
+    }
+
+    .instruction-icon {
+        font-size: 1.25rem;
+        color: #28a745;
+        margin-right: 0.5rem;
+    }
+
+    .feature-highlight {
+        background: #e8f5e9;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .modal-footer .btn-success {
+        background: #28a745;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+    }
+
+    #draw-shape-btn {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        color: white !important;
+    }
+
+    #draw-shape-btn:hover {
+        background-color: #218838 !important;
+        border-color: #1e7e34 !important;
     }
 </style>
 {% endblock %}
@@ -339,8 +395,8 @@
                                 <label class="btn" id="map-selection-mode-label" for="map-selection-mode">
                                     <i class="fas fa-hand-pointer"></i> Sélection manuelle
                                 </label>
-                                <button type="button" id="draw-shape-btn" class="btn">
-                                    <i class="fas fa-draw-polygon"></i> Dessiner une zone
+                                <button type="button" id="draw-shape-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#drawAreaInfoModal">
+                                    <i class="fas fa-info-circle me-2"></i>Information carte d'incident
                                 </button>
                             </div>
                         </div>
@@ -419,6 +475,67 @@
                                 </div>
                                 <div class="invalid-feedback">Veuillez décrire l'impact de l'incident</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="drawAreaInfoModal" tabindex="-1" aria-labelledby="drawAreaInfoModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="drawAreaInfoModalLabel">
+                                <i class="fas fa-map-marked-alt me-2"></i>Outils de la Carte
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <strong>Pourquoi délimiter la zone ?</strong>
+                                <p class="mb-0 mt-1">Délimiter la zone d'incident facilite le suivi, améliore la coordination des équipes sur le terrain et permet une meilleure gestion des ressources. Cette information est essentielle pour une intervention efficace.</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-success mb-2">
+                                    <i class="fas fa-tools me-2"></i>Outils Disponibles
+                                </h6>
+                                <div class="instruction-step">
+                                    <i class="fas fa-draw-polygon instruction-icon"></i>
+                                    <strong>Outil Polygone</strong>
+                                    <p class="mb-0">Pour délimiter une zone précise de l'incident</p>
+                                </div>
+                                <div class="instruction-step">
+                                    <i class="fas fa-edit instruction-icon"></i>
+                                    <strong>Outil Modification</strong>
+                                    <p class="mb-0">Pour ajuster les points de votre zone</p>
+                                </div>
+                                <div class="instruction-step">
+                                    <i class="fas fa-trash instruction-icon"></i>
+                                    <strong>Outil Suppression</strong>
+                                    <p class="mb-0">Pour effacer une zone si nécessaire</p>
+                                </div>
+                            </div>
+
+                            <div class="feature-highlight">
+                                <h6 class="text-success mb-2">
+                                    <i class="fas fa-magic me-2"></i>Fonctionnalités Automatiques
+                                </h6>
+                                <ul class="mb-0">
+                                    <li><i class="fas fa-save me-2"></i>Sauvegarde automatique de vos zones</li>
+                                    <li><i class="fas fa-layer-group me-2"></i>Possibilité de dessiner plusieurs zones</li>
+                                    <li><i class="fas fa-sync me-2"></i>Mise à jour en temps réel</li>
+                                </ul>
+                            </div>
+
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Toutes vos modifications sont automatiquement sauvegardées avec l'incident. Pas besoin de sauvegarder manuellement les zones dessinées.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                                <i class="fas fa-check me-2"></i>J'ai compris
+                            </button>
                         </div>
                     </div>
                 </div>
