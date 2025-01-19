@@ -571,7 +571,7 @@ function parseMarkdown(text) {
         .replace(/^(.+)$/gm, '<p>$1</p>');  // Wrap each line in paragraph
 }
 
-// Function to handle AI explanation card animation
+// Function to handle AI explanation card animation (ona spark agent)
 function startAIExplanationAnimation(card) {
     card.classList.add('loading');
     
@@ -720,8 +720,8 @@ if (aiExplanationBtn) {
             if (aiExplanationResult) {
                 aiExplanationResult.innerHTML = `
                     <div class="alert alert-danger">
-                        <strong>Erreur:</strong> Impossible de générer l'explication AI. 
-                        Veuillez réessayer ou contacter le support technique.
+                        <strong>Erreur:</strong> SparK n'as pas pu analyser vos donneés d'incidents !
+                        Veuillez réessayer plus tard !
                         <details>
                             <summary>Détails de l'erreur</summary>
                             ${error.message}
