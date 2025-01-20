@@ -201,6 +201,43 @@
             display: none;
         }
     }
+
+    .fab-new-incident {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: #2196F3;
+        color: white;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        border: none;
+        font-size: 24px;
+        z-index: 1000;
+        transition: all 0.2s ease-in-out;
+        text-decoration: none;
+    }
+
+    .fab-new-incident:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+        background-color: #1976D2;
+        text-decoration: none;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .fab-new-incident {
+            display: flex;
+        }
+        .desktop-new-incident {
+            display: none;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -234,7 +271,7 @@
                 <button class="btn btn-light me-2" id="emailButton">
                     <i class="fas fa-envelope me-2"></i>Envoyer par Email
                 </button>
-                <a href="{{ url_for('incidents.new_incident') }}" class="btn btn-light">
+                <a href="{{ url_for('incidents.new_incident') }}" class="btn btn-light desktop-new-incident">
                     <i class="fas fa-plus me-2"></i>Nouvel Incident
                 </a>
             </div>
@@ -588,6 +625,12 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Floating Action Button for mobile -->
+<a href="{{ url_for('incidents.new_incident') }}" class="fab-new-incident">
+    <i class="fas fa-plus"></i>
+</a>
+
 {% endblock %}
 
 {% block extra_js %}
