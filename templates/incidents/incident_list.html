@@ -238,10 +238,43 @@
             display: none;
         }
     }
+
+    .mobile-warning {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        background-color: #fff3cd;
+        border-bottom: 1px solid #ffeeba;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        color: #856404;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .mobile-warning {
+            display: block;
+        }
+        .container-fluid {
+            padding-top: 3.5rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Mobile Warning Banner -->
+<div class="mobile-warning" id="mobileWarning">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Cette application est optimisée pour ordinateur. Certaines fonctionnalités peuvent être limitées sur mobile.</span>
+        <button type="button" class="btn-close btn-close-warning" aria-label="Close" onclick="dismissWarning()"></button>
+    </div>
+</div>
+
 <div class="container-fluid py-4">
     <div class="dashboard-header mb-4 fade-in">
         <div class="text-center mb-4">
@@ -659,6 +692,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Warning dismissal
+    function dismissWarning() {
+        document.getElementById('mobileWarning').style.display = 'none';
+        document.querySelector('.container-fluid').style.paddingTop = '1rem';
+    }
+    
+    // Make dismissWarning available globally
+    window.dismissWarning = dismissWarning;
 });
 </script>
 {% endblock %}
