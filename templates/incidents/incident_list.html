@@ -15,9 +15,191 @@
         justify-content: center;
         border-radius: 50%;
         font-size: 0.9rem;
+        transition: all 0.2s ease-in-out;
+        border: none;
     }
+    
     .actions-cell {
         min-width: 180px;
+        position: relative;
+    }
+    
+    .actions-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .actions-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #ffffff;
+        min-width: 180px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        z-index: 1000;
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .actions-menu.show {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .actions-menu .action-btn {
+        width: 100%;
+        height: 38px;
+        border-radius: 8px;
+        display: flex;
+        gap: 0.5rem;
+        padding: 0 1rem;
+        justify-content: flex-start;
+        transition: all 0.2s ease;
+        color: white;
+    }
+
+    .actions-menu .action-btn:hover {
+        opacity: 0.9;
+    }
+
+    .actions-menu .btn-primary {
+        background-color: #2196F3;
+    }
+    
+    .actions-menu .btn-warning {
+        background-color: #FF9800;
+    }
+    
+    .actions-menu .btn-success {
+        background-color: #4CAF50;
+    }
+    
+    .actions-menu .btn-secondary {
+        background-color: #757575;
+    }
+    
+    .actions-menu .btn-danger {
+        background-color: #F44336;
+    }
+
+    .actions-toggle {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+    }
+
+    .actions-toggle:hover {
+        opacity: 0.9;
+    }
+
+    @media (min-width: 769px) {
+        .actions-toggle {
+            display: none;
+        }
+        .actions-menu {
+            display: flex !important;
+            position: static;
+            box-shadow: none;
+            background: none;
+            min-width: auto;
+            padding: 0;
+            flex-direction: row;
+            gap: 0.25rem;
+            border: none;
+        }
+        .actions-menu .action-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .btn-text {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .actions-wrapper {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-text {
+            margin-left: 0.5rem;
+            font-weight: 500;
+            color: white;
+        }
+        .actions-menu {
+            background-color: #F5F5F5;
+        }
+        .actions-menu::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background-color: #F5F5F5;
+            transform: rotate(45deg);
+            border-left: 1px solid rgba(0,0,0,0.08);
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+        .actions-menu .action-btn {
+            margin-bottom: 2px;
+        }
+        .actions-menu .btn-primary {
+            background-color: #2196F3;
+        }
+        .actions-menu .btn-warning {
+            background-color: #FF9800;
+        }
+        .actions-menu .btn-success {
+            background-color: #4CAF50;
+        }
+        .actions-menu .btn-secondary {
+            background-color: #757575;
+        }
+        .actions-menu .btn-danger {
+            background-color: #F44336;
+        }
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+        }
+        
+        .actions-cell {
+            min-width: auto;
+        }
+
+        /* Stack the buttons vertically on very small screens */
+        @media (max-width: 576px) {
+            .actions-wrapper {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .action-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+        }
+    }
+
+    /* Hide less important columns on mobile */
+    @media (max-width: 768px) {
+        .mobile-hide {
+            display: none;
+        }
     }
 </style>
 {% endblock %}
@@ -163,7 +345,7 @@
                     </small>
                 </div>
                 <div class="d-flex align-items-center">
-                    <span class="severity-badge badge bg-{{ 'danger' if incident.gravite == 'Critique' else 'warning' if incident.gravite == 'Élevée' else 'info' if incident.gravite == 'Moyenne' else 'success' }} me-3">
+                    <span class="severity-badge badge bg-{{ 'danger' if incident.gravite == 'Critique' else 'warning' if incident.gravite == 'Élevée' else 'info' if incident.gravite == 'Moyenne' else 'success' }}">
                         {{ incident.gravite }}
                     </span>
                     <div class="btn-group">
@@ -249,11 +431,11 @@
                 <thead class="table-light">
                     <tr>
                         <th>Date</th>
-                        <th>Type</th>
+                        <th class="mobile-hide">Type</th>
                         <th>Localisation</th>
-                        <th>Nature</th>
+                        <th class="mobile-hide">Nature</th>
                         <th>Status</th>
-                        <th>Gravité</th>
+                        <th class="mobile-hide">Gravité</th>
                         <th class="text-end actions-cell">Actions</th>
                     </tr>
                 </thead>
@@ -264,7 +446,7 @@
                             <small>{{ incident.date_incident.strftime('%d/%m/%Y') }}<br>
                             {{ incident.date_incident.strftime('%H:%M') }}</small>
                         </td>
-                        <td>
+                        <td class="mobile-hide">
                             <span class="badge bg-info">{{ incident.structure_type }}</span>
                         </td>
                         <td>
@@ -276,7 +458,7 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td>
+                        <td class="mobile-hide">
                             <div style="max-width: 300px;">
                                 <div class="text-truncate" title="{{ incident.nature_cause }}">
                                     {{ incident.nature_cause }}
@@ -288,39 +470,51 @@
                                 {{ incident.status }}
                             </span>
                         </td>
-                        <td>
+                        <td class="mobile-hide">
                             <span class="severity-badge badge bg-{{ 'danger' if incident.gravite == 'Critique' else 'warning' if incident.gravite == 'Élevée' else 'info' if incident.gravite == 'Moyenne' else 'success' }}">
                                 {{ incident.gravite }}
                             </span>
                         </td>
                         <td>
-                            <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary action-btn" title="Voir">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                {% if current_user.role == 'Admin' %}
-                                <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning text-white action-btn" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                {% endif %}
-                                {% if incident.status != 'Résolu' %}
-                                <button type="button" 
-                                        class="btn btn-success text-white action-btn" 
-                                        title="Marquer comme résolu"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#closeIncidentModal{{ incident.id }}">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                {% endif %}
-                                <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
-                                   class="btn btn-secondary text-white action-btn" 
-                                   title="Exporter en PDF">
-                                    <i class="fas fa-file-pdf"></i>
-                                </a>
-                                <button type="button" class="btn btn-danger text-white action-btn" title="Supprimer" 
-                                        data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <div class="actions-wrapper">
+                                <div class="actions-dropdown">
+                                    <button class="btn action-btn actions-toggle" type="button">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="actions-menu">
+                                        <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary action-btn" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                            <span class="btn-text">Voir</span>
+                                        </a>
+                                        {% if current_user.role == 'Admin' %}
+                                        <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning text-white action-btn" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="btn-text">Modifier</span>
+                                        </a>
+                                        {% endif %}
+                                        {% if incident.status != 'Résolu' %}
+                                        <button type="button" 
+                                                class="btn btn-success text-white action-btn" 
+                                                title="Marquer comme résolu"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#closeIncidentModal{{ incident.id }}">
+                                            <i class="fas fa-check"></i>
+                                            <span class="btn-text">Résoudre</span>
+                                        </button>
+                                        {% endif %}
+                                        <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
+                                           class="btn btn-secondary text-white action-btn" 
+                                           title="Exporter en PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                            <span class="btn-text">PDF</span>
+                                        </a>
+                                        <button type="button" class="btn btn-danger text-white action-btn" title="Supprimer" 
+                                                data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
+                                            <i class="fas fa-trash"></i>
+                                            <span class="btn-text">Supprimer</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -398,4 +592,30 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/incident-list.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.actions-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const menu = this.nextElementSibling;
+            // Close all other menus
+            document.querySelectorAll('.actions-menu.show').forEach(m => {
+                if (m !== menu) m.classList.remove('show');
+            });
+            menu.classList.toggle('show');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.actions-dropdown')) {
+            document.querySelectorAll('.actions-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+});
+</script>
 {% endblock %}
