@@ -42,7 +42,12 @@ def login():
                 next_page = url_for('main_dashboard')
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return {'success': True, 'redirect': next_page}
+                return {
+                    'success': True, 
+                    'redirect': next_page,
+                    'username': user.username,
+                    'nickname': user.nickname or user.username  # Fallback to username if nickname is None
+                }
             
             flash('Connexion réussie!', 'success')
             return redirect(next_page)
