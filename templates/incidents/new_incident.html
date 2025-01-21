@@ -134,6 +134,13 @@
         margin-top: 1rem;
     }
 
+    .map-mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
     #locate-me-btn, #map-selection-mode-label, #draw-shape-btn {
         background-color: var(--primary-color);
         color: white;
@@ -320,11 +327,13 @@
                             <button type="button" id="locate-me-btn" class="btn">
                                 <i class="fas fa-map-marker-alt"></i> Me localiser
                             </button>
-                            <div class="map-mode-toggle">
-                                <input type="checkbox" class="btn-check" id="map-selection-mode" autocomplete="off">
-                                <label class="btn" id="map-selection-mode-label" for="map-selection-mode">
-                                    <i class="fas fa-hand-pointer"></i> Sélection manuelle
-                                </label>
+                            <div class="d-flex gap-2">
+                                <div class="map-mode-toggle">
+                                    <input type="checkbox" class="btn-check" id="map-selection-mode" autocomplete="off">
+                                    <label class="btn" id="map-selection-mode-label" for="map-selection-mode">
+                                        <i class="fas fa-hand-pointer"></i> Sélection manuelle
+                                    </label>
+                                </div>
                                 <button type="button" id="draw-shape-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#drawAreaInfoModal">
                                     <i class="fas fa-info-circle me-2"></i>Information carte d'incident
                                 </button>
