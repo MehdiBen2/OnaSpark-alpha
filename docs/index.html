@@ -521,6 +521,20 @@
                     <li class="nav-item"><a href="#architecture" class="nav-link">Architecture</a></li>
                     <li class="nav-item"><a href="#components" class="nav-link">Composants Principaux</a></li>
                     <li class="nav-item"><a href="#features" class="nav-link">Fonctionnalités</a></li>
+                    <li class="nav-section">
+                        <span class="nav-section-title">Intelligence Artificielle</span>
+                        <ul class="nav-submenu">
+                            <li><a href="#ona-spark-agent" class="nav-link">Agent Ona Spark</a></li>
+                            <li><a href="#spark-agent" class="nav-link">Agent Spark</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-section">
+                        <span class="nav-section-title">Gestion des Documents</span>
+                        <ul class="nav-submenu">
+                            <li><a href="#document-generation" class="nav-link">Génération PDF/Excel</a></li>
+                            <li><a href="#reporting" class="nav-link">Système de Reporting</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item"><a href="#database" class="nav-link">Base de Données</a></li>
                     <li class="nav-item"><a href="#api" class="nav-link">API</a></li>
                     <li class="nav-item"><a href="#i18n" class="nav-link">Internationalisation</a></li>
@@ -557,6 +571,9 @@
                         <li><strong>Authentification:</strong> Flask-Login</li>
                         <li><strong>Migration:</strong> Flask-Migrate</li>
                         <li><strong>Frontend:</strong> HTML/CSS avec templates Jinja2</li>
+                        <li><strong>Intelligence Artificielle:</strong> Modèles d'apprentissage automatique intégrés</li>
+                        <li><strong>Internationalisation:</strong> Support multilingue (Français, Arabe)</li>
+                        <li><strong>Gestion des Documents:</strong> Génération PDF/Excel</li>
                     </ul>
                 </div>
 
@@ -569,9 +586,28 @@
 │   ├── auth.py         # Routes d'authentification
 │   ├── profiles.py     # Gestion des profils
 │   ├── incidents.py    # Gestion des incidents
-│   └── water_quality.py # Évaluation qualité eau
+│   ├── water_quality.py # Évaluation qualité eau
+│   └── url_endpoints.py # Définition centralisée des endpoints
 ├── utils/              # Fonctions utilitaires
-└── templates/          # Templates HTML</code></pre>
+├── ai/                 # Composants d'intelligence artificielle
+│   ├── ona_agent.py    # Agent Ona Spark
+│   └── spark_agent.py  # Agent d'analyse d'incidents
+├── templates/          # Templates HTML
+└── static/            # Fichiers statiques
+    ├── js/           # Scripts JavaScript
+    ├── css/          # Styles CSS
+    └── i18n/         # Fichiers de traduction</code></pre>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Principes Architecturaux</h3>
+                    <ul>
+                        <li><strong>Modularité:</strong> Architecture modulaire avec séparation claire des responsabilités</li>
+                        <li><strong>Centralisation:</strong> Tous les endpoints URL sont définis dans url_endpoints.py</li>
+                        <li><strong>Sécurité:</strong> Pas de valeurs codées en dur, utilisation de variables d'environnement</li>
+                        <li><strong>Maintenabilité:</strong> Documentation complète et code type-safe avec annotations</li>
+                        <li><strong>Extensibilité:</strong> Structure permettant l'ajout facile de nouvelles fonctionnalités</li>
+                    </ul>
                 </div>
             </section>
 
@@ -643,6 +679,68 @@
                                 <li>Configuration système</li>
                             </ul>
                         </div>
+                        <div class="feature">
+                            <h3>Gestion SIG</h3>
+                            <ul>
+                                <li>Cartographie des incidents</li>
+                                <li>Visualisation géographique</li>
+                                <li>Analyse spatiale</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ai-features" class="section">
+                <div class="card">
+                    <h2 class="card-title">Intelligence Artificielle</h2>
+                    <div id="ona-spark-agent" class="feature">
+                        <h3>Agent Ona Spark</h3>
+                        <p>Assistant intelligent spécialisé dans la gestion des ressources en eau, offrant:</p>
+                        <ul>
+                            <li>Analyse automatisée des données</li>
+                            <li>Suggestions d'optimisation des ressources</li>
+                            <li>Prédiction de maintenance</li>
+                            <li>Recommandations personnalisées</li>
+                        </ul>
+                    </div>
+
+                    <div id="spark-agent" class="feature">
+                        <h3>Agent Spark pour l'Analyse d'Incidents</h3>
+                        <p>Système d'analyse avancée des incidents et accidents, permettant:</p>
+                        <ul>
+                            <li>Analyse détaillée des causes d'incidents</li>
+                            <li>Identification des patterns d'accidents</li>
+                            <li>Suggestions de mesures préventives</li>
+                            <li>Génération automatique de rapports d'analyse</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="document-management" class="section">
+                <div class="card">
+                    <h2 class="card-title">Gestion des Documents</h2>
+                    <div id="document-generation" class="feature">
+                        <h3>Génération de Documents</h3>
+                        <p>Système complet de génération de documents, incluant:</p>
+                        <ul>
+                            <li>Création automatisée de rapports PDF</li>
+                            <li>Export de données vers Excel</li>
+                            <li>Templates personnalisables</li>
+                            <li>Formats multiples supportés</li>
+                        </ul>
+                    </div>
+
+                    <div id="reporting" class="feature">
+                        <h3>Système de Reporting Avancé</h3>
+                        <p>Fonctionnalités complètes de reporting, offrant:</p>
+                        <ul>
+                            <li>Rapports détaillés d'incidents</li>
+                            <li>Analyse de la qualité de l'eau</li>
+                            <li>Visualisations de données</li>
+                            <li>Export multi-format</li>
+                        </ul>
                     </div>
                 </div>
             </section>
