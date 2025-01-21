@@ -61,7 +61,7 @@
                 </div>
             </div>
             <div>
-                <img src="static/images/SPARK.png" alt="SPARK Logo" class="logo" loading="eager">
+                <img src="{{ url_for('static', filename='images/onab/sparklt.png') }}" alt="SPARK Logo" class="logo" loading="eager">
             </div>
         </div>
     </div>
@@ -78,7 +78,6 @@
             <div class="side-panel-header">
                 <h2>Fonctionnalités Ona Spark</h2>
             </div>
-            <div id="sidePanelLogoContainer"></div>
             <ul class="side-panel-features">
                 <li>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,52 +112,37 @@
                     </svg>
                     <span>Gestion des différentes unités et zones de l'office</span>
                 </li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Agent Ona Spark : Assistant intelligent pour la gestion des ressources en eau</span>
+                </li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                        <path d="M12 15v4"></path>
+                    </svg>
+                    <span>Agent Spark : Analyse et explication détaillée des incidents et accidents</span>
+                </li>
             </ul>
+            <div class="side-panel-footer" style="text-align: center; padding: 15px; font-size: 0.8em; color: #888;">
+                Et plus de fonctionnalités en développement
+            </div>
         </div>
     </div>
     <script>
         function toggleSidePanel() {
             const sidePanel = document.getElementById('sidePanelContainer');
             const toggleButton = document.querySelector('.side-panel-toggle');
-            const logo = document.querySelector('.logo');
-            const sidePanelLogoContainer = document.getElementById('sidePanelLogoContainer');
-            const originalContainer = document.querySelector('.content-grid > div:last-child');
             
             // Toggle side panel
             sidePanel.classList.toggle('open');
             
             // Toggle button state
             toggleButton.classList.toggle('active');
-            
-            // Move logo logic
-            if (sidePanel.classList.contains('open')) {
-                // Fade out logo first
-                logo.classList.add('fade-out');
-                
-                // After fade-out, move to side panel
-                setTimeout(() => {
-                    sidePanelLogoContainer.appendChild(logo);
-                    logo.classList.add('side-panel-logo');
-                    logo.classList.remove('fade-out');
-                    logo.classList.add('fade-in');
-                }, 300);
-            } else {
-                // Fade out logo in side panel
-                logo.classList.remove('fade-in');
-                logo.classList.add('fade-out');
-                
-                // After fade-out, move back to original container
-                setTimeout(() => {
-                    originalContainer.appendChild(logo);
-                    logo.classList.remove('side-panel-logo', 'fade-out');
-                    
-                    // Trigger reflow to restart animation
-                    void logo.offsetWidth;
-                    
-                    // Fade in logo in original place
-                    logo.classList.add('fade-in');
-                }, 300);
-            }
             
             // Change button text based on panel state
             const buttonText = toggleButton.querySelector('.side-panel-toggle-text');
@@ -184,6 +168,22 @@
                 loadingScreen.classList.add('fade-out');
             }, 1900);
         }
+        
+        // Function to randomly select logo
+        function selectRandomLogo() {
+            const logos = [
+                '{{ url_for("static", filename="images/onab/sparklt1.png") }}',
+                '{{ url_for("static", filename="images/onab/sparklt2.png") }}'
+            ];
+            const randomIndex = Math.floor(Math.random() * logos.length);
+            
+            // Update main page logo
+            const mainLogo = document.querySelector('.logo');
+            mainLogo.src = logos[randomIndex];
+        }
+
+        // Call the function when the page loads
+        window.addEventListener('load', selectRandomLogo);
     </script>
     <script src="{{ url_for('static', filename='js/cycling-text.js') }}"></script>
 </body>

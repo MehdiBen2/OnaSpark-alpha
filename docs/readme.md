@@ -2,8 +2,7 @@
 ![SPARK](https://github.com/user-attachments/assets/0ddc16cf-8a52-44c1-8876-04ab7ca0d07e)
 ## Project Overview
 
- 
-OnaSpark is a comprehensive water management system designed to provide robust solutions for water quality assessment, incident tracking, and organizational management. Developed with a focus on precision, efficiency, and scalability, the platform addresses critical challenges in water resource management.
+OnaSpark is a comprehensive water management system designed to provide robust solutions for water quality assessment, incident tracking, and organizational management. Enhanced with AI-powered agents, the platform delivers intelligent assistance and advanced analytics for water resource management.
 
 ## Core Functionalities
 
@@ -78,6 +77,44 @@ A comprehensive incident management system designed for rapid response and detai
 - Historical incident analysis
 - Integrated resolution workflows
 
+### Document Generation and Reporting
+
+- Automated generation of PDF and Excel reports
+- Customizable report templates
+- Comprehensive data export capabilities
+- Multi-format document support
+
+### Geographic Information System (GIS) Integration
+
+- Integrated incident reporting with GIS
+- Spatial data visualization
+- Geographic tracking and mapping
+- Location-based analytics
+
+
+
+### Organizational Structure Management
+
+- Comprehensive unit and zone management
+- Hierarchical administrative structure
+- Flexible organizational mapping
+- Resource allocation tracking
+
+### AI-Powered Assistance
+
+#### Ona Spark Agent
+- Intelligent water resource management assistant
+- Automated data analysis and insights
+- Predictive maintenance suggestions
+- Resource optimization recommendations
+
+#### Spark Incident Analysis Agent
+- Detailed incident and accident analysis
+- Root cause identification
+- Pattern recognition in incidents
+- Preventive measure suggestions
+- Automated incident report generation
+
 ## Technical Architecture
 
 ### Backend Technologies
@@ -89,7 +126,15 @@ A comprehensive incident management system designed for rapid response and detai
 ### Frontend
 - Templating: Jinja2
 - Responsive Design
-- Multilingual Support
+- Dynamic UI Components
+- Interactive Data Visualization
+- Multilingual Support (French and Arabic)
+
+### AI Integration
+- Advanced Machine Learning Models
+- Natural Language Processing
+- Predictive Analytics
+- Automated Report Generation
 
 ## User Roles and Permissions
 
@@ -97,11 +142,13 @@ A comprehensive incident management system designed for rapid response and detai
    - Full system access
    - User and role management
    - Global configuration
+   - AI agent configuration
 
 2. **Zone Manager**
-   - Area-specific administrative rights
-   - Comprehensive zone oversight
-   - Incident and water quality management within assigned zones
+   - Zone-specific management
+   - Report generation
+   - Incident management
+   - Resource allocation
 
 3. **Unit Manager**
    - Detailed unit-level control
@@ -109,10 +156,10 @@ A comprehensive incident management system designed for rapid response and detai
    - Water quality monitoring for specific units
 
 4. **Standard User**
-   - Limited access
-   - Restricted to assigned zones and units
-   - Basic reporting and tracking capabilities
-
+   - Data entry
+   - Basic reporting
+   - Incident reporting
+   - Resource viewing
 
 ## Key Differentiators
 
@@ -121,6 +168,7 @@ A comprehensive incident management system designed for rapid response and detai
 - Comprehensive incident tracking
 - Advanced multilevel access control
 - Scalable and extensible architecture
+- AI-powered assistance
 
 ## Future Roadmap
 
@@ -129,7 +177,11 @@ A comprehensive incident management system designed for rapid response and detai
 - Machine learning-based anomaly detection
 - Enhanced reporting capabilities
 - Cloud synchronization
-
+- Enhanced AI capabilities
+- Advanced analytics
+- Additional language support
+- Extended reporting capabilities
+- Improved user interface
 
 Mehdi Benhenni
 

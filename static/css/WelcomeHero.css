@@ -33,7 +33,7 @@ body {
     background-image: url('../images/onab/landingpagebg3.jpg');
     background-size: cover;
     background-position: center;
-    filter: blur(8px) brightness(0.7);
+    filter: blur(1px) brightness(0.7);
     will-change: transform;
 }
 
