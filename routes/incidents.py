@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, jsonify
+from flask import (
+    Blueprint, render_template, request, redirect, url_for, 
+    flash, current_app, send_file, jsonify, session
+)
 from flask_login import login_required, current_user
 from models import db, Incident, Unit, UserRole
 from datetime import datetime
@@ -119,42 +122,43 @@ def new_incident():
             # Validate unit_id
             if not unit_id:
                 error_msg = 'Une unité est requise pour créer un incident.'
-                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                current_app.logger.error(error_msg)
+                
                 if is_ajax:
-                    return jsonify({'status': 'error', 'message': error_msg}), 400
-                flash(error_msg, 'error')
-                return render_template('incidents/new_incident.html', units=units)
+                    return jsonify({
+                        'status': 'error', 
+                        'message': error_msg
+                    }), 400
 
-            # Verify the unit exists
-            unit = Unit.query.get(unit_id)
-            if not unit:
-                error_msg = 'L\'unité spécifiée est invalide.'
-                current_app.logger.warning(f"Incident creation failed: {error_msg}")
+                flash(error_msg, 'danger')
+                return redirect(url_for('incidents.new_incident'))
+
+            # Validate other required fields
+            title = request.form.get('title')
+            if not title:
+                error_msg = 'Un titre est requis pour l\'incident.'
+                current_app.logger.error(error_msg)
+                
                 if is_ajax:
-                    return jsonify({'status': 'error', 'message': error_msg}), 400
-                flash(error_msg, 'error')
-                return render_template('incidents/new_incident.html', units=units)
+                    return jsonify({
+                        'status': 'error', 
+                        'message': error_msg
+                    }), 400
 
-            # For non-admin users, verify they're creating an incident for their own unit
-            if current_user.role != UserRole.ADMIN and str(current_user.unit_id) != str(unit_id):
-                error_msg = 'Vous ne pouvez créer des incidents que pour votre unité.'
-                current_app.logger.warning(f"Incident creation unauthorized: {error_msg}")
-                if is_ajax:
-                    return jsonify({'status': 'error', 'message': error_msg}), 403
-                flash(error_msg, 'error')
-                return render_template('incidents/new_incident.html', units=units)
+                flash(error_msg, 'danger')
+                return redirect(url_for('incidents.new_incident'))
 
-            # New fields for map selection
+            # Get coordinates
             latitude = request.form.get('latitude')
             longitude = request.form.get('longitude')
 
-            # Extract drawn shapes
-            drawn_shapes_json = request.form.get('drawn-shapes')
+            # Parse drawn shapes
+            drawn_shapes_json = request.form.get('drawn_shapes')
             drawn_shapes = parse_drawn_shapes(drawn_shapes_json)
 
             # Create the incident
-            incident = Incident(
-                title=request.form.get('title'),
+            new_incident = Incident(
+                title=title,
                 wilaya=request.form.get('wilaya'),
                 commune=request.form.get('commune'),
                 localite=request.form.get('localite'),
@@ -164,54 +168,55 @@ def new_incident():
                 mesures_prises=request.form.get('mesures_prises'),
                 impact=request.form.get('impact'),
                 gravite=request.form.get('gravite').lower(),
-                status='Nouveau',
-                user_id=current_user.id,
                 unit_id=unit_id,
+                user_id=current_user.id,
+                status='En cours',
                 latitude=float(latitude) if latitude else None,
                 longitude=float(longitude) if longitude else None,
                 drawn_shapes=drawn_shapes
             )
-            db.session.add(incident)
+            db.session.add(new_incident)
             db.session.commit()
 
             # Log successful incident creation
-            current_app.logger.info(f"Incident created successfully: ID {incident.id}")
+            current_app.logger.info(f"Incident created successfully: ID {new_incident.id}")
 
-            # Success response
-            success_msg = 'Incident signalé avec succès.'
+            # Add a flash message for successful incident creation
+            flash('Incident créé avec succès', 'success')
+
+            # Return JSON response for AJAX request
             if is_ajax:
                 return jsonify({
                     'status': 'success', 
-                    'message': success_msg,
-                    'redirect_url': url_for(INCIDENT_LIST)
-                }), 201
+                    'message': 'Incident créé avec succès',
+                    'redirect_url': url_for('incidents.incident_list')
+                }), 200
             
-            flash(success_msg, 'success')
-            return redirect(url_for(INCIDENT_LIST))
+            # Redirect for non-AJAX request
+            return redirect(url_for('incidents.incident_list'))
 
         except Exception as e:
             # Rollback the session to prevent any partial commits
             db.session.rollback()
-
-            # Log the full error details
-            current_app.logger.error(f"Incident creation error: {str(e)}", exc_info=True)
+            
+            # Log the full error
+            current_app.logger.error(f"Error creating incident: {str(e)}", exc_info=True)
             
             # Prepare error message
             error_msg = f'Une erreur est survenue lors de la création de l\'incident: {str(e)}'
             
-            # Detailed logging of request data for debugging
-            current_app.logger.error(f"Request Form Data: {dict(request.form)}")
-            
-            # Differentiate between AJAX and traditional form submission
+            # Handle AJAX request
             if is_ajax:
                 return jsonify({
                     'status': 'error', 
                     'message': error_msg
                 }), 500
             
-            flash(error_msg, 'error')
-            return render_template('incidents/new_incident.html', units=units)
+            # Handle non-AJAX request
+            flash(error_msg, 'danger')
+            return redirect(url_for('incidents.new_incident'))
 
+    # GET request: render the new incident form
     return render_template('incidents/new_incident.html', units=units)
 
 @incidents.route('/incident/<int:incident_id>')
@@ -243,10 +248,11 @@ def edit_incident(incident_id):
             incident.date_incident = datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M')
             incident.mesures_prises = request.form.get('mesures_prises')
             incident.impact = request.form.get('impact')
-            incident.gravite = request.form.get('gravite')
-            
+            incident.gravite = request.form.get('gravite').lower()
             db.session.commit()
             flash('Incident mis à jour avec succès.', 'success')
+            current_app.logger.info(f"Flash message set: Incident mis à jour avec succès")
+            current_app.logger.info(f"Session data: {dict(session)}")
             return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
@@ -270,6 +276,8 @@ def delete_incident(incident_id):
         db.session.delete(incident)
         db.session.commit()
         flash('Incident supprimé avec succès.', 'success')
+        current_app.logger.info(f"Flash message set: Incident supprimé avec succès")
+        current_app.logger.info(f"Session data: {dict(session)}")
     except Exception as e:
         db.session.rollback()
         flash(f'Erreur lors de la suppression de l\'incident: {str(e)}', 'danger')
@@ -300,6 +308,8 @@ def resolve_incident(incident_id):
     db.session.commit()
     
     flash('L\'incident a été marqué comme résolu.', 'success')
+    current_app.logger.info(f"Flash message set: L'incident a été marqué comme résolu")
+    current_app.logger.info(f"Session data: {dict(session)}")
     return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incident/<int:incident_id>/export_pdf')
@@ -413,6 +423,8 @@ def merge_incident(incident_id):
             
             db.session.commit()
             flash(f'L\'incident a été fusionné avec succès vers l\'unité {new_unit.name}.', 'success')
+            current_app.logger.info(f"Flash message set: L'incident a été fusionné avec succès vers l'unité {new_unit.name}")
+            current_app.logger.info(f"Session data: {dict(session)}")
             return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
@@ -460,6 +472,8 @@ def batch_merge():
             
             db.session.commit()
             flash(f'{len(incident_ids)} incidents ont été fusionnés avec succès vers l\'unité {target_unit.name}.', 'success')
+            current_app.logger.info(f"Flash message set: {len(incident_ids)} incidents ont été fusionnés avec succès vers l'unité {target_unit.name}")
+            current_app.logger.info(f"Session data: {dict(session)}")
             return redirect(url_for(INCIDENT_LIST))
             
         except Exception as e:

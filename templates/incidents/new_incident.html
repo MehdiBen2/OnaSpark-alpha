@@ -552,6 +552,27 @@
 
 {% block page_scripts %}
 {{ super() }}
+<script>
+    // Ensure Notifications is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!window.Notifications) {
+            console.error('Notifications script failed to load');
+            
+            // Create a fallback notification method
+            window.Notifications = {
+                success: function(message) { 
+                    console.log('SUCCESS:', message); 
+                    alert(message);
+                },
+                error: function(message) { 
+                    console.error('ERROR:', message); 
+                    alert(message);
+                }
+            };
+        }
+    });
+</script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script>
@@ -588,104 +609,59 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             event.stopPropagation();
 
-            // Validate required fields
-            const requiredFields = form.querySelectorAll('[required]');
+            // Prepare form data
+            const formData = new FormData(form);
+            
+            // Ensure all required fields are present
+            const requiredFields = ['title', 'wilaya', 'commune', 'localite', 'structure_type', 'nature_cause', 'impact', 'gravite'];
             let isValid = true;
-
+            
             requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
+                if (!formData.get(field)) {
+                    console.warn(`Missing required field: ${field}`);
                     isValid = false;
-                } else {
-                    field.classList.remove('is-invalid');
                 }
             });
-
-            // Additional specific validations
-            const dateIncident = document.getElementById('date_incident');
-            if (dateIncident && !dateIncident.value) {
-                dateIncident.classList.add('is-invalid');
-                isValid = false;
+            
+            if (!isValid) {
+                Notifications.error('Veuillez remplir tous les champs obligatoires');
+                return false;
             }
-
-            const graviteSelect = document.getElementById('gravite');
-            if (graviteSelect && !graviteSelect.value) {
-                graviteSelect.classList.add('is-invalid');
-                isValid = false;
-            }
-
-            // Validate map coordinates if map selection is enabled
-            const mapToggle = document.getElementById('enable-map-selection');
-            const latitudeInput = document.getElementById('latitude');
-            const longitudeInput = document.getElementById('longitude');
-
-            if (mapToggle && mapToggle.checked) {
-                if (!latitudeInput.value || !longitudeInput.value) {
-                    showNotification('warning', 'Veuillez sélectionner un emplacement sur la carte.');
-                    isValid = false;
+            
+            // Send form data
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            }
-
-            // If form is valid, submit via AJAX
-            if (isValid) {
-                const formData = new FormData(form);
-
-                // Log form data for debugging
-                for (let [key, value] of formData.entries()) {
-                    console.log(`Form Data - ${key}: ${value}`);
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Full response data:', data);
+                
+                if (data.status === 'success') {
+                    // Show success notification in French
+                    Notifications.success('Incident créé avec succès');
                     
-                    // Log full response text for debugging
-                    return response.text().then(text => {
-                        console.log('Response text:', text);
-                        
-                        // Try to parse as JSON, fallback to text
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            throw new Error(`Non-JSON response: ${text}`);
-                        }
-                    });
-                })
-                .then(data => {
-                    if (data.status === 'success') {
-                        showNotification('success', data.message || 'Incident créé avec succès');
-                        // Redirect or reset form
-                        window.location.href = data.redirect_url || '/incidents';
-                    } else {
-                        showNotification('error', data.message || 'Une erreur est survenue lors de la création de l\'incident');
-                    }
-                })
-                .catch(error => {
-                    console.error('Full error object:', error);
-                    console.error('Error name:', error.name);
-                    console.error('Error message:', error.message);
-                    
-                    // More detailed error logging
-                    if (error instanceof TypeError) {
-                        console.error('Network error or fetch failure');
-                    } else if (error instanceof SyntaxError) {
-                        console.error('JSON parsing error');
-                    }
-                    
-                    showNotification('error', 'Une erreur réseau est survenue. Veuillez réessayer. Consultez la console pour plus de détails.');
-                });
-            } else {
-                showNotification('warning', 'Veuillez remplir tous les champs obligatoires.');
-            }
-
-            form.classList.add('was-validated');
+                    // Redirect to incidents list
+                    window.location.href = data.redirect_url || '/incidents';
+                } else {
+                    // Show error notification
+                    Notifications.error(data.message || 'Une erreur est survenue lors de la création de l\'incident');
+                }
+            })
+            .catch(error => {
+                console.error('Full error object:', error);
+                
+                // Network or unexpected error notification
+                Notifications.error('Une erreur réseau est survenue. Veuillez réessayer.');
+            });
         });
     }
 
@@ -720,33 +696,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 localStorage.setItem('incidentDraft', JSON.stringify(draftData));
-                showNotification('success', 'Brouillon sauvegardé avec succès');
+                console.log('Draft saved successfully');
             } catch (error) {
                 console.error('Error saving draft:', error);
-                showNotification('error', 'Erreur lors de la sauvegarde du brouillon');
             }
         });
-    }
-
-    // Utility function for notifications
-    function showNotification(type, message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        const container = document.querySelector('.container-fluid');
-        if (container) {
-            container.insertBefore(alertDiv, container.firstChild);
-            
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => {
-                alertDiv.classList.remove('show');
-                setTimeout(() => alertDiv.remove(), 150);
-            }, 5000);
-        }
     }
 
     // Load draft if exists
@@ -766,6 +720,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } catch (error) {
         console.error('Error loading draft:', error);
+    }
+
+    // Initialize Select2 and other components
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
     }
 });
 </script>

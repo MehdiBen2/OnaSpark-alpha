@@ -704,3 +704,55 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
+{% block page_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+<script>
+    // Ensure Notifications is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create a fallback if Notifications is not defined
+        if (!window.Notifications) {
+            console.warn('Notifications object not found. Creating fallback.');
+            
+            window.Notifications = {
+                success: function(message) { 
+                    console.log('SUCCESS:', message); 
+                    alert(message);
+                },
+                error: function(message) { 
+                    console.error('ERROR:', message); 
+                    alert(message);
+                },
+                warning: function(message) { 
+                    console.warn('WARNING:', message); 
+                    alert(message);
+                },
+                info: function(message) { 
+                    console.info('INFO:', message); 
+                    alert(message);
+                }
+            };
+        }
+
+        // Check for flash messages and convert to notifications
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    // Translate category to notification type
+                    var notificationType = {
+                        'success': 'success',
+                        'error': 'error',
+                        'warning': 'warning',
+                        'info': 'info'
+                    }['{{ category }}'] || 'info';
+
+                    // Show notification
+                    console.log(`Showing ${notificationType} notification:`, `{{ message }}`);
+                    window.Notifications[notificationType](`{{ message }}`);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    });
+</script>
+{% endblock %}
