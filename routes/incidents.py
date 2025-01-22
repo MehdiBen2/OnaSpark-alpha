@@ -183,7 +183,7 @@ def new_incident():
                 date_incident=datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M'),
                 mesures_prises=request.form.get('mesures_prises'),
                 impact=request.form.get('impact'),
-                gravite=request.form.get('gravite').lower(),
+                gravite=request.form.get('gravite'),
                 unit_id=unit_id,
                 user_id=current_user.id,
                 status='En cours',
@@ -264,7 +264,7 @@ def edit_incident(incident_id):
             incident.date_incident = datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M')
             incident.mesures_prises = request.form.get('mesures_prises')
             incident.impact = request.form.get('impact')
-            incident.gravite = request.form.get('gravite').lower()
+            incident.gravite = request.form.get('gravite')
             db.session.commit()
             flash('Incident mis à jour avec succès.', 'success')
             current_app.logger.info(f"Flash message set: Incident mis à jour avec succès")

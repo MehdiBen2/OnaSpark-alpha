@@ -71,16 +71,16 @@
                             </label>
                             <select class="form-select" id="gravite" name="gravite" required>
                                 <option value="Faible" {% if incident.gravite == 'Faible' %}selected{% endif %}>
-                                    🟢 Faible
+                                    Faible
                                 </option>
                                 <option value="Moyenne" {% if incident.gravite == 'Moyenne' %}selected{% endif %}>
-                                    🟡 Moyenne
+                                    Moyenne
                                 </option>
                                 <option value="Élevée" {% if incident.gravite == 'Élevée' %}selected{% endif %}>
-                                    🟠 Élevée
+                                    Élevée
                                 </option>
                                 <option value="Critique" {% if incident.gravite == 'Critique' %}selected{% endif %}>
-                                    🔴 Critique
+                                    Critique
                                 </option>
                             </select>
                         </div>
@@ -149,4 +149,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-
