@@ -243,6 +243,50 @@
                 max-width: 200px !important;
             }
         }
+
+        /* Ensure uniform card sizes */
+        .service-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card .icon-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .service-card .icon-box i {
+            font-size: 2.5rem;
+            color: #007bff;
+        }
+
+        .service-card h3 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .service-card p {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .services .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .services .col-md-4 {
+            display: flex;
+        }
     </style>
 </head>
 <body>
@@ -323,18 +367,25 @@
     <!-- Services Section -->
     <section id="services" class="services">
         <div class="container">
-            <h2 class="text-center mb-5">Le Portail vous permet</h2>
+            <h2 class="text-center mb-5">Ona SparK vous permet</h2>
+            <p class="text-center mb-5 lead" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                Gérez efficacement l'assainissement, prévenez les incidents, centralisez vos données et générez des bilans précis pour une gestion optimale des infrastructures.
+            </p>
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="service-card">
-                        <i class="bi bi-database-check"></i>
+                        <div class="icon-box">
+                            <i class="bi bi-database-check"></i>
+                        </div>
                         <h3>Gestion des Données</h3>
                         <p>Centralisez et gérez efficacement toutes vos données d'entreprise</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="service-card">
-                        <i class="bi bi-graph-up"></i>
+                        <div class="icon-box">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
                         <h3>Analyses et Rapports</h3>
                         <p>Générez des rapports détaillés et des analyses approfondies</p>
                     </div>
@@ -346,6 +397,33 @@
                         </div>
                         <h3>Vue des Incidents sur Carte</h3>
                         <p>Visualisez et localisez les incidents signalés sur une carte interactive</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <div class="icon-box">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h3>Agent Ona Spark</h3>
+                        <p>Assistant intelligent pour la gestion et l'analyse des ressources en eau</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <div class="icon-box">
+                            <i class="bi bi-shield-exclamation"></i>
+                        </div>
+                        <h3>Analyse Détaillée des Incidents</h3>
+                        <p>Explication approfondie et contextuelle des incidents et accidents</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="service-card">
+                        <div class="icon-box">
+                            <i class="bi bi-droplet-half"></i>
+                        </div>
+                        <h3>Analyse Qualité d'Eau Épurée</h3>
+                        <p>Évaluation détaillée et en temps réel de la qualité des eaux traitées</p>
                     </div>
                 </div>
             </div>
