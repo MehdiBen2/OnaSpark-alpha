@@ -171,15 +171,52 @@
         
         // Function to randomly select logo
         function selectRandomLogo() {
-            const logos = [
+            const staticLogo = '{{ url_for("static", filename="images/onab/sparklt.png") }}';
+            const alternateLogos = [
                 '{{ url_for("static", filename="images/onab/sparklt1.png") }}',
                 '{{ url_for("static", filename="images/onab/sparklt2.png") }}'
             ];
-            const randomIndex = Math.floor(Math.random() * logos.length);
-            
-            // Update main page logo
             const mainLogo = document.querySelector('.logo');
-            mainLogo.src = logos[randomIndex];
+            
+            // Add some initial styling to prepare for animation
+            mainLogo.style.willChange = 'transform, opacity';
+            mainLogo.style.transformStyle = 'preserve-3d';
+            
+            // First, set the static logo
+            mainLogo.src = staticLogo;
+            
+            // After 1 second, switch to a random alternate logo with an enhanced animation
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * alternateLogos.length);
+                
+                // Stage 1: Dramatic exit
+                mainLogo.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                mainLogo.style.transform = 'translateX(150%) rotateY(-75deg) rotateX(20deg) scale(0.5)';
+                mainLogo.style.opacity = '0';
+                
+                // Stage 2: Logo change and dramatic entrance
+                setTimeout(() => {
+                    mainLogo.src = alternateLogos[randomIndex];
+                    
+                    // Initial hidden state
+                    mainLogo.style.transform = 'translateX(-150%) rotateY(75deg) rotateX(-20deg) scale(0.5)';
+                    mainLogo.style.opacity = '0';
+                    
+                    // Trigger reflow to ensure initial state is applied
+                    mainLogo.offsetHeight;
+                    
+                    // Animate to final position with bounce and pop
+                    mainLogo.style.transition = 'all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    mainLogo.style.transform = 'translateX(0) rotateY(0) rotateX(0) scale(1.2)';
+                    mainLogo.style.opacity = '1';
+                    
+                    // Settle to original size with a slight bounce
+                    setTimeout(() => {
+                        mainLogo.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                        mainLogo.style.transform = 'scale(1)';
+                    }, 600);
+                }, 500);
+            }, 1000);
         }
 
         // Call the function when the page loads

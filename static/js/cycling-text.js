@@ -33,5 +33,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initial cycle setup
-    setInterval(cycleText, 4000);
+    setInterval(cycleText, 2200);
 });
