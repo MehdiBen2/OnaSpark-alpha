@@ -8,6 +8,10 @@
 - Use decorators to add new features and avoid hardcoding values or behavior
 - When adding new features or modifying existing ones, Cascade needs to ensure that the codebase remains consistent and functional
 - Cascade will do edits in a focused and targeted manner, after scanning the file, to avoid wasting time or throwing errors and wasting credits
+### 1.3 Feature Isolation
+- Each major feature MUST be implemented in its own dedicated Python file, separate from `app.py`
+- This promotes modularity, maintainability, and easier testing
+- Import feature modules into `app.py` as needed, keeping the main application file clean and organized
 
 ### 1.2 File Placement
 - All URL endpoints MUST be defined in `url_endpoints.py`

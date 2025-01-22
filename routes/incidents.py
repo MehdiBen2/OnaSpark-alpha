@@ -81,8 +81,24 @@ def incident_list():
         
         return Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
     
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Number of incidents per page
+    
     incidents = get_incidents_for_user()
-    return render_template('incidents/incident_list.html', incidents=incidents)
+    total_incidents = len(incidents)
+    total_pages = (total_incidents + per_page - 1) // per_page
+    
+    # Slice incidents for current page
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    paginated_incidents = incidents[start_idx:end_idx]
+    
+    return render_template('incidents/incident_list.html', 
+                           incidents=paginated_incidents, 
+                           page=page, 
+                           total_pages=total_pages, 
+                           total_incidents=total_incidents)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
 @login_required
