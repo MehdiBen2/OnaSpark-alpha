@@ -157,6 +157,11 @@
         background-color: var(--success-color) !important;
     }
 
+    /* Map selection active state */
+    #location-map.map-selection-active {
+        transition: all 0.3s ease;
+    }
+
     /* Modal Styles */
     .modal-content {
         border: none;
@@ -428,60 +433,57 @@
             <div class="modal fade" id="drawAreaInfoModal" tabindex="-1" aria-labelledby="drawAreaInfoModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header border-bottom-0">
                             <h5 class="modal-title" id="drawAreaInfoModalLabel">
-                                <i class="fas fa-map-marked-alt me-2"></i>Outils de la Carte
+                                <i class="fas fa-map-marked-alt text-primary me-2"></i>Guide de Sélection de Localisation
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="alert alert-success mb-3">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                <strong>Pourquoi délimiter la zone ?</strong>
-                                <p class="mb-0 mt-1">Délimiter la zone d'incident facilite le suivi, améliore la coordination des équipes sur le terrain et permet une meilleure gestion des ressources. Cette information est essentielle pour une intervention efficace.</p>
-                            </div>
-
-                            <div class="mb-3">
-                                <h6 class="text-success mb-2">
-                                    <i class="fas fa-tools me-2"></i>Outils Disponibles
-                                </h6>
-                                <div class="instruction-step">
-                                    <i class="fas fa-draw-polygon instruction-icon"></i>
-                                    <strong>Outil Polygone</strong>
-                                    <p class="mb-0">Pour délimiter une zone précise de l'incident</p>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info p-3">
+                                        <h6 class="alert-heading mb-2">
+                                            <i class="fas fa-info-circle me-2"></i>Comment Sélectionner Votre Localisation
+                                        </h6>
+                                        <ol class="ps-3 mb-0">
+                                            <li>Utilisez le bouton "Sélection manuelle" pour activer le mode de sélection</li>
+                                            <li>Cliquez directement sur la carte à l'emplacement précis de l'incident</li>
+                                            <li>Ajustez si nécessaire les champs de localité automatiquement remplis</li>
+                                        </ol>
+                                    </div>
                                 </div>
-                                <div class="instruction-step">
-                                    <i class="fas fa-edit instruction-icon"></i>
-                                    <strong>Outil Modification</strong>
-                                    <p class="mb-0">Pour ajuster les points de votre zone</p>
+                                <div class="col-12">
+                                    <div class="card border-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-muted">
+                                                <i class="fas fa-map-pin text-warning me-2"></i>Conseil
+                                            </h6>
+                                            <p class="card-text text-muted">
+                                                Soyez précis dans la sélection de votre localisation pour assurer la meilleure réponse possible.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="card border-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary">
+                                                <i class="fas fa-draw-polygon text-success me-2"></i>Délimitation de la Zone d'Incident
+                                            </h6>
+                                            <p class="card-text">
+                                                Utilisez l'outil de dessin pour délimiter précisément la zone de l'incident. Cela permet :
+                                            </p>
+                                            <ul class="ps-3">
+                                                <li>Une localisation plus précise</li>
+                                                <li>Une meilleure coordination des équipes</li>
+                                                <li>Une gestion optimale des ressources</li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="instruction-step">
-                                    <i class="fas fa-trash instruction-icon"></i>
-                                    <strong>Outil Suppression</strong>
-                                    <p class="mb-0">Pour effacer une zone si nécessaire</p>
-                                </div>
-                            </div>
-
-                            <div class="feature-highlight">
-                                <h6 class="text-success mb-2">
-                                    <i class="fas fa-magic me-2"></i>Fonctionnalités Automatiques
-                                </h6>
-                                <ul class="mb-0">
-                                    <li><i class="fas fa-save me-2"></i>Sauvegarde automatique de vos zones</li>
-                                    <li><i class="fas fa-layer-group me-2"></i>Possibilité de dessiner plusieurs zones</li>
-                                    <li><i class="fas fa-sync me-2"></i>Mise à jour en temps réel</li>
-                                </ul>
-                            </div>
-
-                            <div class="alert alert-info mt-3 mb-0">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Note:</strong> Toutes vos modifications sont automatiquement sauvegardées avec l'incident. Pas besoin de sauvegarder manuellement les zones dessinées.
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-success" data-bs-dismiss="modal">
-                                <i class="fas fa-check me-2"></i>J'ai compris
-                            </button>
+                        <div class="modal-footer border-top-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Compris</button>
                         </div>
                     </div>
                 </div>

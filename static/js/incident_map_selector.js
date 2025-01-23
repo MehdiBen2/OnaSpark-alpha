@@ -361,6 +361,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 createMap();
             }, 100);
         }
+
+        // Toggle manual selection mode with visual feedback
+        if (mapSelectionModeToggle) {
+            mapSelectionModeToggle.addEventListener('change', function() {
+                const label = document.getElementById('map-selection-mode-label');
+                const mapContainer = document.getElementById('location-map');
+                
+                if (this.checked) {
+                    // Add active state styling
+                    label.classList.add('btn-primary', 'text-white');
+                    label.classList.remove('btn-outline-secondary');
+                    label.innerHTML = '<i class="fas fa-hand-pointer"></i> Mode Sélection Activé';
+                    
+                    // Add visual cue to map
+                    if (mapContainer) {
+                        mapContainer.classList.add('map-selection-active');
+                        mapContainer.style.cursor = 'crosshair';
+                    }
+                } else {
+                    // Remove active state styling
+                    label.classList.remove('btn-primary', 'text-white');
+                    label.classList.add('btn-outline-secondary');
+                    label.innerHTML = '<i class="fas fa-hand-pointer"></i> Sélection manuelle';
+                    
+                    // Remove visual cue from map
+                    if (mapContainer) {
+                        mapContainer.classList.remove('map-selection-active');
+                        mapContainer.style.cursor = 'default';
+                    }
+                }
+            });
+        }
     }
 
     // Initialize the map functionality
