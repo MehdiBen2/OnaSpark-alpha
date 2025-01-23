@@ -1,6 +1,59 @@
 // Initialize map variables
 let incidentMap = null;
 let incidentMarker = null;
+let drawnShapesLayer = null;
+
+// Function to render drawn shapes
+function renderDrawnShapes(shapes) {
+    // Remove existing drawn shapes layer if it exists
+    if (drawnShapesLayer) {
+        incidentMap.removeLayer(drawnShapesLayer);
+    }
+
+    // Create a new feature group for drawn shapes
+    drawnShapesLayer = new L.FeatureGroup();
+    incidentMap.addLayer(drawnShapesLayer);
+
+    if (!shapes || shapes.length === 0) return;
+
+    shapes.forEach(shape => {
+        let layer;
+        switch(shape.type) {
+            case 'Polygon':
+                layer = L.polygon(shape.coordinates[0], {
+                    color: '#2196f3',
+                    fillColor: '#2196f3',
+                    fillOpacity: 0.2
+                });
+                break;
+            case 'Rectangle':
+                layer = L.rectangle(shape.coordinates[0], {
+                    color: '#2196f3',
+                    fillColor: '#2196f3',
+                    fillOpacity: 0.2
+                });
+                break;
+            case 'Circle':
+                // Assuming coordinates are [lon, lat, radius]
+                layer = L.circle([shape.coordinates[1], shape.coordinates[0]], {
+                    radius: shape.coordinates[2] || 500, // default radius if not provided
+                    color: '#2196f3',
+                    fillColor: '#2196f3',
+                    fillOpacity: 0.2
+                });
+                break;
+        }
+
+        if (layer) {
+            drawnShapesLayer.addLayer(layer);
+        }
+    });
+
+    // Fit map to drawn shapes
+    if (drawnShapesLayer.getLayers().length > 0) {
+        incidentMap.fitBounds(drawnShapesLayer.getBounds());
+    }
+}
 
 // Function to show location on map
 function showLocationMap(wilaya, commune, localite) {
@@ -12,7 +65,7 @@ function showLocationMap(wilaya, commune, localite) {
     if (!incidentMap) {
         incidentMap = L.map('incident-map').setView([36.7538, 3.0588], 13); // Default to Algeria's center
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: ' OpenStreetMap contributors'
         }).addTo(incidentMap);
     }
 
@@ -42,16 +95,31 @@ function showLocationMap(wilaya, commune, localite) {
                     ${commune}<br>
                     ${localite}
                 `).openPopup();
+
+                // Render drawn shapes if they exist
+                if (window.drawnShapes) {
+                    renderDrawnShapes(window.drawnShapes);
+                }
             } else {
                 console.error('Location not found');
                 // Show a default view of Algeria
                 incidentMap.setView([36.7538, 3.0588], 6);
+
+                // Render drawn shapes if they exist
+                if (window.drawnShapes) {
+                    renderDrawnShapes(window.drawnShapes);
+                }
             }
         })
         .catch(error => {
             console.error('Error fetching location:', error);
             // Show a default view of Algeria
             incidentMap.setView([36.7538, 3.0588], 6);
+
+            // Render drawn shapes if they exist
+            if (window.drawnShapes) {
+                renderDrawnShapes(window.drawnShapes);
+            }
         });
 
     // Invalidate map size when modal is shown
@@ -61,3 +129,6 @@ function showLocationMap(wilaya, commune, localite) {
         }, 10);
     });
 }
+
+// Expose renderDrawnShapes for potential external use
+window.renderDrawnShapes = renderDrawnShapes;

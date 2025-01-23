@@ -578,3 +578,24 @@ document.addEventListener('DOMContentLoaded', function() {
         deepAnalysisModal.show();
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const mapModal = document.getElementById('mapModal');
+    
+    if (mapModal) {
+        mapModal.addEventListener('shown.bs.modal', function() {
+            // Check if we have drawn shapes and coordinates
+            if (window.incidentLat && window.incidentLng && window.drawnShapes) {
+                // Use the existing map initialization function
+                initializeIncidentMap(
+                    'incident-map', 
+                    window.incidentLat, 
+                    window.incidentLng, 
+                    window.incidentLat, 
+                    window.incidentLng, 
+                    window.drawnShapes
+                );
+            }
+        });
+    }
+});
