@@ -41,15 +41,15 @@
                     <i class="fas fa-trash me-1"></i>Supprimer
                 </button>
                 {% endif %}
+                <a href="{{ url_for('incidents.incident_list') }}" class="btn btn-light action-btn me-2">
+                    <i class="fas fa-arrow-left me-1"></i>Retour
+                </a>
                 <button type="button" id="deep-analysis-spark-btn" class="btn btn-primary action-btn me-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-zap text-warning me-2">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                     </svg>
                     Analyse approfondie avec SPARK
                 </button>
-                <a href="{{ url_for('incidents.incident_list') }}" class="btn btn-light action-btn">
-                    <i class="fas fa-arrow-left me-1"></i>Retour
-                </a>
             </div>
         </div>
         

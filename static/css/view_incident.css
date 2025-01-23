@@ -4,7 +4,7 @@ body {
 }
 
 .incident-header {
-    background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+    background: linear-gradient(135deg, rgb(0, 97, 242) 0%, rgb(14, 131, 205) 50%, rgb(0, 166, 235) 100%);
     color: white;
     padding: 2rem;
     border-radius: 8px;
@@ -17,7 +17,7 @@ body {
 
 /* Enhanced Incident Header Loading Animation */
 .incident-header.loading {
-    background: linear-gradient(135deg, #0077BE, #00A86B, #4832c79f, #2733e0);
+    background: linear-gradient(135deg, #0077BE, #00A86B, #4726ff9f, #2733e0);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -240,7 +240,7 @@ body {
 #ai-explanation-btn {
     border: none;
     color: #fff;
-    background-image: linear-gradient(30deg, #0400ff, #4ce3f7);
+    background-image: linear-gradient(30deg, #3b38e0, #3bb4c4);
     border-radius: 20px;
     background-size: 100% auto;
     font-family: inherit;
@@ -257,6 +257,21 @@ body {
     background-position: right center;
     background-size: 200% auto;
     animation: pulse512 1.5s infinite;
+}
+
+#deep-analysis-spark-btn {
+    background-image: linear-gradient(30deg, #3b38e0, #3bb4c4);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#deep-analysis-spark-btn:hover {
+    background-position: right center;
+    background-size: 200% auto;
+    -webkit-animation: pulse 2s infinite;
+    animation: pulse512 2s infinite;
+    text-decoration: none;
 }
 
 @keyframes pulse512 {
