@@ -205,21 +205,15 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/incident_view.js') }}"></script>
 <script>
-    // Pass server-side variables to the JavaScript context
     window.incidentId = {{ incident.id }};
     window.incidentLat = {{ incident.latitude or 'null' }};
     window.incidentLng = {{ incident.longitude or 'null' }};
-    {% if incident.drawn_shapes %}
-    window.drawnShapes = {{ incident.drawn_shapes | tojson | safe }};
-    {% else %}
-    window.drawnShapes = null;
-    {% endif %}
+    window.drawnShapes = {{ incident.drawn_shapes | tojson | safe }} || null;
 </script>
 {% endblock %}
