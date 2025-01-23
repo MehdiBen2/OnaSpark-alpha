@@ -23,9 +23,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const communeInput = document.getElementById('commune');
         const localiteInput = document.getElementById('localite');
 
-        // Default coordinates for Algeria (center)
-        const defaultLat = 28.0339;
-        const defaultLon = 1.6596;
+        
+
+        // Coordinates to center the view of Algiers, Blida, Boumerdes, and Medea
+        const defaultLat = 36.4000;  // Centered latitude to show all cities
+        const defaultLon = 3.1500;   // Centered longitude to show all cities
+        const defaultZoom = 9;       // Zoom level to show all cities
 
         // Ensure map container is fully rendered
         let map = null;
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create map with full container width
             map = L.map('location-map', {
                 center: [defaultLat, defaultLon],
-                zoom: 5,
+                zoom: defaultZoom,
                 attributionControl: false,
                 zoomControl: true
             });
@@ -257,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.warn('Location not found:', searchQuery);
                         // Optionally reset map to default view
                         if (map) {
-                            map.setView([defaultLat, defaultLon], 5);
+                            map.setView([defaultLat, defaultLon], defaultZoom);
                         }
                     }
                 })

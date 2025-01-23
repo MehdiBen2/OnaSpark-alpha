@@ -327,14 +327,21 @@
                             <button type="button" id="locate-me-btn" class="btn">
                                 <i class="fas fa-map-marker-alt"></i> Me localiser
                             </button>
-                            <div class="d-flex gap-2">
-                                <div class="map-mode-toggle">
+                            <div class="d-flex gap-2 align-items-center">
+                                <div class="map-mode-toggle d-flex align-items-center">
+                                    <button type="button" class="btn btn-link text-muted me-2" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="left"
+                                            data-bs-html="true"
+                                            title="Même si en cliquant sur la carte cela remplira automatiquement la Localité, vous devez la modifier pour indiquer l'emplacement exact de l'incident ou de la structure">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
                                     <input type="checkbox" class="btn-check" id="map-selection-mode" autocomplete="off">
-                                    <label class="btn" id="map-selection-mode-label" for="map-selection-mode">
+                                    <label class="btn btn-outline-secondary" id="map-selection-mode-label" for="map-selection-mode">
                                         <i class="fas fa-hand-pointer"></i> Sélection manuelle
                                     </label>
                                 </div>
-                                <button type="button" id="draw-shape-btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#drawAreaInfoModal">
+                                <button type="button" id="draw-shape-btn" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#drawAreaInfoModal">
                                     <i class="fas fa-info-circle me-2"></i>Information carte d'incident
                                 </button>
                             </div>
@@ -524,6 +531,7 @@
             this.initDraftSaving();
             this.loadSavedDraft();
             this.initSelect2();
+            this.initTooltips();
         }
 
         initFormValidation() {
@@ -643,6 +651,13 @@
                     allowClear: true
                 });
             }
+        }
+
+        initTooltips() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         }
     }
 
