@@ -144,42 +144,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     drawnShapesList.appendChild(shapeItem);
                     
-                    // Enhanced shape data logging
-                    console.group('Shape Serialization');
-                    console.log('Shape Type:', shapeType);
-                    console.log('Raw Coordinates:', shapeCoords);
-                    
-                    // Normalize coordinates for different shape types
-                    let normalizedCoords;
-                    switch(shapeType) {
-                        case 'Polygon':
-                        case 'Rectangle':
-                            // For polygons and rectangles, we want the first coordinate set
-                            normalizedCoords = shapeCoords[0].map(coord => [coord[1], coord[0]]);
-                            break;
-                        case 'Circle':
-                            // For circles, we want [lon, lat, radius]
-                            const circleCenter = layer.getLatLng();
-                            normalizedCoords = [circleCenter.lng, circleCenter.lat, layer.getRadius()];
-                            break;
-                        default:
-                            normalizedCoords = shapeCoords;
-                    }
-                    
-                    console.log('Normalized Coordinates:', normalizedCoords);
-                    
                     shapes.push({
                         type: shapeType,
-                        coordinates: [normalizedCoords]  // Wrap in an array to match GeoJSON-like structure
+                        coordinates: shapeCoords
                     });
-                    
-                    console.groupEnd();
                 });
 
                 // Update hidden input with serialized shapes
-                const shapesJson = JSON.stringify(shapes);
-                console.log('Final Drawn Shapes JSON:', shapesJson);
-                drawnShapesInput.value = shapesJson;
+                drawnShapesInput.value = JSON.stringify(shapes);
             }
 
             // Draw shape button functionality
@@ -426,22 +398,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const newIncidentForm = document.getElementById('newIncidentForm');
         if (newIncidentForm) {
             newIncidentForm.addEventListener('submit', function(event) {
-                const drawnShapesInput = document.getElementById('drawn-shapes');
-                
                 // Ensure drawn shapes are populated if any shapes exist
                 if (drawnItems && drawnItems.getLayers().length > 0) {
                     updateDrawnShapesList();
-                    
-                    // Double-check input value
-                    if (!drawnShapesInput.value) {
-                        console.error('Drawn shapes not serialized correctly');
-                        alert('Erreur: Les formes dessinées n\'ont pas été enregistrées. Veuillez les redessiner.');
-                        event.preventDefault();
-                        return false;
-                    }
                 }
-                
-                return true;
             });
         }
     }

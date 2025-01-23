@@ -30,79 +30,32 @@ def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, A
         return None
     
     try:
-        # Log the raw input for debugging
-        current_app.logger.info(f"Raw drawn_shapes_json: {drawn_shapes_json}")
-        
         shapes = json.loads(drawn_shapes_json)
         
         # Validate shapes
         validated_shapes = []
         for shape in shapes:
-            # Ensure shape is a dictionary
-            if not isinstance(shape, dict):
-                current_app.logger.warning(f"Invalid shape (not a dictionary): {shape}")
+            # Ensure shape is a dictionary with required keys
+            if not isinstance(shape, dict) or 'type' not in shape or 'coordinates' not in shape:
                 continue
             
             # Validate shape type
-            shape_type = shape.get('type')
-            if shape_type not in ['Polygon', 'Rectangle', 'Circle']:
-                current_app.logger.warning(f"Invalid shape type: {shape_type}")
+            if shape['type'] not in ['Polygon', 'Rectangle', 'Circle']:
                 continue
             
-            # Validate coordinates
-            coordinates = shape.get('coordinates')
-            if not coordinates or not isinstance(coordinates, list):
-                current_app.logger.warning(f"Invalid coordinates for {shape_type}: {coordinates}")
+            # Basic coordinate validation
+            if not shape['coordinates'] or not isinstance(shape['coordinates'], list):
                 continue
             
-            # Normalize coordinate formats
-            try:
-                if shape_type in ['Polygon', 'Rectangle']:
-                    # Ensure coordinates are a list of coordinate pairs
-                    normalized_coords = []
-                    for coord_set in coordinates:
-                        if isinstance(coord_set, list):
-                            normalized_coords.append([
-                                [float(lon), float(lat)] 
-                                for lat, lon in coord_set
-                            ])
-                    
-                    if not normalized_coords:
-                        current_app.logger.warning(f"Could not normalize {shape_type} coordinates")
-                        continue
-                    
-                    coordinates = normalized_coords
-                
-                elif shape_type == 'Circle':
-                    # Circle coordinates should be [lon, lat, radius]
-                    if len(coordinates[0]) != 3:
-                        current_app.logger.warning(f"Invalid Circle coordinates: {coordinates}")
-                        continue
-                    
-                    coordinates = [[
-                        float(coordinates[0][0]),  # longitude
-                        float(coordinates[0][1]),  # latitude
-                        float(coordinates[0][2])   # radius
-                    ]]
-                
-                validated_shapes.append({
-                    'type': shape_type,
-                    'coordinates': coordinates
-                })
-            
-            except (ValueError, TypeError, IndexError) as e:
-                current_app.logger.warning(f"Error processing shape coordinates: {e}")
-                continue
-        
-        # Log validated shapes
-        current_app.logger.info(f"Validated shapes: {validated_shapes}")
+            validated_shapes.append({
+                'type': shape['type'],
+                'coordinates': shape['coordinates']
+            })
         
         return validated_shapes if validated_shapes else None
     
     except (json.JSONDecodeError, TypeError) as e:
-        # Log the error for debugging
-        current_app.logger.error(f"Error parsing drawn shapes JSON: {e}")
-        current_app.logger.error(f"Invalid drawn shapes JSON: {drawn_shapes_json}")
+        current_app.logger.warning(f"Invalid drawn shapes JSON: {drawn_shapes_json}")
         return None
 
 @incidents.route('/incidents')
