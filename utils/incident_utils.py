@@ -67,7 +67,7 @@ def get_user_incident_counts(user, include_author=False):
         # For admin and top-level roles, use global queries
         total_query = Incident.query
         resolved_query = total_query.filter_by(status='Résolu')
-        nouveau_query = total_query.filter_by(status='Nouveau')
+        nouveau_query = total_query.filter_by(status='En cours')
     
     elif user.role == UserRole.EMPLOYEUR_ZONE:
         # For zone-level users, filter by zone's units
@@ -76,18 +76,18 @@ def get_user_incident_counts(user, include_author=False):
         
         total_query = Incident.query.filter(Incident.unit_id.in_(unit_ids))
         resolved_query = total_query.filter(Incident.status == 'Résolu')
-        nouveau_query = total_query.filter(Incident.status == 'Nouveau')
+        nouveau_query = total_query.filter(Incident.status == 'En cours')
     
     else:
         # For other roles, filter by unit or author
         if include_author:
             total_query = Incident.query.filter_by(author=user)
             resolved_query = total_query.filter_by(status='Résolu')
-            nouveau_query = total_query.filter_by(status='Nouveau')
+            nouveau_query = total_query.filter_by(status='En cours')
         else:
             total_query = Incident.query.filter_by(unit_id=user.unit_id)
             resolved_query = total_query.filter_by(status='Résolu')
-            nouveau_query = total_query.filter_by(status='Nouveau')
+            nouveau_query = total_query.filter_by(status='En cours')
     
     # Execute count queries
     total_incidents = total_query.count()

@@ -225,7 +225,7 @@ def dashboard():
         context = {
             'total_incidents': incident_counts['total_incidents'],
             'resolved_incidents': incident_counts['resolved_incidents'],
-            'nouveau_incidents': incident_counts.get('nouveau_incidents', 0),
+            'closed_incidents': incident_counts['closed_incidents'],
             'user_unit': user_unit,
             'user_zone': user_zone,
         }
