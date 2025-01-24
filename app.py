@@ -192,14 +192,13 @@ def main_dashboard():
     incident_counts = get_user_incident_counts(current_user)
     total_incidents = incident_counts['total_incidents']
     resolved_incidents = incident_counts['resolved_incidents']
-    closed_incidents = incident_counts['closed_incidents']
-    pending_incidents = total_incidents - resolved_incidents - closed_incidents
+    nouveau_incidents = incident_counts['nouveau_incidents']
+    pending_incidents = nouveau_incidents
     
     return render_template('dashboard/main_dashboard.html',
                          recent_incidents=recent_incidents,
                          total_incidents=total_incidents,
                          resolved_incidents=resolved_incidents,
-                         closed_incidents=closed_incidents,
                          pending_incidents=pending_incidents,
                          datetime=datetime)
 
