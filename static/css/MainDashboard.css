@@ -156,6 +156,19 @@
     background: #ebf8ff;
 }
 
+.stat-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.stat-card-link:hover {
+    text-decoration: none;
+    transform: scale(1.02);
+}
+
 .collapsible-section {
     background: white;
     border-radius: var(--card-radius);

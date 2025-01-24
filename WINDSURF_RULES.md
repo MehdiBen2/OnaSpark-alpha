@@ -3,6 +3,12 @@
 ## 1. Project Structure and Organization
 ### 1.1 Cascade must always be Context-Aware : IMPORTANT!
 
+- When editing existing Python, HTML, or any other code, Cascade must thoroughly review the entire codebase to understand the context and existing features
+- Cascade should never delete existing features or break functionality unless explicitly instructed to do so or it part of the coding flow or the task or update
+- Ensure all modifications are made with full awareness of the codebase's structure and interdependencies
+- Before making changes, analyze potential impacts on other parts of the code
+- Preserve existing functionality while implementing new features or modifications when needed or replace them when asked to or in the context of it
+- If a change might affect existing features, Cascade should highlight this and seek confirmation before proceeding
 - Always be mindful of the context of the codebase, including existing features and new features being added
 - Ensure that new features are compatible with old features and that nothing is broken
 - Use decorators to add new features and avoid hardcoding values or behavior

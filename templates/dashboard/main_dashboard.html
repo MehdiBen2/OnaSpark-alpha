@@ -136,88 +136,84 @@
                 <!-- Admin Stats -->
                 <div class="dashboard-cards">
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-number">{{ total_users }}</div>
-                        <div class="stat-label">Utilisateurs Total</div>
-                        <div class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i>
-                            <span>Actif</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-number">{{ total_incidents }}</div>
+                            <div class="stat-label">Total des Incidents</div>
+                            <div class="stat-trend">
+                                <span>Total à ce jour</span>
+                            </div>
+                        </a>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <div class="stat-number">{{ total_units }}</div>
-                        <div class="stat-label">Unités Total</div>
-                        <div class="stat-trend operational">
-                            <i class="fas fa-check"></i>
-                            <span>Opérationnel</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}?status=Nouveau" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="stat-number">{{ nouveau_incidents }}</div>
+                            <div class="stat-label">Nouveaux Incidents</div>
+                            <div class="stat-trend">
+                                <span>Récemment créés</span>
+                            </div>
+                        </a>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="stat-number">{{ total_zones }}</div>
-                        <div class="stat-label">Zones Total</div>
-                        <div class="stat-trend up">
-                            <i class="fas fa-check"></i>
-                            <span>Actif</span>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-city"></i>
-                        </div>
-                        <div class="stat-number">{{ total_centers }}</div>
-                        <div class="stat-label">Centres Total</div>
-                        <div class="stat-trend operational">
-                            <i class="fas fa-check"></i>
-                            <span>Opérationnel</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}?status=Résolu" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-number">{{ resolved_incidents }}</div>
+                            <div class="stat-label">Incidents Résolus</div>
+                            <div class="stat-trend">
+                                <span>Complètement résolus</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 {% else %}
                 <!-- User Incidents -->
                 <div class="dashboard-cards">
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <div class="stat-number">{{ total_incidents }}</div>
-                        <div class="stat-label">Total des Incidents</div>
-                        <div class="stat-trend">
-                            <span>Total à ce jour</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-number">{{ total_incidents }}</div>
+                            <div class="stat-label">Total des Incidents</div>
+                            <div class="stat-trend">
+                                <span>Total à ce jour</span>
+                            </div>
+                        </a>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-number">{{ resolved_incidents }}</div>
-                        <div class="stat-label">Incidents Résolus</div>
-                        <div class="stat-trend up">
-                            <i class="fas fa-chart-line"></i>
-                            <span>{{ "{:.1f}".format(resolved_incidents / total_incidents * 100 if total_incidents > 0 else 0) }}%</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}?status=Nouveau" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="stat-number">{{ nouveau_incidents }}</div>
+                            <div class="stat-label">Nouveaux Incidents</div>
+                            <div class="stat-trend">
+                                <span>Récemment créés</span>
+                            </div>
+                        </a>
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-number">{{ pending_incidents }}</div>
-                        <div class="stat-label">Incidents en Cours</div>
-                        <div class="stat-trend">
-                            <span>En attente</span>
-                        </div>
+                        <a href="{{ url_for('incidents.incident_list') }}?status=Résolu" class="stat-card-link">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-number">{{ resolved_incidents }}</div>
+                            <div class="stat-label">Incidents Résolus</div>
+                            <div class="stat-trend">
+                                <span>Complètement résolus</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 {% endif %}

@@ -13,6 +13,9 @@ import os
 import json
 from typing import Dict, Any, Optional
 import requests
+from flask_caching import Cache
+from extensions import cache
+from utils.incident_utils import get_user_incident_counts, get_incident_cache_key
 
 incidents = Blueprint('incidents', __name__)
 
@@ -58,48 +61,56 @@ def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, A
         current_app.logger.warning(f"Invalid drawn shapes JSON: {drawn_shapes_json}")
         return None
 
-@incidents.route('/incidents')
+@incidents.route('/list')
 @login_required
 def incident_list():
-    # Centralized incident fetching logic
-    def get_incidents_for_user():
-        if current_user.role == UserRole.ADMIN:
-            return Incident.query.order_by(Incident.date_incident.desc()).all()
-        
-        if current_user.role == UserRole.EMPLOYEUR_ZONE:
-            if not current_user.zone_id:
-                flash('Vous devez être assigné à une zone pour voir les incidents.', 'warning')
-                return []
-            
-            zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-            unit_ids = [unit.id for unit in zone_units]
-            return Incident.query.filter(Incident.unit_id.in_(unit_ids)).order_by(Incident.date_incident.desc()).all()
-        
-        # For unit-level and regular users
-        if not current_user.unit_id:
-            flash('Vous devez sélectionner une unité pour voir les incidents.', 'warning')
-            return []
-        
-        return Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
+    """
+    Display a paginated list of incidents with optional filtering.
     
-    # Pagination
+    Query Parameters:
+    - page: Current page number
+    - status: Filter incidents by status
+    
+    Returns:
+        Rendered incident list template with pagination
+    """
+    # Get query parameters
     page = request.args.get('page', 1, type=int)
-    per_page = 10  # Number of incidents per page
+    status_filter = request.args.get('status', None)
     
-    incidents = get_incidents_for_user()
-    total_incidents = len(incidents)
-    total_pages = (total_incidents + per_page - 1) // per_page
+    # Base query setup based on user role
+    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+        query = Incident.query
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        # Get all units in the user's zone
+        zone_units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        unit_ids = [unit.id for unit in zone_units]
+        query = Incident.query.filter(Incident.unit_id.in_(unit_ids))
+    else:
+        # Filter by current user's unit
+        query = Incident.query.filter_by(unit_id=current_user.unit_id)
     
-    # Slice incidents for current page
-    start_idx = (page - 1) * per_page
-    end_idx = start_idx + per_page
-    paginated_incidents = incidents[start_idx:end_idx]
+    # Apply status filter if provided
+    if status_filter:
+        query = query.filter_by(status=status_filter)
     
-    return render_template('incidents/incident_list.html', 
-                           incidents=paginated_incidents, 
-                           page=page, 
-                           total_pages=total_pages, 
-                           total_incidents=total_incidents)
+    # Paginate results
+    pagination = query.order_by(Incident.date_incident.desc()).paginate(
+        page=page, 
+        per_page=10,  # Adjust as needed
+        error_out=False
+    )
+    
+    # Prepare context for template
+    context = {
+        'incidents': pagination.items,
+        'pagination': pagination,
+        'current_page': page,
+        'status_filter': status_filter,
+        'total_incidents': pagination.total
+    }
+    
+    return render_template('incidents/incident_list.html', **context)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
 @login_required
@@ -201,6 +212,9 @@ def new_incident():
             # Add a flash message for successful incident creation
             flash('Incident créé avec succès', 'success')
 
+            # Invalidate incident count cache
+            cache.delete(get_incident_cache_key(current_user))
+            
             # Return JSON response for AJAX request
             if is_ajax:
                 return jsonify({
@@ -270,6 +284,10 @@ def edit_incident(incident_id):
             flash('Incident mis à jour avec succès.', 'success')
             current_app.logger.info(f"Flash message set: Incident mis à jour avec succès")
             current_app.logger.info(f"Session data: {dict(session)}")
+            
+            # Invalidate incident count cache
+            cache.delete(get_incident_cache_key(current_user))
+            
             return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
@@ -295,6 +313,10 @@ def delete_incident(incident_id):
         flash('Incident supprimé avec succès.', 'success')
         current_app.logger.info(f"Flash message set: Incident supprimé avec succès")
         current_app.logger.info(f"Session data: {dict(session)}")
+        
+        # Invalidate incident count cache
+        cache.delete(get_incident_cache_key(current_user))
+        
     except Exception as e:
         db.session.rollback()
         flash(f'Erreur lors de la suppression de l\'incident: {str(e)}', 'danger')
@@ -327,6 +349,10 @@ def resolve_incident(incident_id):
     flash('L\'incident a été marqué comme résolu.', 'success')
     current_app.logger.info(f"Flash message set: L'incident a été marqué comme résolu")
     current_app.logger.info(f"Session data: {dict(session)}")
+    
+    # Invalidate incident count cache
+    cache.delete(get_incident_cache_key(current_user))
+    
     return redirect(url_for(INCIDENT_LIST))
 
 @incidents.route('/incident/<int:incident_id>/export_pdf')
@@ -442,6 +468,10 @@ def merge_incident(incident_id):
             flash(f'L\'incident a été fusionné avec succès vers l\'unité {new_unit.name}.', 'success')
             current_app.logger.info(f"Flash message set: L'incident a été fusionné avec succès vers l'unité {new_unit.name}")
             current_app.logger.info(f"Session data: {dict(session)}")
+            
+            # Invalidate incident count cache
+            cache.delete(get_incident_cache_key(current_user))
+            
             return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
             
         except Exception as e:
@@ -491,6 +521,10 @@ def batch_merge():
             flash(f'{len(incident_ids)} incidents ont été fusionnés avec succès vers l\'unité {target_unit.name}.', 'success')
             current_app.logger.info(f"Flash message set: {len(incident_ids)} incidents ont été fusionnés avec succès vers l'unité {target_unit.name}")
             current_app.logger.info(f"Session data: {dict(session)}")
+            
+            # Invalidate incident count cache
+            cache.delete(get_incident_cache_key(current_user))
+            
             return redirect(url_for(INCIDENT_LIST))
             
         except Exception as e:

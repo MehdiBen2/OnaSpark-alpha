@@ -616,23 +616,27 @@
     <!-- Pagination Section -->
     <nav aria-label="Pagination" class="mt-4">
         <ul class="pagination justify-content-center">
-            {% if page > 1 %}
+            {% if pagination.has_prev %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('incidents.incident_list', page=page-1) }}">
+                <a class="page-link" href="{{ url_for('incidents.incident_list', page=pagination.prev_num, status=status_filter) }}">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             </li>
             {% endif %}
 
-            {% for p in range(1, total_pages + 1) %}
-            <li class="page-item {{ 'active' if p == page else '' }}">
-                <a class="page-link" href="{{ url_for('incidents.incident_list', page=p) }}">{{ p }}</a>
-            </li>
+            {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if p %}
+                    <li class="page-item {{ 'active' if p == current_page else '' }}">
+                        <a class="page-link" href="{{ url_for('incidents.incident_list', page=p, status=status_filter) }}">{{ p }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
             {% endfor %}
 
-            {% if page < total_pages %}
+            {% if pagination.has_next %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('incidents.incident_list', page=page+1) }}">
+                <a class="page-link" href="{{ url_for('incidents.incident_list', page=pagination.next_num, status=status_filter) }}">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             </li>
@@ -642,7 +646,7 @@
 
     <!-- Pagination Info -->
     <div class="text-center mt-2 text-muted">
-        Page {{ page }} sur {{ total_pages }} 
+        Page {{ current_page }} sur {{ pagination.pages }} 
         ({{ total_incidents }} incidents au total)
     </div>
     {% endif %}

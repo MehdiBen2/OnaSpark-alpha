@@ -22,6 +22,8 @@ import click
 from utils.url_endpoints import *  # Import all URL endpoints
 from utils.roles import UserRole
 from routes.landing import landing
+from extensions import cache  # Import cache from extensions
+from utils.incident_utils import get_user_incident_counts  # Import from new utils module
 
 # Load environment variables
 load_dotenv()
@@ -31,6 +33,9 @@ app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///OnaDB.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize cache with app after creating the app
+cache.init_app(app)
 
 # Initialize extensions
 db.init_app(app)
@@ -91,55 +96,22 @@ def unit_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_user_incident_counts(user, include_author=False):
-    """
-    Retrieve incident counts based on user role and permissions.
-    
-    Args:
-        user: Currently logged-in user
-        include_author: If True, use author for filtering instead of unit_id
-    
-    Returns:
-        Tuple of (total_incidents, resolved_incidents)
-    """
-    if user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-        total_incidents = Incident.query.count()
-        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
-    elif user.role == UserRole.EMPLOYEUR_ZONE:
-        zone_units = Unit.query.filter_by(zone_id=user.zone_id).all()
-        unit_ids = [unit.id for unit in zone_units]
-        total_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids)).count()
-        resolved_incidents = Incident.query.filter(Incident.unit_id.in_(unit_ids), Incident.status=='Résolu').count()
-    else:
-        # Use either unit_id or author based on the include_author flag
-        if include_author:
-            total_incidents = Incident.query.filter_by(author=user).count()
-            resolved_incidents = Incident.query.filter_by(author=user, status='Résolu').count()
-        else:
-            total_incidents = Incident.query.filter_by(unit_id=user.unit_id).count()
-            resolved_incidents = Incident.query.filter_by(unit_id=user.unit_id, status='Résolu').count()
-    
-    return total_incidents, resolved_incidents
-
-@app.route('/main')
+@app.route('/invalidate_incident_cache', methods=['POST'])
 @login_required
-def main_dashboard():
-    # Get recent incidents (last 5)
-    if current_user.role == UserRole.ADMIN:
-        recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
-    else:
-        recent_incidents = Incident.query.filter_by(author=current_user).order_by(Incident.date_incident.desc()).limit(5).all()
+def invalidate_incident_cache():
+    """
+    Endpoint to manually invalidate incident count cache.
+    Useful after creating, updating, or deleting incidents.
+    """
+    if current_user.role not in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+        flash('Unauthorized to invalidate cache', 'error')
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
     
-    # Get statistics
-    total_incidents, resolved_incidents = get_user_incident_counts(current_user)
-    pending_incidents = total_incidents - resolved_incidents
+    # Clear all keys starting with 'incident_counts_'
+    cache.delete_memoized(get_user_incident_counts)
     
-    return render_template('dashboard/main_dashboard.html',
-                         recent_incidents=recent_incidents,
-                         total_incidents=total_incidents,
-                         resolved_incidents=resolved_incidents,
-                         pending_incidents=pending_incidents,
-                         datetime=datetime)
+    flash('Incident count cache has been invalidated', 'success')
+    return jsonify({'status': 'success', 'message': 'Cache invalidated'}), 200
 
 def get_dashboard_data():
     # Centralized dashboard data fetching
@@ -157,8 +129,11 @@ def get_dashboard_data():
 
     if current_user.role == UserRole.ADMIN:
         # Admin sees everything
-        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
-        pending_incidents = total_incidents - resolved_incidents
+        incident_counts = get_user_incident_counts(current_user)
+        total_incidents = incident_counts['total_incidents']
+        resolved_incidents = incident_counts['resolved_incidents']
+        closed_incidents = incident_counts['closed_incidents']
+        pending_incidents = total_incidents - resolved_incidents - closed_incidents
         recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
         
         total_users = User.query.count()
@@ -168,8 +143,11 @@ def get_dashboard_data():
         
     elif current_user.role == UserRole.EMPLOYEUR_ZONE:
         # Zone employer sees all incidents in their zone
-        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
-        pending_incidents = total_incidents - resolved_incidents
+        incident_counts = get_user_incident_counts(current_user)
+        total_incidents = incident_counts['total_incidents']
+        resolved_incidents = incident_counts['resolved_incidents']
+        closed_incidents = incident_counts['closed_incidents']
+        pending_incidents = total_incidents - resolved_incidents - closed_incidents
         recent_incidents = Incident.query.filter(Incident.unit_id.in_([unit.id for unit in Unit.query.filter_by(zone_id=current_user.zone_id).all()])).order_by(Incident.date_incident.desc()).limit(5).all()
         
         # Zone statistics
@@ -180,14 +158,18 @@ def get_dashboard_data():
         
     elif current_user.role in [UserRole.EMPLOYEUR_UNITE, UserRole.UTILISATEUR]:
         # Unit employers and regular users see their unit's incidents
-        total_incidents, resolved_incidents = get_user_incident_counts(current_user)
-        pending_incidents = total_incidents - resolved_incidents
+        incident_counts = get_user_incident_counts(current_user)
+        total_incidents = incident_counts['total_incidents']
+        resolved_incidents = incident_counts['resolved_incidents']
+        closed_incidents = incident_counts['closed_incidents']
+        pending_incidents = total_incidents - resolved_incidents - closed_incidents
         recent_incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).limit(5).all()
     
     return {
         'datetime': datetime,
         'total_incidents': total_incidents,
         'resolved_incidents': resolved_incidents,
+        'closed_incidents': closed_incidents,
         'pending_incidents': pending_incidents,
         'recent_incidents': recent_incidents,
         'total_users': total_users,
@@ -197,12 +179,66 @@ def get_dashboard_data():
         'permissions': permissions
     }
 
+@app.route('/main')
+@login_required
+def main_dashboard():
+    # Get recent incidents (last 5)
+    if current_user.role == UserRole.ADMIN:
+        recent_incidents = Incident.query.order_by(Incident.date_incident.desc()).limit(5).all()
+    else:
+        recent_incidents = Incident.query.filter_by(author=current_user).order_by(Incident.date_incident.desc()).limit(5).all()
+    
+    # Get statistics
+    incident_counts = get_user_incident_counts(current_user)
+    total_incidents = incident_counts['total_incidents']
+    resolved_incidents = incident_counts['resolved_incidents']
+    closed_incidents = incident_counts['closed_incidents']
+    pending_incidents = total_incidents - resolved_incidents - closed_incidents
+    
+    return render_template('dashboard/main_dashboard.html',
+                         recent_incidents=recent_incidents,
+                         total_incidents=total_incidents,
+                         resolved_incidents=resolved_incidents,
+                         closed_incidents=closed_incidents,
+                         pending_incidents=pending_incidents,
+                         datetime=datetime)
+
 @app.route('/dashboard')
 @login_required
 @unit_required
 def dashboard():
-    dashboard_data = get_dashboard_data()
-    return render_template('dashboard/main_dashboard.html', **dashboard_data)
+    """
+    Main dashboard route with incident counts and user-specific data.
+    
+    Returns:
+        Rendered dashboard template with incident counts and user information
+    """
+    # Get incident counts for the current user
+    incident_counts = get_user_incident_counts(current_user)
+    
+    # Fetch additional dashboard data
+    try:
+        # Get user's unit and zone information
+        user_unit = Unit.query.get(current_user.unit_id) if current_user.unit_id else None
+        user_zone = Zone.query.get(current_user.zone_id) if current_user.zone_id else None
+        
+        # Prepare context for dashboard rendering
+        context = {
+            'total_incidents': incident_counts['total_incidents'],
+            'resolved_incidents': incident_counts['resolved_incidents'],
+            'nouveau_incidents': incident_counts.get('nouveau_incidents', 0),
+            'user_unit': user_unit,
+            'user_zone': user_zone,
+        }
+        
+        # Render dashboard with context
+        return render_template('dashboard/main_dashboard.html', **context)
+    
+    except Exception as e:
+        # Log any errors and flash a message
+        current_app.logger.error(f"Dashboard rendering error: {str(e)}")
+        flash('Une erreur s\'est produite lors du chargement du tableau de bord.', 'danger')
+        return redirect(url_for('landing.index'))
 
 @app.route('/services')
 @login_required
@@ -214,10 +250,14 @@ def services():
 @login_required
 @unit_required
 def listes_dashboard():
-    total_incidents, resolved_incidents = get_user_incident_counts(current_user)
+    incident_counts = get_user_incident_counts(current_user)
+    total_incidents = incident_counts['total_incidents']
+    resolved_incidents = incident_counts['resolved_incidents']
+    closed_incidents = incident_counts['closed_incidents']
     return render_template('listes_dashboard.html',
                          total_incidents=total_incidents,
-                         resolved_incidents=resolved_incidents)
+                         resolved_incidents=resolved_incidents,
+                         closed_incidents=closed_incidents)
 
 @app.route('/exploitation')
 @login_required
@@ -261,8 +301,9 @@ def reuse_section(section):
 @unit_required
 def rapports():
     # Get the count of incidents (you can modify this based on your needs)
-    incidents_count = Incident.query.count()
-    return render_template('departement/rapports.html', incidents_count=incidents_count)
+    incident_counts = get_user_incident_counts(current_user)
+    total_incidents = incident_counts['total_incidents']
+    return render_template('departement/rapports.html', total_incidents=total_incidents)
 
 @app.route('/departement/statistiques')
 @login_required
