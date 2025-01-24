@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, send_file, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, current_user
 from flask_migrate import Migrate
@@ -223,9 +223,10 @@ def dashboard():
         
         # Prepare context for dashboard rendering
         context = {
-            'total_incidents': incident_counts['total_incidents'],
-            'resolved_incidents': incident_counts['resolved_incidents'],
-            'closed_incidents': incident_counts['closed_incidents'],
+            'total_incidents': incident_counts.get('total_incidents', 0),
+            'resolved_incidents': incident_counts.get('resolved_incidents', 0),
+            'closed_incidents': incident_counts.get('closed_incidents', 0),
+            'pending_incidents': incident_counts.get('nouveau_incidents', 0),
             'user_unit': user_unit,
             'user_zone': user_zone,
         }
