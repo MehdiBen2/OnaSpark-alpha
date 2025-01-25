@@ -119,19 +119,16 @@ def invalidate_incident_cache():
 
 @app.route('/services')
 @login_required
-@unit_required
 def services():
     return render_template('services.html')
 
 @app.route('/exploitation')
 @login_required
-@unit_required
 def exploitation():
     return render_template('departement/exploitation.html')
 
 @app.route('/departements')
 @login_required
-@unit_required
 def departements():
     return render_template('departement/departement.html')
 
@@ -145,13 +142,11 @@ REUSE_SECTIONS = {
 
 @app.route('/departements/reuse')
 @login_required
-@unit_required
 def reuse():
     return redirect(url_for('reuse_section', section='introduction'))
 
 @app.route('/departements/reuse/<section>')
 @login_required
-@unit_required
 def reuse_section(section):
     if section not in REUSE_SECTIONS:
         flash('Section non trouvée.', 'danger')
@@ -162,7 +157,6 @@ def reuse_section(section):
 
 @app.route('/departements/reuse/rapports')
 @login_required
-@unit_required
 def rapports():
     # Get the count of incidents (you can modify this based on your needs)
     incident_counts = get_user_incident_counts(current_user)

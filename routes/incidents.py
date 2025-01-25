@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from models import db, Incident, Unit, UserRole
 from datetime import datetime
 from functools import wraps
-from utils.decorators import admin_required, unit_required
+from utils.decorators import admin_required
 from utils.pdf_generator import create_incident_pdf
 from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, MERGE_INCIDENT, BATCH_MERGE
 import os
@@ -155,7 +155,6 @@ def list_incidents():
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
 @login_required
-@unit_required
 def new_incident():
     # Get all available units for admin, or just the user's unit for others
     if current_user.role == UserRole.ADMIN:
@@ -293,7 +292,6 @@ def new_incident():
 
 @incidents.route('/incident/<int:incident_id>')
 @login_required
-@unit_required
 def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
@@ -303,7 +301,6 @@ def view_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/edit', methods=['GET', 'POST'])
 @login_required
-@unit_required
 def edit_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
@@ -340,7 +337,6 @@ def edit_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/delete', methods=['POST'])
 @login_required
-@unit_required
 def delete_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     
@@ -366,7 +362,6 @@ def delete_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/resolve', methods=['POST'])
 @login_required
-@unit_required
 def resolve_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
@@ -398,7 +393,6 @@ def resolve_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/export_pdf')
 @login_required
-@unit_required
 def export_incident_pdf(incident_id):
     try:
         incident = Incident.query.get_or_404(incident_id)
@@ -432,7 +426,6 @@ def export_incident_pdf(incident_id):
 
 @incidents.route('/incidents/export_all_pdf')
 @login_required
-@unit_required
 def export_all_incidents_pdf():
     try:
         # Get all incidents based on user role

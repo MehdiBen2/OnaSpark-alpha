@@ -139,7 +139,6 @@ def dashboard_main():
 
 @main_dashboard.route('/dashboard')
 @login_required
-@unit_required
 def dashboard():
     """
     Detailed dashboard route with comprehensive user and incident information
@@ -188,7 +187,6 @@ def dashboard():
 
 @main_dashboard.route('/listes_dashboard')
 @login_required
-@unit_required
 def listes_dashboard():
     """
     Dashboard listing route with incident counts
