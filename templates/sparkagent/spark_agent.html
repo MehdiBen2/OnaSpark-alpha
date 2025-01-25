@@ -52,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(30, 30, 30, 0.7); /* Overlay to improve readability */
+            background-color: transparent;
             z-index: 1;
         }
 
@@ -227,6 +227,8 @@
             padding: 20px;
             align-self: center;
             width: 100%;
+            position: relative;
+            z-index: 10;
         }
 
         .loading-balls {
@@ -235,15 +237,32 @@
             align-items: center;
             gap: 15px;
             padding: 15px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes fadeAndBounce {
+            0% {
+                transform: translateY(20px) scale(0.7);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(-60px) scale(1);
+                opacity: 1;
+            }
         }
 
         .loading-ball {
-            width: 35px;
-            height: 35px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             background-size: cover;
             background-position: center;
-            animation: ballBounce 0.5s alternate infinite;
+            animation: fadeAndBounce 0.5s alternate infinite;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            animation-fill-mode: forwards;
         }
 
         .loading-ball:nth-child(1) {
@@ -259,17 +278,6 @@
         .loading-ball:nth-child(3) {
             animation-delay: 0.4s;
             background-image: url('{{ url_for('static', filename='images/onab/ball3.png') }}');
-        }
-
-        @keyframes ballBounce {
-            0% {
-                transform: translateY(0);
-                opacity: 0.7;
-            }
-            100% {
-                transform: translateY(-60px);
-                opacity: 1;
-            }
         }
 
         /* Scrollbar styling */
