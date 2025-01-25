@@ -250,3 +250,19 @@ class Incident(db.Model):
 
     def __repr__(self):
         return f'<Incident {self.id}>'
+
+class Infrastructure(db.Model):
+    __tablename__ = 'infrastructures'
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(200), nullable=False, index=True)
+    type = db.Column(db.String(100), nullable=False, index=True)
+    localisation = db.Column(db.String(200), nullable=False)
+    capacite = db.Column(db.Float, nullable=False)
+    etat = db.Column(db.String(50), nullable=False, default='Opérationnel', index=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
+
+    def __repr__(self):
+        return f'<Infrastructure {self.nom}>'

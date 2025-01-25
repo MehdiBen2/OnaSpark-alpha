@@ -1,0 +1,25 @@
+{
+    "sample_infrastructures": [
+        {
+            "nom": "Station de Traitement de Alger",
+            "type": "Station de traitement",
+            "localisation": "Alger, Algérie",
+            "capacite": 50000,
+            "etat": "Opérationnel"
+        },
+        {
+            "nom": "Station de Traitement d'Oran",
+            "type": "Station de traitement", 
+            "localisation": "Oran, Algérie",
+            "capacite": 35000,
+            "etat": "En maintenance"
+        },
+        {
+            "nom": "Station de Pompage de Constantine",
+            "type": "Station de pompage",
+            "localisation": "Constantine, Algérie", 
+            "capacite": 25000,
+            "etat": "Opérationnel"
+        }
+    ]
+}

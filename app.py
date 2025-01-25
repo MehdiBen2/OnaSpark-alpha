@@ -8,10 +8,11 @@ import os
 from dotenv import load_dotenv
 import random
 from functools import wraps
-from models import db, User, Unit, Incident, Zone, Center
+from models import db, User, Unit, Incident, Zone, Center, Infrastructure  # Import Infrastructure model
 from routes.auth import auth
 from routes.profiles import profiles
 from routes.incidents import incidents
+from routes.infrastructures import infrastructures
 from routes.units import units
 from routes.users import users
 from routes.database_admin import database_admin
@@ -53,6 +54,7 @@ login_manager.login_message_category = 'warning'
 app.register_blueprint(spark_agent, url_prefix='/spark-agent')
 app.register_blueprint(auth)
 app.register_blueprint(incidents)
+app.register_blueprint(infrastructures)
 app.register_blueprint(main_dashboard)
 app.register_blueprint(departement)
 app.register_blueprint(landing)
@@ -466,6 +468,7 @@ def handle_exception(error):
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist
     with app.app_context():
+        db.create_all()  # Create tables for any models that might not exist
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(
