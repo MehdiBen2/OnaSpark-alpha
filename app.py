@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 import random
 from functools import wraps
-from models import db, User, Unit, Incident, Zone, Center, Infrastructure  # Import Infrastructure model
+from models import db, User, Unit, Incident, Zone, Center
 from routes.auth import auth
 from routes.profiles import profiles
 from routes.incidents import incidents
@@ -468,7 +468,6 @@ def handle_exception(error):
 if __name__ == '__main__':
     # Create default admin user if it doesn't exist
     with app.app_context():
-        db.create_all()  # Create tables for any models that might not exist
         admin_user = User.query.filter_by(username='admin').first()
         if not admin_user:
             admin_user = User(

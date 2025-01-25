@@ -17,7 +17,7 @@ RAPPORTS = 'rapports'
 STATISTIQUES = 'departement.statistiques'  # Updated to use a more specific namespace
 
 # Infrastructure routes
-INFRASTRUCTURES = '/departements/infrastructures'
+INFRASTRUCTURES = 'departement.infrastructures'
 
 # Reuse routes
 REUSE = 'reuse'
