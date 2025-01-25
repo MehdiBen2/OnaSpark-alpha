@@ -68,3 +68,40 @@ def create_infrastructure():
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         return jsonify({'error': 'Une erreur inattendue est survenue'}), 500
+
+@infrastructures.route('/infrastructures/delete/<int:id>', methods=['DELETE'])
+@login_required
+def delete_infrastructure(id):
+    """
+    Delete an infrastructure by its ID.
+    
+    Args:
+        id (int): The ID of the infrastructure to delete.
+    
+    Returns:
+        JSON response with a success or error message.
+    """
+    try:
+        # Find the infrastructure by ID
+        infrastructure = Infrastructure.query.get_or_404(id)
+        
+        # Delete the infrastructure
+        db.session.delete(infrastructure)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Infrastructure supprimée avec succès.',
+            'status': 'success'
+        }), 200
+    
+    except Exception as e:
+        # Rollback the session in case of error
+        db.session.rollback()
+        
+        # Log the full error for server-side debugging
+        logger.error(f"Erreur lors de la suppression de l'infrastructure {id}: {str(e)}", exc_info=True)
+        
+        return jsonify({
+            'message': f'Erreur lors de la suppression: {str(e)}',
+            'status': 'error'
+        }), 500
