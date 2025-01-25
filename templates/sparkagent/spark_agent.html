@@ -392,18 +392,77 @@
         </div>
     </div>
 
+    <!-- Disclaimer Modal -->
+    <div class="modal fade" id="disclaimerModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--ona-dark-secondary); color: var(--ona-light);">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title">Important Notice: Spark ONA Assistant</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        <strong>Spark is a contextual, session-based AI assistant.</strong>
+                    </p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-clock me-2"></i>Temporary Conversation</li>
+                        <li class="mb-2"><i class="fas fa-sync me-2"></i>Session will be cleared upon page reload or exit</li>
+                        <li class="mb-2"><i class="fas fa-bolt me-2"></i>Designed for immediate, context-specific guidance</li>
+                        <li class="mb-2"><i class="fas fa-window-restore me-2"></i>Recommended: Open in a separate tab while working</li>
+                    </ul>
+                    <p class="text-warning small">
+                        <i class="fas fa-info-circle me-2"></i>Recommendation: Copy important information for future reference.
+                    </p>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Understood</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chatMessages');
+            console.log('DOM fully loaded and parsed');
+
+            // Ensure Bootstrap is available
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap is not loaded correctly');
+                return;
+            }
+
+            // Try to get the modal element
+            const disclaimerModalElement = document.getElementById('disclaimerModal');
+            if (!disclaimerModalElement) {
+                console.error('Disclaimer modal element not found');
+                return;
+            }
+
+            // Create and show the modal
+            try {
+                const disclaimerModal = new bootstrap.Modal(disclaimerModalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                console.log('Modal instance created');
+                
+                // Slight delay to ensure everything is ready
+                setTimeout(() => {
+                    disclaimerModal.show();
+                    console.log('Modal should now be showing');
+                }, 100);
+            } catch (error) {
+                console.error('Error creating or showing modal:', error);
+            }
+
             const chatInput = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Hardcoded API key (replace with your actual Mistral API key)
             // const MISTRAL_API_KEY = 'your_mistral_api_key_here';
-            const DEFAULT_MODEL = 'mistral-small-latest';
-            const DEFAULT_TEMPERATURE = 0.7;
 
             // Fetch Mistral API key from server
             const fetchMistralApiKey = async () => {
@@ -415,8 +474,7 @@
                     const data = await response.json();
                     return data.api_key;
                 } catch (error) {
-                    console.error("Error fetching Mistral API key:", error);
-                    alert('Impossible de récupérer la clé API. Veuillez vérifier votre configuration.');
+                    console.error('Error fetching API key:', error);
                     return null;
                 }
             };
@@ -425,15 +483,14 @@
             const fetchSystemPrompt = async () => {
                 try {
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
-                    const systemPrompt = await response.text();
-                    return systemPrompt.trim();
+                    return await response.text();
                 } catch (error) {
-                    console.error("Erreur lors du chargement du système de prompt:", error);
-                    return 'Tu es SparkAgent, un assistant de l\'Office National de l\'Assainissement en Algérie. Donne des informations précises et professionnelles.';
+                    console.error('Error fetching system prompt:', error);
+                    return "You are a helpful AI assistant.";
                 }
             };
 
-            // Send message function
+            // Send message function implementation...
             const sendMessage = async () => {
                 const userMessage = chatInput.value.trim();
                 if (!userMessage) return;
@@ -592,6 +649,12 @@
 
                 return content;
             };
+
+            // Initial settings load
+            loadSettings();
+            
+            // Ensure typing indicator is hidden on page load
+            typingIndicator.style.display = 'none';
         });
     </script>
 </body>
