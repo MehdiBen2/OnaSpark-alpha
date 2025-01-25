@@ -4,6 +4,67 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/MainDashboard.css') }}">
+<style>
+    /* Loading animation with optimized performance */
+    .loading-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 24px;
+        margin-top: 8px;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+    }
+
+    .loading-dots.hide {
+        opacity: 0;
+    }
+
+    .loading-dots .dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary-color, #4A90E2);
+        border-radius: 50%;
+        transform: scale(0.8);
+        opacity: 0.6;
+        will-change: transform, opacity;
+    }
+
+    .loading-dots .dot:nth-child(1) { animation: pulse 1.5s infinite; }
+    .loading-dots .dot:nth-child(2) { animation: pulse 1.5s infinite 0.5s; }
+    .loading-dots .dot:nth-child(3) { animation: pulse 1.5s infinite 1s; }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(0.8);
+            opacity: 0.6;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+    }
+
+    .stat-number {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .number-value {
+        position: absolute;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease-out;
+    }
+
+    .number-value.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -140,7 +201,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-clipboard-list"></i>
                             </div>
-                            <div class="stat-number">{{ total_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ total_incidents }}</span>
+                            </div>
                             <div class="stat-label">Total des Incidents</div>
                             <div class="stat-trend">
                                 <span>Total à ce jour</span>
@@ -153,7 +221,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-plus-circle"></i>
                             </div>
-                            <div class="stat-number">{{ pending_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ pending_incidents }}</span>
+                            </div>
                             <div class="stat-label">Nouveaux Incidents</div>
                             <div class="stat-trend">
                                 <span>Récemment créés</span>
@@ -166,7 +241,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-check-circle"></i>
                             </div>
-                            <div class="stat-number">{{ resolved_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ resolved_incidents }}</span>
+                            </div>
                             <div class="stat-label">Incidents Résolus</div>
                             <div class="stat-trend">
                                 <span>Complètement résolus</span>
@@ -182,7 +264,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-clipboard-list"></i>
                             </div>
-                            <div class="stat-number">{{ total_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ total_incidents }}</span>
+                            </div>
                             <div class="stat-label">Total des Incidents</div>
                             <div class="stat-trend">
                                 <span>Total à ce jour</span>
@@ -195,7 +284,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-plus-circle"></i>
                             </div>
-                            <div class="stat-number">{{ pending_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ pending_incidents }}</span>
+                            </div>
                             <div class="stat-label">Nouveaux Incidents</div>
                             <div class="stat-trend">
                                 <span>Récemment créés</span>
@@ -208,7 +304,14 @@
                             <div class="stat-icon">
                                 <i class="fas fa-check-circle"></i>
                             </div>
-                            <div class="stat-number">{{ resolved_incidents }}</div>
+                            <div class="stat-number">
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <span class="number-value">{{ resolved_incidents }}</span>
+                            </div>
                             <div class="stat-label">Incidents Résolus</div>
                             <div class="stat-trend">
                                 <span>Complètement résolus</span>
@@ -226,6 +329,35 @@
 
 <script>
 (function() {
+    // Constants for animation timing
+    const ANIMATION_DURATION = 1500;
+    const FADE_DURATION = 300;
+
+    // Show numbers with optimized animation
+    function showNumbers() {
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+            const loadingDots = document.querySelectorAll('.loading-dots');
+            const numberValues = document.querySelectorAll('.number-value');
+            
+            // Add hide class to trigger fade out
+            setTimeout(() => {
+                loadingDots.forEach(dots => dots.classList.add('hide'));
+            }, ANIMATION_DURATION - FADE_DURATION);
+
+            // Show numbers after loading dots fade out
+            setTimeout(() => {
+                loadingDots.forEach(dots => dots.style.display = 'none');
+                numberValues.forEach(value => {
+                    value.style.display = 'block';
+                    // Trigger reflow for animation
+                    void value.offsetWidth;
+                    value.classList.add('show');
+                });
+            }, ANIMATION_DURATION);
+        });
+    }
+
     // Cache DOM queries
     const container = document.querySelector('.dashboard-wrapper');
     
@@ -260,6 +392,8 @@
         firstHeader.classList.add('active');
         firstContent.classList.add('active');
     }
+
+    showNumbers();
 })();
 
 // Format date in French
