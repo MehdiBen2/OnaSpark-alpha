@@ -188,15 +188,39 @@ def upload_infrastructure_files(id):
     try:
         infrastructure = Infrastructure.query.get_or_404(id)
         
+        # Log initial file upload attempt
+        logger.info(f"Attempting to upload files for infrastructure {id}")
+        
         # Check if files are present
         if 'files' not in request.files:
+            logger.warning(f"No files found in request for infrastructure {id}")
             return jsonify({'error': 'Aucun fichier téléchargé'}), 400
         
         files = request.files.getlist('files')
         
+        # Log number of files in the request
+        logger.info(f"Total files in request: {len(files)}")
+        
         # Create a directory for infrastructure files if it doesn't exist
         upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
         os.makedirs(upload_dir, exist_ok=True)
+        
+        # Maximum number of files allowed per infrastructure
+        MAX_FILES = 10
+        
+        # Count existing files
+        existing_files = [f for f in os.listdir(upload_dir) 
+                          if os.path.isfile(os.path.join(upload_dir, f)) 
+                          and not f.startswith('.') 
+                          and not f.startswith('temp_')]
+        
+        # Check if adding new files would exceed the limit
+        if len(existing_files) + len(files) > MAX_FILES:
+            logger.warning(f"Upload would exceed max file limit of {MAX_FILES}")
+            return jsonify({
+                'error': f'Limite maximale de {MAX_FILES} fichiers atteinte',
+                'current_files': len(existing_files)
+            }), 400
         
         # Sanitize location for filename (remove spaces, special characters)
         def sanitize_filename(text):
@@ -204,9 +228,12 @@ def upload_infrastructure_files(id):
         
         # Save each file
         saved_files = []
-        for index, file in enumerate(files, 1):
+        for index, file in enumerate(files, len(existing_files) + 1):
             if file.filename == '':
+                logger.warning(f"Skipping empty filename at index {index}")
                 continue
+            
+            logger.info(f"Processing file: {file.filename}")
             
             # Generate a unique filename with infrastructure number and location
             file_extension = os.path.splitext(file.filename)[1].lower()
@@ -219,11 +246,12 @@ def upload_infrastructure_files(id):
             
             # Compress image if it's an image file
             compression_result = None
-            if file_extension in ['.jpg', '.jpeg', '.png']:
+            if file_extension in ['.jpg', '.jpeg', '.png', '.webp']:
                 try:
                     final_path = os.path.join(upload_dir, new_filename)
                     compression_result = compress_image(temp_path, final_path)
                     os.remove(temp_path)  # Remove temporary file
+                    logger.info(f"Successfully compressed {new_filename}")
                 except Exception as e:
                     logger.warning(f"Compression failed for {new_filename}: {str(e)}")
                     # Use original file if compression fails
@@ -245,9 +273,13 @@ def upload_infrastructure_files(id):
                 'compression': compression_result
             })
         
+        # Log the number of files saved
+        logger.info(f"Uploaded {len(saved_files)} files for infrastructure {id}")
+        
         return jsonify({
             'message': f'{len(saved_files)} fichier(s) téléchargé(s) avec succès',
-            'files': saved_files
+            'files': saved_files,
+            'total_files': len(existing_files) + len(saved_files)
         }), 200
     
     except Exception as e:
@@ -280,7 +312,7 @@ def get_infrastructure_files(id):
             file_info = {
                 'name': filename,
                 'path': file_path,
-                'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) else 'pdf',
+                'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) else 'pdf',
                 'location': infrastructure.localisation,
                 'uploaded_at': os.path.getctime(os.path.join(upload_dir, filename))
             }
@@ -293,16 +325,13 @@ def get_infrastructure_files(id):
         image_files = [f for f in all_files if f['type'].startswith('image')]
         pdf_files = [f for f in all_files if f['type'] == 'pdf']
         
-        # Limit images to 10 most recent
-        image_files = image_files[:10]
-        
         # Combine and return files
         files = image_files + pdf_files
         
         return jsonify({
             'files': files,
-            'total_images': len(all_files),
-            'max_images_displayed': 10
+            'total_images': len(image_files),
+            'max_images_displayed': len(image_files)  # Show all images
         }), 200
     
     except Exception as e:
