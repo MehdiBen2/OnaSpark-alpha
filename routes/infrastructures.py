@@ -105,3 +105,99 @@ def delete_infrastructure(id):
             'message': f'Erreur lors de la suppression: {str(e)}',
             'status': 'error'
         }), 500
+
+@infrastructures.route('/infrastructure/<int:id>/details', methods=['GET'])
+@login_required
+def get_infrastructure_details(id):
+    try:
+        infrastructure = Infrastructure.query.get_or_404(id)
+        
+        # Convert infrastructure to dictionary for JSON response
+        infrastructure_details = {
+            'id': infrastructure.id,
+            'nom': infrastructure.nom,
+            'type': infrastructure.type,
+            'localisation': infrastructure.localisation,
+            'capacite': infrastructure.capacite,
+            'etat': infrastructure.etat
+        }
+        
+        return jsonify(infrastructure_details)
+    except Exception as e:
+        logger.error(f"Error retrieving infrastructure details: {str(e)}")
+        return jsonify({'error': 'Impossible de récupérer les détails de l\'infrastructure'}), 404
+
+@infrastructures.route('/infrastructure/<int:id>/upload-files', methods=['POST'])
+@login_required
+def upload_infrastructure_files(id):
+    try:
+        infrastructure = Infrastructure.query.get_or_404(id)
+        
+        # Check if files are present
+        if 'files' not in request.files:
+            return jsonify({'error': 'Aucun fichier téléchargé'}), 400
+        
+        files = request.files.getlist('files')
+        
+        # Create a directory for infrastructure files if it doesn't exist
+        import os
+        upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save each file
+        saved_files = []
+        for file in files:
+            if file.filename == '':
+                continue
+            
+            # Generate a unique filename
+            from werkzeug.utils import secure_filename
+            import uuid
+            filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
+            file_path = os.path.join(upload_dir, filename)
+            file.save(file_path)
+            
+            # Store relative path for frontend
+            relative_path = os.path.join('uploads', 'infrastructures', str(id), filename)
+            saved_files.append({
+                'name': file.filename,
+                'path': relative_path,
+                'type': file.content_type
+            })
+        
+        return jsonify({
+            'message': f'{len(saved_files)} fichier(s) téléchargé(s) avec succès',
+            'files': saved_files
+        }), 200
+    
+    except Exception as e:
+        logger.error(f"Error uploading infrastructure files: {str(e)}")
+        return jsonify({'error': 'Erreur lors du téléchargement des fichiers'}), 500
+
+@infrastructures.route('/infrastructure/<int:id>/files', methods=['GET'])
+@login_required
+def get_infrastructure_files(id):
+    try:
+        # Create a directory for infrastructure files
+        import os
+        upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
+        
+        # If directory doesn't exist, return empty list
+        if not os.path.exists(upload_dir):
+            return jsonify({'files': []}), 200
+        
+        # Get all files in the directory
+        files = []
+        for filename in os.listdir(upload_dir):
+            file_path = os.path.join('/static', 'uploads', 'infrastructures', str(id), filename)
+            files.append({
+                'name': filename,
+                'path': file_path,
+                'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) else 'pdf'
+            })
+        
+        return jsonify({'files': files}), 200
+    
+    except Exception as e:
+        logger.error(f"Error retrieving infrastructure files: {str(e)}")
+        return jsonify({'error': 'Impossible de récupérer les fichiers'}), 500
