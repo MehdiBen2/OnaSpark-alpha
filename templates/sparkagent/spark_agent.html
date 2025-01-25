@@ -490,26 +490,31 @@
             const sendBtn = document.getElementById('sendBtn');
             const typingIndicator = document.getElementById('typingIndicator');
 
-            // Hardcoded API key (replace with your actual Mistral API key)
-            // const MISTRAL_API_KEY = 'your_mistral_api_key_here';
+            // Fetch default model from server configuration
+            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
 
-            // Fetch Mistral API key from server
-            const fetchMistralApiKey = async () => {
-                try {
-                    const response = await fetch("{{ url_for('get_mistral_api_key_route') }}");
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch API key');
+            function fetchDefaultModel() {
+                fetch("{{ url_for('spark_agent.get_default_model') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.default_model) {
+                        DEFAULT_MODEL = data.default_model;
+                        console.log('Default model set:', DEFAULT_MODEL);
                     }
-                    const data = await response.json();
-                    return data.api_key;
-                } catch (error) {
-                    console.error('Error fetching API key:', error);
-                    return null;
-                }
-            };
+                })
+                .catch(error => {
+                    console.warn('Could not fetch default model, using fallback:', DEFAULT_MODEL);
+                });
+            }
+
+            // Call this function early in the script initialization
+            fetchDefaultModel();
 
             // Fetch system prompt
             const fetchSystemPrompt = async () => {
+                // If DEFAULT_MODEL is not defined, use a fallback
+                const modelToUse = DEFAULT_MODEL || 'mistral-small';
+                
                 try {
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
                     return await response.text();

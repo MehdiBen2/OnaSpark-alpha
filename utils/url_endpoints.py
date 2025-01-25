@@ -39,6 +39,7 @@ GET_ZONE_UNITS = 'api.get_zone_units'
 
 # Spark Agent routes
 GET_MISTRAL_API_KEY = 'spark_agent.get_mistral_api_key'
+GET_DEFAULT_MODEL = 'spark_agent.get_default_model'
 
 # Incidents routes
 INCIDENT_LIST = 'incidents.incident_list'

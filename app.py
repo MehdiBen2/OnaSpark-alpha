@@ -24,9 +24,9 @@ from utils.roles import UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
-from routes.spark_agent_routes import get_mistral_api_key
+from routes.spark_agent_routes import get_mistral_api_key, spark_agent
 from routes.main_dashboard import main_dashboard
-from routes.departement import statistiques
+from routes.departement import departement  # Add this import
 
 # Load environment variables
 load_dotenv()
@@ -50,19 +50,21 @@ login_manager.login_message = 'Veuillez vous connecter pour accéder à cette pa
 login_manager.login_message_category = 'warning'
 
 # Register blueprints
-app.register_blueprint(landing)
+app.register_blueprint(spark_agent, url_prefix='/spark-agent')
 app.register_blueprint(auth)
-app.register_blueprint(profiles)
 app.register_blueprint(incidents)
-app.register_blueprint(units)
-app.register_blueprint(users)
-app.register_blueprint(database_admin)
-app.register_blueprint(water_quality)
-app.register_blueprint(documentation)
 app.register_blueprint(main_dashboard)
+app.register_blueprint(departement)
+app.register_blueprint(landing)
+app.register_blueprint(users)
+app.register_blueprint(water_quality)
+app.register_blueprint(profiles)
+app.register_blueprint(units)
+app.register_blueprint(documentation)
+app.register_blueprint(database_admin)
 
-# Department routes
-app.add_url_rule('/departement/statistiques', view_func=statistiques, methods=['GET'], endpoint='departement.statistiques')
+# Remove the old route definition for statistiques
+# This is now handled by the departement Blueprint
 
 @app.cli.command("init-db")
 @with_appcontext
