@@ -4,11 +4,17 @@ from models import db, User, UserProfile, Unit
 from datetime import datetime
 from sqlalchemy import or_
 from utils.form_validation import FormValidator, handle_form_exception
-from utils.url_endpoints import INDEX, VIEW_PROFILE, CREATE_PROFILE, ADMIN_PROFILES
+from utils.url_endpoints import (
+    PROFILE_VIEW,
+    PROFILE_EDIT,
+    PROFILE_CREATE,
+    PROFILE_ADMIN,
+    PROFILE_USER_VIEW
+)
 
 profiles = Blueprint('profiles', __name__)
 
-@profiles.route('/profile/create', methods=['GET', 'POST'])
+@profiles.route('/profile/create', methods=['GET', 'POST'], endpoint='create_profile')
 @login_required
 def create_profile():
     if request.method == 'POST':
@@ -87,7 +93,7 @@ def create_profile():
             db.session.add(profile)
             db.session.commit()
             flash('Profil créé avec succès', 'success')
-            return redirect(url_for(VIEW_PROFILE))
+            return redirect(url_for(PROFILE_VIEW))
 
         except Exception as e:
             db.session.rollback()
@@ -96,37 +102,37 @@ def create_profile():
 
     return render_template('profiles/create_profile.html', form_data={})
 
-@profiles.route('/profile', methods=['GET'])
+@profiles.route('/profile', methods=['GET'], endpoint='view_profile')
 @login_required
 def view_profile():
     if not current_user.profile:
         flash('Vous n\'avez pas encore créé votre profil.', 'info')
-        return redirect(url_for(CREATE_PROFILE))
+        return redirect(url_for(PROFILE_CREATE))
     
     return render_template('profiles/view_profile.html', profile=current_user.profile)
 
-@profiles.route('/profile/<int:user_id>', methods=['GET'])
+@profiles.route('/profile/<int:user_id>', methods=['GET'], endpoint='view_user_profile')
 @login_required
 def view_user_profile(user_id):
     # Check if the current user is an admin or viewing their own profile
     if not current_user.role == 'Admin' and current_user.id != user_id:
         flash('Vous n\'avez pas la permission de voir ce profil.', 'error')
-        return redirect(url_for(VIEW_PROFILE))
+        return redirect(url_for(PROFILE_VIEW))
     
     user = User.query.get_or_404(user_id)
     if not user.profile:
         flash('Ce utilisateur n\'a pas encore créé son profil.', 'info')
-        return redirect(url_for(ADMIN_PROFILES))
+        return redirect(url_for(PROFILE_ADMIN))
     
     return render_template('profiles/view_profile.html', profile=user.profile, is_admin_view=True)
 
-@profiles.route('/profile/edit', methods=['GET', 'POST'])
+@profiles.route('/profile/edit', methods=['GET', 'POST'], endpoint='edit_profile')
 @login_required
 def edit_profile():
     profile = current_user.profile
     if not profile:
         flash('Profile not found', 'error')
-        return redirect(url_for(CREATE_PROFILE))
+        return redirect(url_for(PROFILE_CREATE))
 
     if request.method == 'POST':
         try:
@@ -194,7 +200,7 @@ def edit_profile():
 
             db.session.commit()
             flash('Profile updated successfully', 'success')
-            return redirect(url_for(VIEW_PROFILE))
+            return redirect(url_for(PROFILE_VIEW))
 
         except Exception as e:
             db.session.rollback()
@@ -203,20 +209,20 @@ def edit_profile():
 
     return render_template('profiles/edit_profile.html', profile=profile, form_data={})
 
-@profiles.route('/profile/<int:user_id>/edit', methods=['GET', 'POST'])
+@profiles.route('/profile/<int:user_id>/edit', methods=['GET', 'POST'], endpoint='edit_user_profile')
 @login_required
 def edit_user_profile(user_id):
     if current_user.role != 'Admin':
-        flash('Unauthorized access', 'error')
-        return redirect(url_for(INDEX))
+        flash('Vous n\'avez pas la permission de modifier ce profil.', 'error')
+        return redirect(url_for(PROFILE_VIEW))
     
     user = User.query.get_or_404(user_id)
     profile = user.profile
     
     if not profile:
         flash('Profile not found', 'error')
-        return redirect(url_for(ADMIN_PROFILES))
-
+        return redirect(url_for(PROFILE_ADMIN))
+    
     if request.method == 'POST':
         try:
             # Get form data
@@ -283,7 +289,7 @@ def edit_user_profile(user_id):
 
             db.session.commit()
             flash('Profile updated successfully', 'success')
-            return redirect(url_for('profiles.view_user_profile', user_id=user_id))
+            return redirect(url_for(PROFILE_USER_VIEW, user_id=user_id))
 
         except Exception as e:
             db.session.rollback()
@@ -292,13 +298,13 @@ def edit_user_profile(user_id):
 
     return render_template('profiles/edit_profile.html', profile=profile, form_data={}, is_admin_view=True)
 
-@profiles.route('/admin/profiles', methods=['GET'])
+@profiles.route('/admin/profiles', methods=['GET'], endpoint='admin_profiles')
 @login_required
 def admin_profiles():
     if current_user.role != 'Admin':
-        flash('Accès non autorisé', 'error')
-        return redirect(url_for(INDEX))
-
+        flash('Vous n\'avez pas la permission d\'accéder à cette page.', 'error')
+        return redirect(url_for(PROFILE_VIEW))
+    
     search_query = request.args.get('search', '')
     sort_by = request.args.get('sort_by', 'last_name')
     order = request.args.get('order', 'asc')

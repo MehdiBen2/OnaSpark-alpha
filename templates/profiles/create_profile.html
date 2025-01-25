@@ -13,7 +13,7 @@
                 </div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Tableau de Bord</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('main_dashboard.dashboard') }}">Tableau de Bord</a></li>
                         <li class="breadcrumb-item"><a href="{{ url_for('profiles.admin_profiles') }}">Profils</a></li>
                         <li class="breadcrumb-item active">Nouveau Profil</li>
                     </ol>
@@ -339,4 +339,3 @@
 })()
 </script>
 {% endblock %}
-

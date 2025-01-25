@@ -61,9 +61,9 @@ def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, A
         current_app.logger.warning(f"Invalid drawn shapes JSON: {drawn_shapes_json}")
         return None
 
-@incidents.route('/list')
+@incidents.route('/list', methods=['GET'], endpoint='incident_list')
 @login_required
-def incident_list():
+def list_incidents():
     """
     Display a paginated list of incidents with optional filtering, searching, and sorting.
     

@@ -280,7 +280,7 @@
 <body>
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+            <a class="navbar-brand" href="{{ url_for('main_dashboard.dashboard') }}">
                 <img src="{{ url_for('static', filename='images/ona_logo.png') }}" alt="ONA">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -289,7 +289,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                        <a class="nav-link" href="{{ url_for('main_dashboard.dashboard') }}">
                             <i class="fas fa-chart-line"></i>
                             <span>Tableau de bord</span>
                         </a>

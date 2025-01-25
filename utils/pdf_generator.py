@@ -161,14 +161,17 @@ def create_incident_pdf(incidents, output_path, unit=None):
     # Table data with proper text wrapping
     data = [headers]
     for incident in incidents:
+        nature_cause = incident.nature_cause or "Aucune cause détaillée"
+        mesures_prises = incident.mesures_prises or "Aucune mesure prise"
+        
         row = [
             Paragraph('Conduits', cell_style),
             Paragraph(incident.wilaya, cell_style),
             Paragraph(incident.commune, cell_style),
             Paragraph(incident.localite, cell_style),
-            Paragraph(incident.nature_cause, cell_style),
+            Paragraph(nature_cause, cell_style),
             Paragraph(incident.date_incident.strftime('%Y-%m-%d\n%H:%M'), cell_style),
-            Paragraph(incident.mesures_prises, cell_style),
+            Paragraph(mesures_prises, cell_style),
             Paragraph(incident.impact, cell_style)
         ]
         data.append(row)

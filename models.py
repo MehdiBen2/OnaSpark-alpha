@@ -11,8 +11,8 @@ db = SQLAlchemy()
 class Zone(db.Model):
     __tablename__ = 'zones'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    code = db.Column(db.String(10), unique=True, nullable=False)
+    name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    code = db.Column(db.String(10), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
     phone = db.Column(db.String(20), nullable=True)
     description = db.Column(db.Text)
@@ -25,8 +25,8 @@ class Zone(db.Model):
     director = db.relationship('User', foreign_keys=[director_id], backref='directed_zone', lazy=True)
 
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     def __repr__(self):
         return f'<Zone {self.name}>'
@@ -34,13 +34,13 @@ class Zone(db.Model):
 class Unit(db.Model):
     __tablename__ = 'units'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    code = db.Column(db.String(10), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False, index=True)
+    code = db.Column(db.String(10), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
     phone = db.Column(db.String(20), nullable=True)
     description = db.Column(db.Text)
     address = db.Column(db.String(200))
-    zone_id = db.Column(db.Integer, db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False)
+    zone_id = db.Column(db.Integer, db.ForeignKey('zones.id', ondelete='CASCADE'), nullable=False, index=True)
     director_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     # Relationships
@@ -50,8 +50,8 @@ class Unit(db.Model):
     incidents = db.relationship('Incident', backref='unit', lazy=True)
 
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     def __repr__(self):
         return f'<Unit {self.name}>'
@@ -79,22 +79,22 @@ class Center(db.Model):
 class UserProfile(db.Model):
     __tablename__ = 'user_profiles'
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False, index=True)
+    last_name = db.Column(db.String(100), nullable=False, index=True)
     date_of_birth = db.Column(db.Date, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    professional_number = db.Column(db.String(50), unique=True, nullable=False)
-    job_function = db.Column(db.String(100), nullable=False)
-    recruitment_date = db.Column(db.DateTime, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    professional_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    job_function = db.Column(db.String(100), nullable=False, index=True)
+    recruitment_date = db.Column(db.DateTime, nullable=False, index=True)
     phone = db.Column(db.String(20))
     address = db.Column(db.String(200))
     
     # Foreign Keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     def calculate_years_of_work(self):
         today = datetime.now()
@@ -113,17 +113,17 @@ class UserProfile(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    nickname = db.Column(db.String(80))
-    email = db.Column(db.String(120), unique=True, nullable=True)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    nickname = db.Column(db.String(80), index=True)
+    email = db.Column(db.String(120), unique=True, nullable=True, index=True)
     password_hash = db.Column(db.String(128))
-    role = db.Column(db.String(20), nullable=False, default=UserRole.UTILISATEUR)
-    is_active = db.Column(db.Boolean, default=True)
-    last_login = db.Column(db.DateTime)
-    unit_id = db.Column(db.Integer, db.ForeignKey('units.id', ondelete='SET NULL'), nullable=True)
-    zone_id = db.Column(db.Integer, db.ForeignKey('zones.id', ondelete='SET NULL'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    role = db.Column(db.String(20), nullable=False, default=UserRole.UTILISATEUR, index=True)
+    is_active = db.Column(db.Boolean, default=True, index=True)
+    last_login = db.Column(db.DateTime, index=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id', ondelete='SET NULL'), nullable=True, index=True)
+    zone_id = db.Column(db.Integer, db.ForeignKey('zones.id', ondelete='SET NULL'), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     # Relationships
     profile = db.relationship('UserProfile', backref='user', uselist=False, lazy=True, cascade='all, delete-orphan')
@@ -141,24 +141,24 @@ class User(UserMixin, db.Model):
 class Incident(db.Model):
     __tablename__ = 'incidents'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    wilaya = db.Column(db.String(50), nullable=False)
-    commune = db.Column(db.String(100), nullable=False)
-    localite = db.Column(db.String(200), nullable=False)
-    structure_type = db.Column(db.String(50), nullable=False, default='Conduits')
-    nature_cause = db.Column(db.Text, nullable=False)
-    date_incident = db.Column(db.DateTime, nullable=False)
+    title = db.Column(db.String(200), nullable=False, index=True)
+    wilaya = db.Column(db.String(50), nullable=False, index=True)
+    commune = db.Column(db.String(100), nullable=False, index=True)
+    localite = db.Column(db.String(200), nullable=False, index=True)
+    structure_type = db.Column(db.String(50), nullable=False, default='Conduits', index=True)
+    nature_cause = db.Column(db.Text, nullable=False, index=True)
+    date_incident = db.Column(db.DateTime, nullable=False, index=True)
     mesures_prises = db.Column(db.Text)
     impact = db.Column(db.Text, nullable=False)
-    gravite = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(20), nullable=False, default='Nouveau')
-    date_resolution = db.Column(db.DateTime)
+    gravite = db.Column(db.String(50), nullable=False, index=True)
+    status = db.Column(db.String(20), nullable=False, default='Nouveau', index=True)
+    date_resolution = db.Column(db.DateTime, index=True)
     resolution_notes = db.Column(db.Text)
     
     # Foreign Keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False)
-    center_id = db.Column(db.Integer, db.ForeignKey('centers.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('units.id'), nullable=False, index=True)
+    center_id = db.Column(db.Integer, db.ForeignKey('centers.id'), index=True)
     
     # New column for storing drawn shapes
     drawn_shapes = db.Column(JSON, nullable=True)
@@ -168,8 +168,8 @@ class Incident(db.Model):
     longitude = db.Column(db.Float, nullable=True)
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     def __init__(self, *args, **kwargs):
         # If drawn_shapes are provided, attempt to extract representative coordinates
