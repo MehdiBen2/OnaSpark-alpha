@@ -3,12 +3,67 @@ from flask_login import login_required, current_user
 from models import db, Infrastructure
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+import os
+from PIL import Image
+import io
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 infrastructures = Blueprint('infrastructures', __name__, url_prefix='/departements')
+
+def compress_image(input_path, output_path, max_size=(1920, 1080), quality=85, max_file_size_kb=500):
+    """
+    Compress and resize an image while maintaining aspect ratio.
+    
+    Args:
+        input_path (str): Path to the input image
+        output_path (str): Path to save the compressed image
+        max_size (tuple): Maximum width and height
+        quality (int): JPEG compression quality (1-95)
+        max_file_size_kb (int): Maximum file size in kilobytes
+    
+    Returns:
+        dict: Compression details
+    """
+    try:
+        # Open the image
+        with Image.open(input_path) as img:
+            # Convert to RGB if needed
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # Resize image while maintaining aspect ratio
+            img.thumbnail(max_size, Image.LANCZOS)
+            
+            # Dynamically adjust quality to meet file size constraint
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=quality, optimize=True)
+            file_size = buffer.tell() / 1024  # Size in KB
+            
+            # Adjust quality if file is too large
+            attempts = 0
+            while file_size > max_file_size_kb and attempts < 5:
+                quality -= 5
+                buffer = io.BytesIO()
+                img.save(buffer, format='JPEG', quality=quality, optimize=True)
+                file_size = buffer.tell() / 1024
+                attempts += 1
+            
+            # Save the compressed image
+            img.save(output_path, format='JPEG', quality=quality, optimize=True)
+            
+            return {
+                'original_size': os.path.getsize(input_path) / 1024,
+                'compressed_size': file_size,
+                'quality': quality,
+                'dimensions': img.size
+            }
+    except Exception as e:
+        logger.error(f"Image compression error: {str(e)}")
+        return None
 
 @infrastructures.route('/infrastructures', methods=['GET'])
 @login_required
@@ -140,14 +195,11 @@ def upload_infrastructure_files(id):
         files = request.files.getlist('files')
         
         # Create a directory for infrastructure files if it doesn't exist
-        import os
         upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
         os.makedirs(upload_dir, exist_ok=True)
         
         # Sanitize location for filename (remove spaces, special characters)
-        import re
         def sanitize_filename(text):
-            # Remove non-alphanumeric characters and convert to lowercase
             return re.sub(r'[^\w\s-]', '', text.lower().replace(' ', '_'))
         
         # Save each file
@@ -157,25 +209,40 @@ def upload_infrastructure_files(id):
                 continue
             
             # Generate a unique filename with infrastructure number and location
-            from werkzeug.utils import secure_filename
-            file_extension = os.path.splitext(file.filename)[1]
-            
-            # Sanitize location for filename
+            file_extension = os.path.splitext(file.filename)[1].lower()
             sanitized_location = sanitize_filename(infrastructure.localisation)
             
             # Create new filename: infra{id}_{location}_{index}{extension}
             new_filename = f"infra{id}_{sanitized_location}_{index}{file_extension}"
-            file_path = os.path.join(upload_dir, new_filename)
-            file.save(file_path)
+            temp_path = os.path.join(upload_dir, f"temp_{new_filename}")
+            file.save(temp_path)
+            
+            # Compress image if it's an image file
+            compression_result = None
+            if file_extension in ['.jpg', '.jpeg', '.png']:
+                try:
+                    final_path = os.path.join(upload_dir, new_filename)
+                    compression_result = compress_image(temp_path, final_path)
+                    os.remove(temp_path)  # Remove temporary file
+                except Exception as e:
+                    logger.warning(f"Compression failed for {new_filename}: {str(e)}")
+                    # Use original file if compression fails
+                    final_path = os.path.join(upload_dir, new_filename)
+                    os.rename(temp_path, final_path)
+            else:
+                # For non-image files, just rename
+                final_path = os.path.join(upload_dir, new_filename)
+                os.rename(temp_path, final_path)
             
             # Store relative path for frontend
             relative_path = os.path.join('uploads', 'infrastructures', str(id), new_filename)
             saved_files.append({
-                'name': new_filename,  # Use the new filename
-                'original_name': file.filename,  # Keep original filename for reference
+                'name': new_filename,
+                'original_name': file.filename,
                 'path': relative_path,
                 'type': file.content_type,
-                'location': infrastructure.localisation  # Add location information
+                'location': infrastructure.localisation,
+                'compression': compression_result
             })
         
         return jsonify({
@@ -203,17 +270,40 @@ def get_infrastructure_files(id):
             return jsonify({'files': []}), 200
         
         # Get all files in the directory
-        files = []
-        for filename in os.listdir(upload_dir):
+        all_files = []
+        for filename in sorted(os.listdir(upload_dir)):
+            # Skip temporary or hidden files
+            if filename.startswith('.') or filename.startswith('temp_'):
+                continue
+            
             file_path = os.path.join('/static', 'uploads', 'infrastructures', str(id), filename)
-            files.append({
+            file_info = {
                 'name': filename,
                 'path': file_path,
                 'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) else 'pdf',
-                'location': infrastructure.localisation  # Add location information
-            })
+                'location': infrastructure.localisation,
+                'uploaded_at': os.path.getctime(os.path.join(upload_dir, filename))
+            }
+            all_files.append(file_info)
         
-        return jsonify({'files': files}), 200
+        # Sort files by upload time (newest first)
+        all_files.sort(key=lambda x: x['uploaded_at'], reverse=True)
+        
+        # Separate images and PDFs
+        image_files = [f for f in all_files if f['type'].startswith('image')]
+        pdf_files = [f for f in all_files if f['type'] == 'pdf']
+        
+        # Limit images to 10 most recent
+        image_files = image_files[:10]
+        
+        # Combine and return files
+        files = image_files + pdf_files
+        
+        return jsonify({
+            'files': files,
+            'total_images': len(all_files),
+            'max_images_displayed': 10
+        }), 200
     
     except Exception as e:
         logger.error(f"Error retrieving infrastructure files: {str(e)}")
