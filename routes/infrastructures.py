@@ -144,25 +144,38 @@ def upload_infrastructure_files(id):
         upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
         os.makedirs(upload_dir, exist_ok=True)
         
+        # Sanitize location for filename (remove spaces, special characters)
+        import re
+        def sanitize_filename(text):
+            # Remove non-alphanumeric characters and convert to lowercase
+            return re.sub(r'[^\w\s-]', '', text.lower().replace(' ', '_'))
+        
         # Save each file
         saved_files = []
-        for file in files:
+        for index, file in enumerate(files, 1):
             if file.filename == '':
                 continue
             
-            # Generate a unique filename
+            # Generate a unique filename with infrastructure number and location
             from werkzeug.utils import secure_filename
-            import uuid
-            filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-            file_path = os.path.join(upload_dir, filename)
+            file_extension = os.path.splitext(file.filename)[1]
+            
+            # Sanitize location for filename
+            sanitized_location = sanitize_filename(infrastructure.localisation)
+            
+            # Create new filename: infra{id}_{location}_{index}{extension}
+            new_filename = f"infra{id}_{sanitized_location}_{index}{file_extension}"
+            file_path = os.path.join(upload_dir, new_filename)
             file.save(file_path)
             
             # Store relative path for frontend
-            relative_path = os.path.join('uploads', 'infrastructures', str(id), filename)
+            relative_path = os.path.join('uploads', 'infrastructures', str(id), new_filename)
             saved_files.append({
-                'name': file.filename,
+                'name': new_filename,  # Use the new filename
+                'original_name': file.filename,  # Keep original filename for reference
                 'path': relative_path,
-                'type': file.content_type
+                'type': file.content_type,
+                'location': infrastructure.localisation  # Add location information
             })
         
         return jsonify({
@@ -178,6 +191,9 @@ def upload_infrastructure_files(id):
 @login_required
 def get_infrastructure_files(id):
     try:
+        # Get the infrastructure to ensure we have location information
+        infrastructure = Infrastructure.query.get_or_404(id)
+        
         # Create a directory for infrastructure files
         import os
         upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
@@ -193,7 +209,8 @@ def get_infrastructure_files(id):
             files.append({
                 'name': filename,
                 'path': file_path,
-                'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) else 'pdf'
+                'type': 'image' if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')) else 'pdf',
+                'location': infrastructure.localisation  # Add location information
             })
         
         return jsonify({'files': files}), 200
