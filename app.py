@@ -88,18 +88,15 @@ def admin_required(f):
 def unit_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for('login'))
-            
-        # Check if the role requires unit selection
-        if not UserRole.requires_unit_selection(current_user.role):
+        # Exempt certain roles from unit requirement
+        if current_user.role in [UserRole.EMPLOYEUR_ZONE, UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
             return f(*args, **kwargs)
-            
-        # All other roles need a unit
-        if current_user.unit_id is None:
-            flash("Vous devez sélectionner une unité pour accéder à cette page.", "warning")
+        
+        # Check if user has a unit
+        if not current_user.unit_id:
+            flash('Vous devez sélectionner une unité avant de continuer.', 'warning')
             return redirect(url_for('select_unit'))
-            
+        
         return f(*args, **kwargs)
     return decorated_function
 
@@ -368,8 +365,13 @@ def delete_center(id):
 @app.route('/select-unit', methods=['GET', 'POST'])
 @login_required
 def select_unit():
-    # Zone employers, Admin, and DG don't need to select a unit
+    # Exempt certain roles from unit selection
     if current_user.role in [UserRole.EMPLOYEUR_ZONE, UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+        return redirect(url_for('main_dashboard.dashboard'))
+    
+    # If user has no zone, they need to be assigned first
+    if not current_user.zone_id:
+        flash("Vous devez d'abord être assigné à une zone par un administrateur.", "warning")
         return redirect(url_for('main_dashboard.dashboard'))
     
     if request.method == 'POST':
@@ -394,14 +396,12 @@ def select_unit():
         return redirect(url_for('main_dashboard.dashboard'))
         
     # GET request - show selection form
-    if current_user.role == UserRole.ADMIN:
-        zones = Zone.query.all()
-    elif current_user.zone_id:
-        zones = [Zone.query.get(current_user.zone_id)]
-    else:
-        zones = []
-        
-    return render_template('incidents/select_unit.html', zones=zones)
+    zones = [Zone.query.get(current_user.zone_id)]
+    
+    # Get units for the zone
+    units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+    
+    return render_template('select_unit.html', zones=zones, units=units)
 
 @app.route('/api/units/<int:zone_id>')
 @login_required
