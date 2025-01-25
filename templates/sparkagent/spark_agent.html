@@ -394,28 +394,57 @@
 
     <!-- Disclaimer Modal -->
     <div class="modal fade" id="disclaimerModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background-color: var(--ona-dark-secondary); color: var(--ona-light);">
-                <div class="modal-header border-bottom-0">
-                    <h5 class="modal-title">Important Notice: Spark ONA Assistant</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="background-color: var(--ona-dark-secondary); color: var(--ona-light); border-radius: 15px; border: 2px solid var(--ona-primary);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title d-flex align-items-center" style="color: var(--ona-primary); font-weight: 600;">
+                        <i class="fas fa-bolt me-3" style="font-size: 1.5rem;"></i>
+                        Important : Utilisation de l'Assistant Spark ONA
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="opacity: 0.7;"></button>
                 </div>
-                <div class="modal-body">
-                    <p>
-                        <strong>Spark is a contextual, session-based AI assistant.</strong>
-                    </p>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><i class="fas fa-clock me-2"></i>Temporary Conversation</li>
-                        <li class="mb-2"><i class="fas fa-sync me-2"></i>Session will be cleared upon page reload or exit</li>
-                        <li class="mb-2"><i class="fas fa-bolt me-2"></i>Designed for immediate, context-specific guidance</li>
-                        <li class="mb-2"><i class="fas fa-window-restore me-2"></i>Recommended: Open in a separate tab while working</li>
-                    </ul>
-                    <p class="text-warning small">
-                        <i class="fas fa-info-circle me-2"></i>Recommendation: Copy important information for future reference.
-                    </p>
+                <div class="modal-body pt-2">
+                    <div class="alert" style="background-color: rgba(53, 110, 231, 0.1); border-left: 4px solid var(--ona-primary); color: var(--ona-light);">
+                        <strong class="d-block mb-2" style="color: var(--ona-primary);">Spark : Votre Assistant IA Contextuel</strong>
+                        <p class="mb-0">Un assistant intelligent conçu pour vous aider efficacement dans vos tâches quotidiennes.</p>
+                    </div>
+                    
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <div class="feature-card p-3 h-100" style="background-color: rgba(23, 58, 170, 0.2); border-radius: 10px; border: 1px solid rgba(53, 110, 231, 0.2);">
+                                <h6 class="mb-2" style="color: var(--ona-primary);"><i class="fas fa-clock me-2"></i>Session Temporaire</h6>
+                                <p class="text-muted small mb-0">La conversation est contextuelle et limitée à la session en cours.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card p-3 h-100" style="background-color: rgba(23, 58, 170, 0.2); border-radius: 10px; border: 1px solid rgba(53, 110, 231, 0.2);">
+                                <h6 class="mb-2" style="color: var(--ona-primary);"><i class="fas fa-sync me-2"></i>Réinitialisation Automatique</h6>
+                                <p class="text-muted small mb-0">La session sera effacée lors du rechargement ou de la sortie de la page.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card p-3 h-100" style="background-color: rgba(23, 58, 170, 0.2); border-radius: 10px; border: 1px solid rgba(53, 110, 231, 0.2);">
+                                <h6 class="mb-2" style="color: var(--ona-primary);"><i class="fas fa-bolt me-2"></i>Assistance Contextuelle</h6>
+                                <p class="text-muted small mb-0">Conçu pour fournir des conseils immédiats et spécifiques.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card p-3 h-100" style="background-color: rgba(23, 58, 170, 0.2); border-radius: 10px; border: 1px solid rgba(53, 110, 231, 0.2);">
+                                <h6 class="mb-2" style="color: var(--ona-primary);"><i class="fas fa-external-link-alt me-2"></i>Nouvel Onglet</h6>
+                                <p class="text-muted small mb-0">Spark s'ouvre automatiquement dans un nouvel onglet pour votre commodité.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-3" style="background-color: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; color: var(--ona-light);">
+                        <i class="fas fa-info-circle me-2" style="color: #ffc107;"></i>
+                        <strong>Conseil :</strong> Pensez à copier les informations importantes pour référence future.
+                    </div>
                 </div>
-                <div class="modal-footer border-top-0">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Understood</button>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: var(--ona-primary); border-color: var(--ona-primary); border-radius: 50px; padding: 10px 20px;">
+                        <i class="fas fa-check-circle me-2"></i>Compris
+                    </button>
                 </div>
             </div>
         </div>
