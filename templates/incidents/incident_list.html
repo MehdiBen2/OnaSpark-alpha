@@ -308,15 +308,17 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap">
             <h2 class="mb-0">Liste des Incidents</h2>
             <div class="action-buttons d-flex align-items-center gap-2">
-                <form class="d-flex" action="{{ url_for('incidents.incident_list') }}" method="GET">
+                <form id="searchSortForm" class="d-flex" action="{{ url_for('incidents.incident_list') }}" method="GET">
                     <div class="input-group me-2">
-                        <input type="text" class="form-control" name="search" placeholder="Rechercher..." value="{{ request.args.get('search', '') }}" style="width: 200px;">
+                        <input type="text" class="form-control" name="search" placeholder="Rechercher..." 
+                               value="{{ request.args.get('search', '') }}" style="width: 200px;">
+                        <input type="hidden" name="sort" id="sortInput" value="{{ request.args.get('sort', 'date_desc') }}">
                         <button class="btn btn-light" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
-                <select class="form-select me-2" id="sortIncidents" onchange="this.form.submit()" name="sort" style="width: 150px;">
+                <select class="form-select me-2" id="sortIncidents" style="width: 150px;">
                     <option value="date_desc" {{ 'selected' if request.args.get('sort') == 'date_desc' }}>Plus récent</option>
                     <option value="date_asc" {{ 'selected' if request.args.get('sort') == 'date_asc' }}>Plus ancien</option>
                     <option value="gravite" {{ 'selected' if request.args.get('sort') == 'gravite' }}>Gravité</option>
@@ -764,7 +766,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Warning dismissal
+    // Sort functionality
+    const sortSelect = document.getElementById('sortIncidents');
+    const sortInput = document.getElementById('sortInput');
+    const searchSortForm = document.getElementById('searchSortForm');
+
+    // Update hidden input when sort changes
+    sortSelect.addEventListener('change', function() {
+        sortInput.value = this.value;
+        searchSortForm.submit();
+    });
+
+    // Warning dismissal function
     function dismissWarning() {
         document.getElementById('mobileWarning').style.display = 'none';
         document.querySelector('.container-fluid').style.paddingTop = '1rem';

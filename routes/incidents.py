@@ -65,11 +65,13 @@ def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, A
 @login_required
 def incident_list():
     """
-    Display a paginated list of incidents with optional filtering.
+    Display a paginated list of incidents with optional filtering, searching, and sorting.
     
     Query Parameters:
     - page: Current page number
     - status: Filter incidents by status
+    - search: Search term for incidents
+    - sort: Sorting option
     
     Returns:
         Rendered incident list template with pagination
@@ -77,6 +79,8 @@ def incident_list():
     # Get query parameters
     page = request.args.get('page', 1, type=int)
     status_filter = request.args.get('status', None)
+    search_term = request.args.get('search', '').strip()
+    sort_option = request.args.get('sort', 'date_desc')
     
     # Base query setup based on user role
     if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
@@ -94,8 +98,45 @@ def incident_list():
     if status_filter:
         query = query.filter_by(status=status_filter)
     
+    # Apply search filter if search term is provided
+    if search_term:
+        search_filter = f'%{search_term}%'
+        query = query.filter(
+            db.or_(
+                Incident.wilaya.ilike(search_filter),
+                Incident.commune.ilike(search_filter),
+                Incident.localite.ilike(search_filter),
+                Incident.nature_cause.ilike(search_filter),
+                Incident.impact.ilike(search_filter)
+            )
+        )
+    
+    # Apply sorting
+    if sort_option == 'date_desc':
+        query = query.order_by(Incident.date_incident.desc())
+    elif sort_option == 'date_asc':
+        query = query.order_by(Incident.date_incident.asc())
+    elif sort_option == 'gravite':
+        # Custom sorting for severity
+        gravite_order = ['Critique', 'Élevée', 'Moyenne', 'Faible']
+        query = query.order_by(
+            db.case(
+                *[(Incident.gravite == severity, index) for index, severity in enumerate(gravite_order)],
+                else_=len(gravite_order)
+            )
+        )
+    elif sort_option == 'status':
+        # Custom sorting for status
+        status_order = ['En cours', 'Résolu']
+        query = query.order_by(
+            db.case(
+                *[(Incident.status == status, index) for index, status in enumerate(status_order)],
+                else_=len(status_order)
+            )
+        )
+    
     # Paginate results
-    pagination = query.order_by(Incident.date_incident.desc()).paginate(
+    pagination = query.paginate(
         page=page, 
         per_page=10,  # Adjust as needed
         error_out=False
