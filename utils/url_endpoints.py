@@ -14,7 +14,7 @@ SELECT_UNIT = 'select_unit'
 EXPLOITATION = 'exploitation'
 DEPARTEMENTS = 'departements'
 RAPPORTS = 'rapports'
-STATISTIQUES = 'statistiques'
+STATISTIQUES = 'departement.statistiques'  # Updated to use a more specific namespace
 
 # Reuse routes
 REUSE = 'reuse'

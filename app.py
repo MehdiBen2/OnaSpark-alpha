@@ -26,6 +26,7 @@ from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
 from routes.spark_agent_routes import get_mistral_api_key
 from routes.main_dashboard import main_dashboard
+from routes.departement import statistiques
 
 # Load environment variables
 load_dotenv()
@@ -59,6 +60,9 @@ app.register_blueprint(database_admin)
 app.register_blueprint(water_quality)
 app.register_blueprint(documentation)
 app.register_blueprint(main_dashboard)
+
+# Department routes
+app.add_url_rule('/departement/statistiques', view_func=statistiques, methods=['GET'], endpoint='departement.statistiques')
 
 @app.cli.command("init-db")
 @with_appcontext
@@ -167,15 +171,6 @@ def rapports():
     incident_counts = get_user_incident_counts(current_user)
     total_incidents = incident_counts['total_incidents']
     return render_template('departement/rapports.html', total_incidents=total_incidents)
-
-@app.route('/departement/statistiques')
-@login_required
-@unit_required
-def statistiques():
-    return render_template('departement/statistiques.html', datetime=datetime)
-
-# Remove Water Quality Assessment Routes
-# These routes have been moved to routes/water_quality.py
 
 @app.route('/units')
 @login_required
