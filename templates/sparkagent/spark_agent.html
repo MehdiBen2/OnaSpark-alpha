@@ -492,8 +492,6 @@
 
             // Fetch default model from server configuration
             let DEFAULT_MODEL = 'mistral-small';  // Fallback value
-            let DEFAULT_TEMPERATURE = 0.7;  // Default temperature for model generation
-            let DEFAULT_MAX_TOKENS = 4096;  // Default max tokens
 
             // Function to fetch Mistral API Key
             function fetchMistralApiKey() {
@@ -555,27 +553,7 @@
             // Send message function implementation...
             const sendMessage = async () => {
                 const userMessage = chatInput.value.trim();
-
-                // Validate input
-                if (!userMessage) {
-                    console.warn('No message to send');
-                    return;
-                }
-
-                // Get current model and temperature
-                const selectedModel = document.getElementById('model-select').value || DEFAULT_MODEL;
-                const temperatureInput = document.getElementById('temperature-input');
-                const temperature = temperatureInput ? 
-                    parseFloat(temperatureInput.value) || DEFAULT_TEMPERATURE : 
-                    DEFAULT_TEMPERATURE;
-                
-                // Prepare request payload
-                const payload = {
-                    model: selectedModel,
-                    message: userMessage,
-                    temperature: temperature,
-                    max_tokens: DEFAULT_MAX_TOKENS
-                };
+                if (!userMessage) return;
 
                 // Add user message to chat
                 const userMessageEl = createMessageElement('user', userMessage);
