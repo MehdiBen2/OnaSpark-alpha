@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Incident, Unit
+from models import Incident, Unit, UserRole
 from datetime import datetime
 from functools import wraps
 
@@ -10,6 +10,10 @@ departement = Blueprint('departement', __name__)
 def unit_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Allow admin users to access the route
+        if current_user.role == UserRole.ADMIN:
+            return f(*args, **kwargs)
+        
         # Check if user has a unit or a zone
         if not current_user.unit_id and not current_user.zone_id:
             flash('Aucune unité ou zone assignée', 'error')
@@ -21,8 +25,16 @@ def unit_required(f):
 @login_required
 @unit_required
 def statistiques():
+    # Check if the user is an admin
+    is_admin = current_user.role == UserRole.ADMIN
+
+    # If admin, show all incidents across all zones
+    if is_admin:
+        total_incidents = Incident.query.count()
+        critical_incidents = Incident.query.filter_by(gravite='Critique').count()
+        resolved_incidents = Incident.query.filter_by(status='Résolu').count()
     # If no unit is assigned, use the user's zone
-    if not current_user.unit_id and current_user.zone_id:
+    elif not current_user.unit_id and current_user.zone_id:
         # Get all units in the user's zone
         units_in_zone = Unit.query.filter_by(zone_id=current_user.zone_id).all()
         unit_ids = [unit.id for unit in units_in_zone]
@@ -41,20 +53,22 @@ def statistiques():
         # If a specific unit is assigned, use that unit's stats
         current_unit = current_user.assigned_unit
 
+        # If no unit is found, show zero incidents
         if not current_unit:
-            flash('Aucune unité assignée', 'error')
-            return redirect(url_for('main_dashboard.dashboard'))
-
-        # Calculate incident statistics
-        total_incidents = Incident.query.filter_by(unit_id=current_unit.id).count()
-        critical_incidents = Incident.query.filter_by(
-            unit_id=current_unit.id, 
-            gravite='Critique'
-        ).count()
-        resolved_incidents = Incident.query.filter_by(
-            unit_id=current_unit.id, 
-            status='Résolu'
-        ).count()
+            total_incidents = 0
+            critical_incidents = 0
+            resolved_incidents = 0
+        else:
+            # Calculate incident statistics
+            total_incidents = Incident.query.filter_by(unit_id=current_unit.id).count()
+            critical_incidents = Incident.query.filter_by(
+                unit_id=current_unit.id, 
+                gravite='Critique'
+            ).count()
+            resolved_incidents = Incident.query.filter_by(
+                unit_id=current_unit.id, 
+                status='Résolu'
+            ).count()
     
     # Calculate resolution rate with safe division
     resolution_rate = (resolved_incidents / total_incidents * 100) if total_incidents > 0 else 0
@@ -64,7 +78,8 @@ def statistiques():
         'total_incidents': total_incidents or 0,
         'critical_incidents': critical_incidents or 0,
         'resolved_incidents': resolved_incidents or 0,
-        'resolution_rate': round(resolution_rate, 2) if total_incidents > 0 else 0
+        'resolution_rate': round(resolution_rate, 2) if total_incidents > 0 else 0,
+        'is_admin': is_admin
     }
 
     return render_template(
