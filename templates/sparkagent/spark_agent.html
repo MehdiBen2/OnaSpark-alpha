@@ -145,7 +145,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(30, 30, 30, 0.6);
+            background-color: transparent;
             z-index: 1;
         }
 
@@ -171,18 +171,35 @@
             border-radius: 15px;
             line-height: 1.5;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            animation: messageAppear 0.5s ease-out;
+            transform-origin: bottom;
+            opacity: 0;
+            animation-fill-mode: forwards;
         }
 
         .message.user .message-content {
             background-color: var(--ona-primary);
             color: white;
             margin-right: 10px;
+            animation-delay: 0.1s;
         }
 
         .message.agent .message-content {
             background-color: var(--ona-dark-secondary);
             color: var(--ona-light);
             margin-left: 10px;
+            animation-delay: 0.2s;
+        }
+
+        @keyframes messageAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .chat-input {
@@ -344,9 +361,6 @@
                     <button class="btn btn-sm btn-outline-light me-2" id="dashboardBtn" onclick="window.location.href='{{ url_for('main_dashboard') }}'">
                         <i class="fas fa-home me-1"></i>Accueil
                     </button>
-                    <button class="btn btn-sm btn-outline-light" id="settingsBtn">
-                        <i class="fas fa-cog"></i>
-                    </button>
                 </div>
             </div>
             
@@ -378,42 +392,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal fade" id="settingsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Paramètres de SparkAgent</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="apiKeyInput" class="form-label">Clé API Mistral</label>
-                        <input type="password" class="form-control" id="apiKeyInput" placeholder="Entrez votre clé API">
-                        <small class="form-text text-muted">Votre clé API est stockée localement et de manière sécurisée.</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="modelSelect" class="form-label">Modèle IA</label>
-                        <select class="form-select" id="modelSelect">
-                            <option value="mistral-small-latest">Mistral Small</option>
-                            <option value="mistral-medium-latest">Mistral Medium</option>
-                            <option value="mistral-large-latest">Mistral Large</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="temperatureSlider" class="form-label">Créativité (Température)</label>
-                        <input type="range" class="form-range" id="temperatureSlider" min="0" max="1" step="0.1" value="0.7">
-                        <small class="form-text text-muted">Contrôle la randomness des réponses</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Enregistrer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -421,86 +399,26 @@
             const chatInput = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
             const typingIndicator = document.getElementById('typingIndicator');
-            const settingsBtn = document.getElementById('settingsBtn');
-            const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
-            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const modelSelect = document.getElementById('modelSelect');
-            const temperatureSlider = document.getElementById('temperatureSlider');
 
-            // Load settings from localStorage
-            const loadSettings = () => {
-                const apiKey = localStorage.getItem('mistralApiKey');
-                const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
-                const temperature = localStorage.getItem('mistralTemperature') || 0.7;
+            // Hardcoded API key (replace with your actual Mistral API key)
+            // const MISTRAL_API_KEY = 'your_mistral_api_key_here';
+            const DEFAULT_MODEL = 'mistral-small-latest';
+            const DEFAULT_TEMPERATURE = 0.7;
 
-                apiKeyInput.value = apiKey || '';
-                modelSelect.value = model;
-                temperatureSlider.value = temperature;
-            };
-
-            // Save settings to localStorage
-            const saveSettings = () => {
-                const apiKey = apiKeyInput.value.trim();
-                const model = modelSelect.value;
-                const temperature = temperatureSlider.value;
-
-                if (apiKey) {
-                    localStorage.setItem('mistralApiKey', apiKey);
-                    localStorage.setItem('mistralModel', model);
-                    localStorage.setItem('mistralTemperature', temperature);
-                    settingsModal.hide();
-                } else {
-                    alert('Veuillez entrer une clé API valide');
+            // Fetch Mistral API key from server
+            const fetchMistralApiKey = async () => {
+                try {
+                    const response = await fetch("{{ url_for('get_mistral_api_key_route') }}");
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch API key');
+                    }
+                    const data = await response.json();
+                    return data.api_key;
+                } catch (error) {
+                    console.error("Error fetching Mistral API key:", error);
+                    alert('Impossible de récupérer la clé API. Veuillez vérifier votre configuration.');
+                    return null;
                 }
-            };
-
-            // Open settings modal
-            settingsBtn.addEventListener('click', () => {
-                loadSettings();
-                settingsModal.show();
-            });
-
-            // Save settings
-            saveSettingsBtn.addEventListener('click', saveSettings);
-
-            // Enhanced markdown-like parsing
-            const parseMarkdown = (content) => {
-                // Escape HTML to prevent XSS
-                const escapeHtml = (unsafe) => {
-                    return unsafe
-                        .replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/'/g, "&#039;");
-                };
-
-                // Code block parsing
-                content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-                    const escapedCode = escapeHtml(code.trim());
-                    return `<pre class="code-block ${lang ? `language-${lang}` : ''}"><code>${escapedCode}</code></pre>`;
-                });
-
-                // Bold parsing
-                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-                // Italic parsing
-                content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                // Unordered list parsing
-                content = content.replace(/^- (.*)/gm, '<li>$1</li>');
-                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
-
-                // Ordered list parsing
-                content = content.replace(/^\d+\. (.*)/gm, '<li>$1</li>');
-                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ol>$&</ol>');
-
-                // Headings
-                content = content.replace(/^# (.*)/gm, '<h3>$1</h3>');
-                content = content.replace(/^## (.*)/gm, '<h4>$1</h4>');
-
-                return content;
             };
 
             // Fetch system prompt
@@ -531,9 +449,9 @@
 
                 try {
                     // Retrieve settings
-                    const apiKey = localStorage.getItem('mistralApiKey');
-                    const model = localStorage.getItem('mistralModel') || 'mistral-small-latest';
-                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || 0.7);
+                    const apiKey = await fetchMistralApiKey();
+                    const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
+                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
 
                     if (!apiKey) {
                         throw new Error('Clé API Mistral non configurée');
@@ -597,7 +515,7 @@
                 const avatarEl = document.createElement('div');
                 avatarEl.classList.add('message-avatar');
                 if (type === 'user') {
-                    avatarEl.innerHTML = '<i class="fas fa-user"></i>';
+                    avatarEl.innerHTML = '<i class="fas fa-user" style="color: var(--ona-primary);"></i>';
                 } else {
                     avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" width="40" height="40" class="coolshapes moon-9 "><g clip-path="url(#cs_clip_1_moon-9)"><mask id="cs_mask_1_moon-9" style="mask-type:alpha" width="201" height="200" x="-1" y="0" maskUnits="userSpaceOnUse"><path fill="#fff" d="M100 200a100.001 100.001 0 000-200v200zM0 200a100.002 100.002 0 00100-100A100 100 0 000 0v200z"></path></mask><g mask="url(#cs_mask_1_moon-9)"><path fill="#fff" d="M200 0H0v200h200V0z"></path><path fill="url(#paint0_linear_748_4479)" d="M200 0H0v200h200V0z"></path><g filter="url(#filter0_f_748_4479)"><path fill="#FFE500" d="M180-41H-11v141h191V-41z"></path><path fill="#18A0FB" d="M256 63H113v157h143V63z"></path></g></g></g><defs><filter id="filter0_f_748_4479" width="407" height="401" x="-81" y="-111" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur result="effect1_foregroundBlur_748_4479" stdDeviation="35"></feGaussianBlur></filter><linearGradient id="paint0_linear_748_4479" x1="158.5" x2="29" y1="12.5" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0E6FFF"></stop><stop offset="1" stop-color="#00F0FF"></stop></linearGradient><clipPath id="cs_clip_1_moon-9"><path fill="#fff" d="M0 0H200V200H0z"></path></clipPath></defs><g style="mix-blend-mode:overlay" mask="url(#cs_mask_1_moon-9)"><path fill="gray" stroke="transparent" d="M200 0H0v200h200V0z" filter="url(#cs_noise_1_moon-9)"></path></g><defs><filter id="cs_noise_1_moon-9" width="100%" height="100%" x="0%" y="0%" filterUnits="objectBoundingBox"><feTurbulence baseFrequency="0.6" numOctaves="5" result="out1" seed="4"></feTurbulence><feComposite in="out1" in2="SourceGraphic" operator="in" result="out2"></feComposite><feBlend in="SourceGraphic" in2="out2" mode="overlay" result="out3"></feBlend></filter></defs></svg>`;
                 }
@@ -636,11 +554,44 @@
                 }
             });
 
-            // Initial settings load
-            loadSettings();
-            
-            // Ensure typing indicator is hidden on page load
-            typingIndicator.style.display = 'none';
+            // Enhanced markdown-like parsing
+            const parseMarkdown = (content) => {
+                // Escape HTML to prevent XSS
+                const escapeHtml = (unsafe) => {
+                    return unsafe
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                };
+
+                // Code block parsing
+                content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+                    const escapedCode = escapeHtml(code.trim());
+                    return `<pre class="code-block ${lang ? `language-${lang}` : ''}"><code>${escapedCode}</code></pre>`;
+                });
+
+                // Bold parsing
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Italic parsing
+                content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                // Unordered list parsing
+                content = content.replace(/^- (.*)/gm, '<li>$1</li>');
+                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+                // Ordered list parsing
+                content = content.replace(/^\d+\. (.*)/gm, '<li>$1</li>');
+                content = content.replace(/(<li>.*<\/li>\n?)+/g, '<ol>$&</ol>');
+
+                // Headings
+                content = content.replace(/^# (.*)/gm, '<h3>$1</h3>');
+                content = content.replace(/^## (.*)/gm, '<h4>$1</h4>');
+
+                return content;
+            };
         });
     </script>
 </body>

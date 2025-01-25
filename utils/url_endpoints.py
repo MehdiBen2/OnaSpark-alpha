@@ -75,5 +75,8 @@ DELETE_CENTER = 'delete_center'
 # API routes
 GET_ZONE_UNITS = 'get_zone_units'
 
+# Spark Agent routes
+GET_MISTRAL_API_KEY = 'get_mistral_api_key'
+
 # Incidents routes
 INCIDENT_LIST = 'incidents.incident_list'

@@ -24,6 +24,7 @@ from utils.roles import UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
+from routes.spark_agent_routes import get_mistral_api_key
 
 # Load environment variables
 load_dotenv()
@@ -579,6 +580,14 @@ def test_error():
 @app.route('/spark-agent')
 def spark_agent():
     return render_template('sparkagent/spark_agent.html')
+
+@app.route(f'/{GET_MISTRAL_API_KEY}')
+@login_required
+def get_mistral_api_key_route():
+    """
+    Wrapper route for the Mistral API key retrieval function.
+    """
+    return get_mistral_api_key()
 
 # Add error handling for common HTTP errors and exceptions
 @app.errorhandler(404)
