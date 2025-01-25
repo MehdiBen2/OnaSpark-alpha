@@ -135,6 +135,17 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    @classmethod
+    def disconnect_all_users(cls):
+        """
+        Invalidate all active user sessions by setting is_active to False.
+        """
+        from app import db
+        
+        # Update all users to be inactive
+        cls.query.update({cls.is_active: False})
+        db.session.commit()
+
     def __repr__(self):
         return f'<User {self.username}>'
 

@@ -221,7 +221,7 @@ def list_centers():
 def create_zone():
     if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     try:
         zone = Zone(
@@ -239,14 +239,14 @@ def create_zone():
         db.session.rollback()
         flash(f'Erreur lors de la création de la zone: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_ZONES))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/zones/edit/<int:id>', methods=['POST'])
 @login_required
 def edit_zone(id):
     if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     zone = Zone.query.get_or_404(id)
     try:
@@ -262,14 +262,14 @@ def edit_zone(id):
         db.session.rollback()
         flash(f'Erreur lors de la mise à jour de la zone: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_ZONES))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/zones/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_zone(id):
     if current_user.role != UserRole.ADMIN:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     try:
         zone = Zone.query.get_or_404(id)
@@ -289,14 +289,14 @@ def delete_zone(id):
         db.session.rollback()
         flash(f'Erreur lors de la suppression de la zone: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_ZONES))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/centers/create', methods=['POST'])
 @login_required
 def create_center():
     if current_user.role not in [UserRole.ADMIN, UserRole.UNIT_OFFICER]:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     try:
         # If Unit Officer, use their unit_id
@@ -317,7 +317,7 @@ def create_center():
         db.session.rollback()
         flash(f'Erreur lors de la création du centre: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_CENTERS))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/centers/edit/<int:id>', methods=['POST'])
 @login_required
@@ -327,7 +327,7 @@ def edit_center(id):
     # Check permissions
     if current_user.role == UserRole.UNIT_OFFICER and center.unit_id != current_user.unit_id:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     try:
         center.name = request.form['name']
@@ -343,7 +343,7 @@ def edit_center(id):
         db.session.rollback()
         flash(f'Erreur lors de la mise à jour du centre: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_CENTERS))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/centers/delete/<int:id>', methods=['POST'])
 @login_required
@@ -353,7 +353,7 @@ def delete_center(id):
     # Check permissions
     if current_user.role == UserRole.UNIT_OFFICER and center.unit_id != current_user.unit_id:
         flash('Accès non autorisé.', 'danger')
-        return redirect(url_for(MAIN_DASHBOARD))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     try:
         db.session.delete(center)
@@ -363,14 +363,14 @@ def delete_center(id):
         db.session.rollback()
         flash(f'Erreur lors de la suppression du centre: {str(e)}', 'danger')
     
-    return redirect(url_for(LIST_CENTERS))
+    return redirect(url_for('main_dashboard.dashboard'))
 
 @app.route('/select-unit', methods=['GET', 'POST'])
 @login_required
 def select_unit():
     # Zone employers, Admin, and DG don't need to select a unit
     if current_user.role in [UserRole.EMPLOYEUR_ZONE, UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('main_dashboard.dashboard'))
     
     if request.method == 'POST':
         zone_id = request.form.get('zone')
@@ -391,7 +391,7 @@ def select_unit():
         db.session.commit()
         
         flash(f"Vous êtes maintenant connecté à l'unité: {unit.name}", "success")
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('main_dashboard.dashboard'))
         
     # GET request - show selection form
     if current_user.role == UserRole.ADMIN:

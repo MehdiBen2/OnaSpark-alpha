@@ -132,3 +132,22 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+@auth.route('/disconnect-all', methods=['POST'])
+@login_required
+def disconnect_all_users():
+    """
+    Route to disconnect all users from the system.
+    Only accessible by admin users.
+    """
+    if current_user.role != UserRole.ADMIN:
+        flash('Accès non autorisé.', 'danger')
+        return redirect(url_for('main_dashboard.dashboard'))
+    
+    try:
+        User.disconnect_all_users()
+        flash('Tous les utilisateurs ont été déconnectés.', 'success')
+        return redirect(url_for('main_dashboard.dashboard'))
+    except Exception as e:
+        flash(f'Erreur lors de la déconnexion des utilisateurs: {str(e)}', 'danger')
+        return redirect(url_for('main_dashboard.dashboard'))
