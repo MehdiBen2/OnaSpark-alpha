@@ -29,9 +29,53 @@
         .loading-ball:nth-child(3) {
             animation-delay: 0.4s;
         }
+
+        /* New styles for introduction video */
+        #introVideoSection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #111535;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #introVideoSection.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #introVideoContainer {
+            max-width: 100%;
+            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        #introVideo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
+    <!-- Introduction Video Section -->
+    <div id="introVideoSection">
+        <div id="introVideoContainer">
+            <video id="introVideo" autoplay muted playsinline>
+                <source src="{{ url_for('static', filename='images/sparkvid/ona.mp4') }}" type="video/mp4">
+                Votre navigateur ne supporte pas la vidéo.
+            </video>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
     <div class="loading-screen fade-out" id="loadingScreen">
         <div class="loading-balls">
@@ -134,6 +178,26 @@
         </div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const introVideoSection = document.getElementById('introVideoSection');
+            const introVideo = document.getElementById('introVideo');
+
+            function hideIntroVideo() {
+                introVideoSection.classList.add('hidden');
+                setTimeout(() => {
+                    introVideoSection.style.display = 'none';
+                }, 500);
+            }
+
+            // Hide intro video when it ends
+            introVideo.addEventListener('ended', hideIntroVideo);
+
+            // Ensure video plays
+            introVideo.play().catch(function(error) {
+                console.log('Autoplay was prevented. Allowing user interaction.');
+            });
+        });
+
         function toggleSidePanel() {
             const sidePanel = document.getElementById('sidePanelContainer');
             const toggleButton = document.querySelector('.side-panel-toggle');
@@ -185,7 +249,7 @@
             // First, set the static logo
             mainLogo.src = staticLogo;
             
-            // After 1 second, switch to a random alternate logo with an enhanced animation
+            // After 3 seconds, switch to a random alternate logo with an enhanced animation
             setTimeout(() => {
                 const randomIndex = Math.floor(Math.random() * alternateLogos.length);
                 
@@ -216,7 +280,7 @@
                         mainLogo.style.transform = 'scale(1)';
                     }, 600);
                 }, 500);
-            }, 1000);
+            }, 5000);
         }
 
         // Call the function when the page loads
