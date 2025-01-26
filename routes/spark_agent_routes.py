@@ -21,3 +21,16 @@ def get_mistral_api_key():
     
     # Only return a masked version of the key for security
     return jsonify({'api_key': api_key})
+
+@spark_agent.route('/get-default-model', methods=['GET'])
+@login_required
+def get_default_model_route():
+    """
+    Endpoint to fetch the default AI model configuration.
+    Only accessible to authenticated users.
+
+    Returns:
+        JSON response with default model name
+    """
+    default_model = os.getenv('DEFAULT_AI_MODEL', 'mistral-small')
+    return jsonify({'default_model': default_model})

@@ -370,7 +370,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" width="40" height="40" class="coolshapes moon-9 "><g clip-path="url(#cs_clip_1_moon-9)"><mask id="cs_mask_1_moon-9" style="mask-type:alpha" width="201" height="200" x="-1" y="0" maskUnits="userSpaceOnUse"><path fill="#fff" d="M100 200a100.001 100.001 0 000-200v200zM0 200a100.002 100.002 0 00100-100A100 100 0 000 0v200z"></path></mask><g mask="url(#cs_mask_1_moon-9)"><path fill="#fff" d="M200 0H0v200h200V0z"></path><path fill="url(#paint0_linear_748_4479)" d="M200 0H0v200h200V0z"></path><g filter="url(#filter0_f_748_4479)"><path fill="#FFE500" d="M180-41H-11v141h191V-41z"></path><path fill="#18A0FB" d="M256 63H113v157h143V63z"></path></g></g></g><defs><filter id="filter0_f_748_4479" width="407" height="401" x="-81" y="-111" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur result="effect1_foregroundBlur_748_4479" stdDeviation="35"></feGaussianBlur></filter><linearGradient id="paint0_linear_748_4479" x1="158.5" x2="29" y1="12.5" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0E6FFF"></stop><stop offset="1" stop-color="#00F0FF"></stop></linearGradient><clipPath id="cs_clip_1_moon-9"><path fill="#fff" d="M0 0H200V200H0z"></path></clipPath></defs><g style="mix-blend-mode:overlay" mask="url(#cs_mask_1_moon-9)"><path fill="gray" stroke="transparent" d="M200 0H0v200h200V0z" filter="url(#cs_noise_1_moon-9)"></path></g><defs><filter id="cs_noise_1_moon-9" width="100%" height="100%" x="0%" y="0%" filterUnits="objectBoundingBox"><feTurbulence baseFrequency="0.6" numOctaves="5" result="out1" seed="4"></feTurbulence><feComposite in="out1" in2="SourceGraphic" operator="in" result="out2"></feComposite><feBlend in="SourceGraphic" in2="out2" mode="overlay" result="out3"></feBlend></filter></defs></svg>
                     </div>
                     <div class="message-content">
-                        Bonjour, je suis Spark, votre assistant technique pour l'ONA. Mon objectif : optimiser votre productivité et faciliter vos tâches d'assainissement. Comment puis-je vous aider aujourd'hui ?
+                        Hey, je suis Spark, ici pour faciliter vos tâches a l office national de l'assainissement. Comment puis-je vous aider aujourd'hui ?
                     </div>
                 </div>
             </div>
@@ -442,9 +442,6 @@
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-secondary me-2" id="nePlusAfficherBtn">
-                        <i class="fas fa-eye-slash me-2"></i>Ne plus afficher
-                    </button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: var(--ona-primary); border-color: var(--ona-primary); border-radius: 50px; padding: 10px 20px;">
                         <i class="fas fa-check-circle me-2"></i>Compris
                     </button>
@@ -472,427 +469,78 @@
                 return;
             }
 
-            // Create modal instance
-            const disclaimerModal = new bootstrap.Modal(disclaimerModalElement, {
-                backdrop: 'static',
-                keyboard: false
-            });
-
-            // Function to check if disclaimer should be shown
-            const shouldShowDisclaimer = () => {
-                // Check local storage for disclaimer visibility preference
-                const hideDisclaimer = localStorage.getItem('hideSparkAgentDisclaimer');
-                return hideDisclaimer !== 'true';
-            };
-
-            // Function to set disclaimer visibility preference
-            const setDisclaimerVisibility = (show) => {
-                localStorage.setItem('hideSparkAgentDisclaimer', show ? 'false' : 'true');
-            };
-
-            // Check if disclaimer should be shown
-            if (shouldShowDisclaimer()) {
+            // Create and show the modal
+            try {
+                const disclaimerModal = new bootstrap.Modal(disclaimerModalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                console.log('Modal instance created');
+                
                 // Slight delay to ensure everything is ready
                 setTimeout(() => {
                     disclaimerModal.show();
                     console.log('Modal should now be showing');
                 }, 100);
+            } catch (error) {
+                console.error('Error creating or showing modal:', error);
             }
-
-            // Add event listener to 'Ne plus afficher' button
-            const nePlusAfficherBtn = document.getElementById('nePlusAfficherBtn');
-            nePlusAfficherBtn.addEventListener('click', () => {
-                // Set preference to hide disclaimer
-                setDisclaimerVisibility(false);
-                
-                // Close the modal
-                disclaimerModal.hide();
-
-                // Optional: Show a toast or notification
-                const toastContainer = document.createElement('div');
-                toastContainer.classList.add('toast-container', 'position-fixed', 'bottom-0', 'end-0', 'p-3');
-                const toast = document.createElement('div');
-                toast.classList.add('toast', 'bg-info', 'text-white');
-                toast.innerHTML = `
-                    <div class="toast-header bg-info text-white">
-                        <strong class="me-auto">Paramètre enregistré</strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        Le disclaimer ne s'affichera plus automatiquement.
-                    </div>
-                `;
-                toastContainer.appendChild(toast);
-                document.body.appendChild(toastContainer);
-                
-                // Initialize and show toast
-                const toastInstance = new bootstrap.Toast(toast);
-                toastInstance.show();
-            });
 
             const chatInput = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Fetch default model from server configuration
-            let DEFAULT_MODEL = 'mistral-small';  
-            const DEFAULT_TEMPERATURE = 0.7;  
+            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
 
             // Function to fetch Mistral API Key
-            const fetchMistralApiKey = async () => {
-                try {
-                    console.log('Attempting to fetch Mistral API Key');
-                    
-                    // Retrieve API key from server-side environment variable
-                    const response = await fetch("{{ url_for('spark_agent.get_mistral_api_key') }}");
-                    
-                    // Check response status
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Failed to fetch API key. Status:', response.status, response.statusText);
-                        console.error('Error details:', errorText);
-                        
-                        // Detailed error handling
-                        throw new Error(`API Key Retrieval Failed: ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    // Validate response structure
-                    if (!data || !data.api_key) {
-                        console.error('Invalid API key response:', data);
-                        throw new Error('Invalid API key response from server');
-                    }
-
-                    let apiKey = data.api_key;
-                    console.log('Raw API Key Content:', apiKey);
-                    
-                    // Clean and validate API key
-                    apiKey = apiKey.trim();
-                    console.log('Cleaned API Key:', apiKey);
-                    
-                    // Store API key for later use
-                    window.mistralApiKey = apiKey;
-                    console.log('Mistral API Key successfully retrieved');
-                    return apiKey;
-                } catch (error) {
-                    console.error('Error fetching Mistral API Key:', error);
-                    // Show an error message to the user
-                    alert('Impossible de récupérer la clé API Mistral. Veuillez vérifier votre configuration.');
-                    throw error;  // Re-throw to stop further execution
-                }
-            };
-
-            // Function to send message using Mistral API
-            const sendMessageWithMistral = async (messages, model, temperature) => {
-                try {
-                    // Fetch API key
-                    const apiKey = window.mistralApiKey || await fetchMistralApiKey();
-                    if (!apiKey) {
-                        throw new Error('Clé API Mistral invalide ou manquante');
-                    }
-
-                    // Prepare request body
-                    const requestBody = {
-                        model: model || 'mistral-large-latest',
-                        messages: messages,
-                        temperature: temperature || 0.7,
-                        max_tokens: 300
-                    };
-
-                    // Fetch with Mistral configuration
-                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
+            function fetchMistralApiKey() {
+                return fetch("{{ url_for('spark_agent.get_mistral_api_key') }}")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch Mistral API Key');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            console.error('API Key Error:', data.error);
+                            return null;
+                        }
+                        return data.api_key;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching Mistral API Key:', error);
+                        return null;
                     });
+            }
 
-                    // Check response status
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Mistral API Error:', errorText);
-                        throw new Error(`Erreur API Mistral: ${errorText}`);
-                    }
-
-                    // Parse response
-                    const data = await response.json();
-                    return data.choices[0].message.content;
-                } catch (error) {
-                    console.error('Erreur lors de l\'envoi du message:', error);
-                    alert('Impossible d\'envoyer le message. Veuillez réessayer.');
-                    throw error;
-                }
-            };
-
-            // Fallback Response Generator
-            const FallbackResponseGenerator = {
-                /**
-                 * Generate a fallback response based on the error type
-                 * @param {Error} error - The original error
-                 * @returns {string} A user-friendly fallback message
-                 */
-                generateResponse(error) {
-                    console.error('Fallback Response Generation:', {
-                        errorName: error.name,
-                        errorMessage: error.message,
-                        timestamp: new Date().toISOString()
+            // Fetch default model configuration
+            function fetchDefaultModel() {
+                fetch("{{ url_for('spark_agent.get_default_model_route') }}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.default_model) {
+                            DEFAULT_MODEL = data.default_model;
+                            console.log('Default model set:', DEFAULT_MODEL);
+                        }
+                    })
+                    .catch(error => {
+                        console.warn('Could not fetch default model, using fallback:', DEFAULT_MODEL);
                     });
-
-                    // Categorize and respond to different error types
-                    const errorResponses = {
-                        'NetworkError': [
-                            "La connexion réseau est instable. Veuillez réessayer.",
-                            "Problème de communication temporaire. Merci de patienter."
-                        ],
-                        'APIError': [
-                            "Erreur de communication avec le service AI.",
-                            "Le service AI est momentanément indisponible."
-                        ],
-                        'default': [
-                            "Un problème technique est survenu.",
-                            "Service temporairement indisponible.",
-                            "Erreur système. Nos techniciens ont été informés."
-                        ]
-                    };
-
-                    // Select error category
-                    const category = error.message.includes('choices') ? 'APIError'
-                        : error.name === 'TypeError' ? 'NetworkError'
-                        : 'default';
-
-                    const responses = errorResponses[category];
-                    return responses[Math.floor(Math.random() * responses.length)];
-                }
-            };
-
-            // Function to fetch default model configuration
-            const fetchDefaultModel = async () => {
-                try {
-                    // Use Mistral Large as the default model
-                    window.DEFAULT_MODEL = 'mistral-large-latest';
-                    window.DEFAULT_TEMPERATURE = 0.7;
-                    console.log('Default model configuration set to Mistral Large');
-                } catch (error) {
-                    console.error('Erreur lors de la configuration du modèle:', error);
-                    // Fallback to hardcoded values
-                    window.DEFAULT_MODEL = 'mistral-large-latest';
-                    window.DEFAULT_TEMPERATURE = 0.7;
-                }
-            };
+            }
 
             // Fetch system prompt
-            async function fetchSystemPrompt() {
+            const fetchSystemPrompt = async () => {
+                // If DEFAULT_MODEL is not defined, use a fallback
+                const modelToUse = DEFAULT_MODEL || 'mistral-small';
+                
                 try {
-                    console.log(' Tentative de chargement du système de prompt...');
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
-                    if (!response.ok) {
-                        throw new Error('Impossible de charger le système de prompt');
-                    }
-                    window.systemPrompt = await response.text();
-                    
-                    // Detailed logging and verification
-                    console.log(' Système de prompt chargé avec succès');
-                    console.log(' Contenu du système de prompt:');
-                    console.log(window.systemPrompt);
-                    
-                    // Verify key sections
-                    const promptSections = [
-                        'Contexte Système',
-                        'Directives Essentielles',
-                        'Identité',
-                        'Identification Spéciale'
-                    ];
-                    
-                    const foundSections = promptSections.filter(section => 
-                        window.systemPrompt.includes(section)
-                    );
-                    
-                    console.log(' Sections vérifiées:', foundSections);
-                    
-                    if (foundSections.length === promptSections.length) {
-                        console.log(' Système de prompt complet et valide !');
-                    } else {
-                        console.warn(' Certaines sections du système de prompt sont manquantes');
-                    }
-                    
-                    return window.systemPrompt;
+                    return await response.text();
                 } catch (error) {
-                    console.error(' Erreur lors du chargement du système de prompt:', error);
-                    window.systemPrompt = `# Contexte Système par défaut
-- Toujours parler en français
-- Être professionnel et concis
-- Aider efficacement les travailleurs de l'ONA`;
-                    return window.systemPrompt;
-                }
-            };
-
-            // Conversation History Management Module
-            const ConversationHistoryManager = {
-                // Configuration constants
-                MAX_HISTORY_LENGTH: 5,
-
-                // Prepare messages for AI context
-                prepareMessagesForAI: async function() {
-                    try {
-                        // Retrieve conversation history
-                        const history = this.getHistory();
-
-                        // Prepare messages array, starting with system prompt
-                        const messages = [
-                            {
-                                role: 'system', 
-                                content: window.systemPrompt || `# Contexte Système par défaut
-- Toujours parler en français
-- Être professionnel et concis
-- Aider efficacement les travailleurs de l'ONA`
-                            }
-                        ];
-
-                        // Detailed logging of system prompt usage
-                        console.log('🤖 Préparation des messages pour l\'IA');
-                        console.log('📋 Système de prompt utilisé:');
-                        console.log(messages[0].content);
-                        console.log('🔢 Nombre de messages historiques:', history.length);
-
-                        // Add conversation history, limiting to MAX_HISTORY_LENGTH
-                        const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
-                        messages.push(...recentHistory.map(msg => ({
-                            role: msg.role,
-                            content: msg.content
-                        })));
-
-                        console.log('✅ Messages préparés pour l\'envoi à l\'IA');
-                        console.log('📊 Structure des messages:', messages.map(m => m.role));
-
-                        return messages;
-                    } catch (error) {
-                        console.error('❌ Erreur lors de la préparation des messages:', error);
-                        return [
-                            {
-                                role: 'system', 
-                                content: `# Contexte Système par défaut
-- Toujours parler en français
-- Être professionnel et concis
-- Aider efficacement les travailleurs de l'ONA`
-                            }
-                        ];
-                    }
-                },
-
-                // Other existing methods remain the same
-                getHistory: function() {
-                    try {
-                        const historyJson = localStorage.getItem('conversationHistory') || '[]';
-                        return JSON.parse(historyJson);
-                    } catch (error) {
-                        console.error('Erreur lors de la récupération de l\'historique:', error);
-                        return [];
-                    }
-                },
-
-                saveMessage: function(role, content) {
-                    try {
-                        const history = this.getHistory();
-                        history.push({ role, content });
-
-                        // Limit history length
-                        if (history.length > this.MAX_HISTORY_LENGTH) {
-                            history.shift();
-                        }
-
-                        localStorage.setItem('conversationHistory', JSON.stringify(history));
-                    } catch (error) {
-                        console.error('Erreur lors de la sauvegarde du message:', error);
-                    }
-                },
-
-                clearHistory: function() {
-                    try {
-                        localStorage.removeItem('conversationHistory');
-                    } catch (error) {
-                        console.error('Erreur lors de la suppression de l\'historique:', error);
-                    }
-                }
-            };
-
-            // Function to manage conversation history
-            const getConversationHistory = () => {
-                // Retrieve existing conversation history from localStorage
-                const storedHistory = localStorage.getItem('conversationHistory');
-                let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
-
-                // Limit history to last 5 messages to prevent context overflow
-                if (conversationHistory.length > 5) {
-                    conversationHistory = conversationHistory.slice(-5);
-                }
-
-                return conversationHistory;
-            };
-
-            // Function to save message to conversation history
-            const saveToConversationHistory = (role, content) => {
-                const storedHistory = localStorage.getItem('conversationHistory');
-                let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
-
-                // Add new message
-                conversationHistory.push({ role, content });
-
-                // Limit history to last 5 messages
-                if (conversationHistory.length > 5) {
-                    conversationHistory = conversationHistory.slice(-5);
-                }
-
-                // Save updated history back to localStorage
-                localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
-            };
-
-            // Function to clear conversation history
-            const clearConversationHistory = () => {
-                localStorage.removeItem('conversationHistory');
-                console.log('Conversation history cleared');
-            };
-
-            // Function to load application settings
-            function loadSettings() {
-                try {
-                    console.log('🔧 Chargement des paramètres de l\'application');
-                    
-                    // Default settings
-                    const defaultSettings = {
-                        language: 'fr',
-                        theme: 'light',
-                        notifications: true,
-                        chatHistoryLimit: 50
-                    };
-
-                    // Try to retrieve saved settings from localStorage
-                    const savedSettings = localStorage.getItem('sparkAgentSettings');
-                    
-                    if (savedSettings) {
-                        try {
-                            const parsedSettings = JSON.parse(savedSettings);
-                            Object.assign(defaultSettings, parsedSettings);
-                            console.log('✅ Paramètres personnalisés chargés');
-                        } catch (parseError) {
-                            console.warn('⚠️ Erreur lors du parsing des paramètres sauvegardés', parseError);
-                        }
-                    }
-
-                    // Apply settings (placeholder for actual implementation)
-                    console.log('📝 Paramètres appliqués:', defaultSettings);
-                    
-                    return defaultSettings;
-                } catch (error) {
-                    console.error('❌ Erreur lors du chargement des paramètres:', error);
-                    return {
-                        language: 'fr',
-                        theme: 'light',
-                        notifications: true,
-                        chatHistoryLimit: 50
-                    };
+                    console.error('Error fetching system prompt:', error);
+                    return "You are a helpful AI assistant.";
                 }
             };
 
@@ -900,172 +548,79 @@
             document.addEventListener('DOMContentLoaded', () => {
                 fetchMistralApiKey();
                 fetchDefaultModel();
-                fetchSystemPrompt();
-                loadSettings();
             });
 
-            // Main function to send messages
-            async function sendMessage() {
-                const chatInput = document.getElementById('chatInput');
-                const messageContainer = document.getElementById('chatMessages');
-                const typingIndicator = document.getElementById('typingIndicator');
-                const sendBtn = document.getElementById('sendBtn');
-
-                // Get user input
+            // Send message function implementation...
+            const sendMessage = async () => {
                 const userMessage = chatInput.value.trim();
                 if (!userMessage) return;
 
-                // Disable send button and clear input
-                sendBtn.disabled = true;
+                // Add user message to chat
+                const userMessageEl = createMessageElement('user', userMessage);
+                chatMessages.appendChild(userMessageEl);
                 chatInput.value = '';
+                scrollToBottom();
+
+                // Show typing indicator
+                typingIndicator.style.display = 'block';
 
                 try {
-                    // Create and append user message
-                    const userMessageElement = createMessageElement('user', userMessage);
-                    messageContainer.appendChild(userMessageElement);
+                    // Retrieve settings
+                    const apiKey = await fetchMistralApiKey();
+                    const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
+                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
 
-                    // Show typing indicator
-                    typingIndicator.style.display = 'block';
-                    scrollToBottom();
+                    if (!apiKey) {
+                        throw new Error('Clé API Mistral non configurée');
+                    }
 
-                    // Prepare conversation history
-                    const conversationHistory = await ConversationHistoryManager.prepareMessagesForAI();
+                    // Fetch system prompt
+                    const systemPrompt = await fetchSystemPrompt();
 
-                    // Add current user message to conversation history
-                    conversationHistory.push({
-                        role: 'user',
-                        content: userMessage
+                    // Send request to Mistral API
+                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [
+                                {role: 'system', content: systemPrompt},
+                                {role: 'user', content: userMessage}
+                            ],
+                            temperature: temperature,
+                            max_tokens: 1000,
+                            top_p: 1,
+                            stream: false
+                        })
                     });
 
-                    // Send message using Mistral
-                    const aiResponse = await sendMessageWithMistral(
-                        conversationHistory, 
-                        DEFAULT_MODEL, 
-                        DEFAULT_TEMPERATURE
-                    );
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Erreur de communication avec l\'API');
+                    }
 
-                    // Create and append AI message
-                    const aiMessageElement = createMessageElement('agent', aiResponse);
-                    messageContainer.appendChild(aiMessageElement);
+                    const data = await response.json();
+                    const agentResponse = data.choices[0].message.content.trim();
 
-                    // Save messages to conversation history
-                    ConversationHistoryManager.saveMessage('user', userMessage);
-                    ConversationHistoryManager.saveMessage('assistant', aiResponse);
-
-                    // Scroll to bottom and hide typing indicator
-                    scrollToBottom();
-                    typingIndicator.style.display = 'none';
-
-                } catch (error) {
-                    console.error('Message sending error:', error);
-                    
-                    // Create fallback error message
-                    const fallbackResponse = FallbackResponseGenerator.generateResponse(error);
-                    const fallbackMessageElement = createMessageElement('error', fallbackResponse);
-                    messageContainer.appendChild(fallbackMessageElement);
-                    
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
-                } finally {
-                    // Re-enable send button
-                    sendBtn.disabled = false;
-                    chatInput.focus();
-                }
-            }
 
-            // Function to fetch contact information
-            const fetchContactInfo = async (query) => {
-                try {
-                    // Validate input query
-                    if (!query || query.trim().length < 2) {
-                        return 'Veuillez fournir un terme de recherche plus spécifique.';
-                    }
+                    // Add agent message to chat
+                    const agentMessageEl = createMessageElement('agent', agentResponse);
+                    chatMessages.appendChild(agentMessageEl);
+                    scrollToBottom();
 
-                    const response = await fetch("{{ url_for('static', filename='phonenames.txt') }}");
-                    const contactData = await response.text();
-                    
-                    // Advanced query normalization with comprehensive accent and character handling
-                    const normalizedQuery = query.toLowerCase().trim()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')  // Remove all diacritical marks
-                        .replace(/[éèêë]/g, 'e')
-                        .replace(/[àâä]/g, 'a')
-                        .replace(/[ôö]/g, 'o')
-                        .replace(/[ùûü]/g, 'u')
-                        .replace(/[ç]/g, 'c')
-                        .replace(/\s+/g, ' ');  // Normalize whitespace
-                    
-                    // Comprehensive search strategies with weighted matching
-                    const searchStrategies = [
-                        // High priority: Exact zone and role match
-                        {
-                            priority: 3,
-                            match: line => {
-                                const lowercaseLine = line.toLowerCase();
-                                return (
-                                    lowercaseLine.includes('zone') && 
-                                    lowercaseLine.includes('directrice') && 
-                                    lowercaseLine.includes(normalizedQuery)
-                                );
-                            }
-                        },
-                        // Medium priority: Partial zone and name match
-                        {
-                            priority: 2,
-                            match: line => {
-                                const lowercaseLine = line.toLowerCase();
-                                const zoneMatch = lowercaseLine.includes('zone');
-                                const nameMatch = lowercaseLine.includes(normalizedQuery);
-                                return zoneMatch || nameMatch;
-                            }
-                        },
-                        // Low priority: Broad text match
-                        {
-                            priority: 1,
-                            match: line => line.toLowerCase().includes(normalizedQuery)
-                        }
-                    ];
-                    
-                    // Enhanced matching with priority-based filtering
-                    const matchingLines = contactData.split('\n')
-                        .filter(line => searchStrategies.some(strategy => strategy.match(line)))
-                        .sort((a, b) => {
-                            const aMatches = searchStrategies.filter(s => s.match(a));
-                            const bMatches = searchStrategies.filter(s => s.match(b));
-                            return Math.max(...bMatches.map(m => m.priority)) - 
-                                   Math.max(...aMatches.map(m => m.priority));
-                        });
-                    
-                    // Process and format matching lines
-                    const contactResults = matchingLines
-                        .slice(0, 3)  // Limit to top 3 results
-                        .map(line => {
-                            const nameMatch = line.match(/Mme\.\s+([^0]+)/i) || 
-                                              line.match(/M\.\s+([^0]+)/i);
-                            const phoneMatch = line.match(/0\d{9}/);
-                            const emailMatch = line.match(/[\w.-]+@ona-dz\.com/);
-                            const roleMatch = line.match(/Directrice?\s+de\s+Zone/i);
-                            
-                            return {
-                                name: nameMatch ? nameMatch[1].trim() : 'Nom non trouvé',
-                                phone: phoneMatch ? phoneMatch[0] : 'Téléphone non disponible',
-                                email: emailMatch ? emailMatch[0] : 'E-mail non disponible',
-                                role: roleMatch ? roleMatch[0] : 'Rôle non spécifié'
-                            };
-                        });
-                    
-                    // Format and return results
-                    if (contactResults.length > 0) {
-                        return contactResults.map(contact => 
-                            `${contact.role}: ${contact.name}\nTéléphone: ${contact.phone}\nE-mail: ${contact.email}`
-                        ).join('\n\n');
-                    }
-                    
-                    // Fallback for no results
-                    return 'Aucune information de contact correspondante n\'a été trouvée. Veuillez affiner votre recherche.';
                 } catch (error) {
-                    console.error('Erreur lors de la recherche de contacts:', error);
-                    return 'Une erreur technique s\'est produite. Veuillez réessayer ultérieurement.';
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+
+                    // Add error message
+                    const errorMessageEl = createMessageElement('agent', `Erreur: ${error.message}`);
+                    chatMessages.appendChild(errorMessageEl);
+                    scrollToBottom();
                 }
             };
 
@@ -1118,12 +673,6 @@
 
             // Enhanced markdown-like parsing
             const parseMarkdown = (content) => {
-                // Truncate content to ensure conciseness (3-4 sentences max)
-                const truncateSentences = (text, maxSentences = 4) => {
-                    const sentences = text.split(/[.!?]+/).filter(s => s.trim() !== '');
-                    return sentences.slice(0, maxSentences).join('. ') + (sentences.length > maxSentences ? '...' : '');
-                };
-
                 // Escape HTML to prevent XSS
                 const escapeHtml = (unsafe) => {
                     return unsafe
@@ -1133,9 +682,6 @@
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;");
                 };
-
-                // Truncate content before further processing
-                content = truncateSentences(content);
 
                 // Code block parsing
                 content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
