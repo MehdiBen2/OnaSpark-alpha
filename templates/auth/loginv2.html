@@ -260,7 +260,85 @@
             }
         }
 
-        /* Login Animation Styles */
+        /* Uiverse.io Loader Styles */
+        .container {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: auto;
+            filter: url("#goo");
+            animation: rotate-move 3.5s ease-in-out infinite;
+            display: none; /* Initially hidden */
+        }
+
+        .dot {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #000;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+        }
+
+        .dot-3 {
+            background-color: #95C11F;  /* ONA Green (Accent) */
+            animation: dot-3-move 3.5s ease infinite, index 8s ease infinite;
+        }
+
+        .dot-2 {
+            background-color: #2181c3;  /* Updated Primary Blue */
+            animation: dot-2-move 3.5s ease infinite, index 8s -4s ease infinite;
+        }
+
+        .dot-1 {
+            background-color: #cae7f0;  /* Light Blue */
+            animation: dot-1-move 3.5s ease infinite, index 8s -2s ease infinite;
+        }
+
+        @keyframes dot-3-move {
+            20% { transform: scale(1); }
+            45% { transform: translateY(-18px) scale(0.45); }
+            60% { transform: translateY(-90px) scale(0.45); }
+            80% { transform: translateY(-90px) scale(0.45); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        @keyframes dot-2-move {
+            20% { transform: scale(1); }
+            45% { transform: translate(-16px, 12px) scale(0.45); }
+            60% { transform: translate(-80px, 60px) scale(0.45); }
+            80% { transform: translate(-80px, 60px) scale(0.45); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        @keyframes dot-1-move {
+            20% { transform: scale(1); }
+            45% { transform: translate(16px, 12px) scale(0.45); }
+            60% { transform: translate(80px, 60px) scale(0.45); }
+            80% { transform: translate(80px, 60px) scale(0.45); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        @keyframes rotate-move {
+            55% { transform: translate(-50%, -50%) rotate(0deg); }
+            80% { transform: translate(-50%, -50%) rotate(360deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes index {
+            0%, 100% { z-index: 3; }
+            33.3% { z-index: 2; }
+            66.6% { z-index: 1; }
+        }
+
+        /* Existing login animation styles */
         .login-animation-overlay {
             position: fixed;
             top: 0;
@@ -283,48 +361,40 @@
             visibility: visible;
         }
 
-        .login-loader {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #ffffff;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .login-message {
-            color: white;
-            font-size: 1.2rem;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .login-message.active {
-            opacity: 1;
-            transform: translateY(0);
+            display: none;
         }
 
         .login-logo {
-            width: 100px;
-            height: 100px;
-            background: url("{{ url_for('static', filename='images/ona_logo.png') }}") no-repeat center;
-            background-size: contain;
-            opacity: 0;
-            transform: scale(0.7);
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none;
         }
 
-        .login-logo.active {
-            opacity: 1;
-            transform: scale(1);
+        .terms {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #71717a;
+            text-align: center;
+        }
+
+        .terms a {
+            color: #000000;
+            text-decoration: none;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.875rem;
+            color: #71717a;
+            background-color: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
@@ -376,8 +446,30 @@
     <!-- Login Animation Overlay -->
     <div class="login-animation-overlay">
         <div class="login-logo"></div>
-        <div class="login-loader"></div>
-        <div class="login-message">Connexion en cours...</div>
+        
+        <!-- Uiverse.io Loader -->
+        <div class="container">
+            <div class="dot dot-1"></div>
+            <div class="dot dot-2"></div>
+            <div class="dot dot-3"></div>
+        </div>
+
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="goo">
+                    <feGaussianBlur
+                        result="blur"
+                        stdDeviation="10"
+                        in="SourceGraphic"
+                    ></feGaussianBlur>
+                    <feColorMatrix
+                        values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -7"
+                        mode="matrix"
+                        in="blur"
+                    ></feColorMatrix>
+                </filter>
+            </defs>
+        </svg>
     </div>
 
     <script>
@@ -442,31 +534,31 @@
             const loginForm = document.querySelector('form');
             const loginAnimationOverlay = document.querySelector('.login-animation-overlay');
             const loginLogo = document.querySelector('.login-logo');
-            const loginLoader = document.querySelector('.login-loader');
-            const loginMessage = document.querySelector('.login-message');
+            const loginLoader = document.querySelector('.container');
 
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                // Activate animation overlay
-                loginAnimationOverlay.classList.add('active');
+                // Activate animation overlay with a slight delay for smoother transition
+                setTimeout(() => {
+                    loginAnimationOverlay.classList.add('active');
+                }, 100);
                 
-                // Stagger animations
+                // Stagger animations with more dynamic timing
                 setTimeout(() => {
                     loginLogo.classList.add('active');
                 }, 300);
 
                 setTimeout(() => {
                     loginLoader.style.display = 'block';
-                    loginMessage.classList.add('active');
                 }, 600);
 
-                // Simulate login process (replace with actual login logic)
+                // Simulate login process with more realistic timing
                 setTimeout(() => {
                     // Here you would typically make an AJAX call to your login endpoint
                     // For demonstration, we'll just submit the form after animation
                     this.submit();
-                }, 2000);
+                }, 3500);
             });
         });
     </script>
