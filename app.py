@@ -433,6 +433,7 @@ def test_error():
     return 1 / 0
 
 @app.route('/spark-agent')
+@login_required
 def spark_agent():
     return render_template('sparkagent/spark_agent.html')
 
