@@ -1,7 +1,6 @@
 # Ona Spark: Smart Platform for Advanced Reporting and Knowledge. S P A R K
-![sparklt1](https://github.com/user-attachments/assets/31867c26-1bf1-4732-bf21-405ce6bb3917)
-## Project Overview
 
+![SPARK](https://github.com/user-attachments/assets/0391b836-495d-40d7-8d17-045f837f1bc3)
 
 OnaSpark is a comprehensive water management system designed to provide robust solutions for water quality assessment, incident tracking, and organizational management. Enhanced with AI-powered agents, the platform delivers intelligent assistance and advanced analytics for water resource management.
 
@@ -54,7 +53,9 @@ OnaSpark provides a robust framework for managing complex organizational structu
 - Granular access control
 - Dynamic unit and zone assignment
 
-#### Key Management Features
+#### Key Management Features  
+                              
+![sparklt1](https://github.com/user-attachments/assets/31867c26-1bf1-4732-bf21-405ce6bb3917)
 
 - Centralized zone configuration
 - Detailed unit tracking
@@ -164,6 +165,7 @@ A comprehensive incident management system designed for rapid response and detai
    - Resource viewing
 
 ## Key Differentiators
+
 
 - Precision-driven water quality assessment
 - Flexible organizational management
