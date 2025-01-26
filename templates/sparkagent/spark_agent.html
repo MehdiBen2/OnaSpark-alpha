@@ -370,7 +370,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" width="40" height="40" class="coolshapes moon-9 "><g clip-path="url(#cs_clip_1_moon-9)"><mask id="cs_mask_1_moon-9" style="mask-type:alpha" width="201" height="200" x="-1" y="0" maskUnits="userSpaceOnUse"><path fill="#fff" d="M100 200a100.001 100.001 0 000-200v200zM0 200a100.002 100.002 0 00100-100A100 100 0 000 0v200z"></path></mask><g mask="url(#cs_mask_1_moon-9)"><path fill="#fff" d="M200 0H0v200h200V0z"></path><path fill="url(#paint0_linear_748_4479)" d="M200 0H0v200h200V0z"></path><g filter="url(#filter0_f_748_4479)"><path fill="#FFE500" d="M180-41H-11v141h191V-41z"></path><path fill="#18A0FB" d="M256 63H113v157h143V63z"></path></g></g></g><defs><filter id="filter0_f_748_4479" width="407" height="401" x="-81" y="-111" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur result="effect1_foregroundBlur_748_4479" stdDeviation="35"></feGaussianBlur></filter><linearGradient id="paint0_linear_748_4479" x1="158.5" x2="29" y1="12.5" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#0E6FFF"></stop><stop offset="1" stop-color="#00F0FF"></stop></linearGradient><clipPath id="cs_clip_1_moon-9"><path fill="#fff" d="M0 0H200V200H0z"></path></clipPath></defs><g style="mix-blend-mode:overlay" mask="url(#cs_mask_1_moon-9)"><path fill="gray" stroke="transparent" d="M200 0H0v200h200V0z" filter="url(#cs_noise_1_moon-9)"></path></g><defs><filter id="cs_noise_1_moon-9" width="100%" height="100%" x="0%" y="0%" filterUnits="objectBoundingBox"><feTurbulence baseFrequency="0.6" numOctaves="5" result="out1" seed="4"></feTurbulence><feComposite in="out1" in2="SourceGraphic" operator="in" result="out2"></feComposite><feBlend in="SourceGraphic" in2="out2" mode="overlay" result="out3"></feBlend></filter></defs></svg>
                     </div>
                     <div class="message-content">
-                        Hey, je suis Spark, ici pour faciliter vos tâches a l office national de l'assainissement. Comment puis-je vous aider aujourd'hui ?
+                        Bonjour, je suis Spark, votre assistant technique pour l'ONA. Mon objectif : optimiser votre productivité et faciliter vos tâches d'assainissement. Comment puis-je vous aider aujourd'hui ?
                     </div>
                 </div>
             </div>
@@ -442,6 +442,9 @@
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-secondary me-2" id="nePlusAfficherBtn">
+                        <i class="fas fa-eye-slash me-2"></i>Ne plus afficher
+                    </button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: var(--ona-primary); border-color: var(--ona-primary); border-radius: 50px; padding: 10px 20px;">
                         <i class="fas fa-check-circle me-2"></i>Compris
                     </button>
@@ -469,29 +472,71 @@
                 return;
             }
 
-            // Create and show the modal
-            try {
-                const disclaimerModal = new bootstrap.Modal(disclaimerModalElement, {
-                    backdrop: 'static',
-                    keyboard: false
-                });
-                console.log('Modal instance created');
-                
+            // Create modal instance
+            const disclaimerModal = new bootstrap.Modal(disclaimerModalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            // Function to check if disclaimer should be shown
+            const shouldShowDisclaimer = () => {
+                // Check local storage for disclaimer visibility preference
+                const hideDisclaimer = localStorage.getItem('hideSparkAgentDisclaimer');
+                return hideDisclaimer !== 'true';
+            };
+
+            // Function to set disclaimer visibility preference
+            const setDisclaimerVisibility = (show) => {
+                localStorage.setItem('hideSparkAgentDisclaimer', show ? 'false' : 'true');
+            };
+
+            // Check if disclaimer should be shown
+            if (shouldShowDisclaimer()) {
                 // Slight delay to ensure everything is ready
                 setTimeout(() => {
                     disclaimerModal.show();
                     console.log('Modal should now be showing');
                 }, 100);
-            } catch (error) {
-                console.error('Error creating or showing modal:', error);
             }
+
+            // Add event listener to 'Ne plus afficher' button
+            const nePlusAfficherBtn = document.getElementById('nePlusAfficherBtn');
+            nePlusAfficherBtn.addEventListener('click', () => {
+                // Set preference to hide disclaimer
+                setDisclaimerVisibility(false);
+                
+                // Close the modal
+                disclaimerModal.hide();
+
+                // Optional: Show a toast or notification
+                const toastContainer = document.createElement('div');
+                toastContainer.classList.add('toast-container', 'position-fixed', 'bottom-0', 'end-0', 'p-3');
+                const toast = document.createElement('div');
+                toast.classList.add('toast', 'bg-info', 'text-white');
+                toast.innerHTML = `
+                    <div class="toast-header bg-info text-white">
+                        <strong class="me-auto">Paramètre enregistré</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        Le disclaimer ne s'affichera plus automatiquement.
+                    </div>
+                `;
+                toastContainer.appendChild(toast);
+                document.body.appendChild(toastContainer);
+                
+                // Initialize and show toast
+                const toastInstance = new bootstrap.Toast(toast);
+                toastInstance.show();
+            });
 
             const chatInput = document.getElementById('chatInput');
             const sendBtn = document.getElementById('sendBtn');
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Fetch default model from server configuration
-            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
+            let DEFAULT_MODEL = 'qwen/qwen-2-7b-instruct:free';  
+            const DEFAULT_TEMPERATURE = 0.7;  
 
             // Function to fetch Mistral API Key
             function fetchMistralApiKey() {
@@ -515,7 +560,162 @@
                     });
             }
 
-            // Fetch default model configuration
+            // Function to fetch OpenRouter API Key
+            const fetchOpenRouterApiKey = async () => {
+                try {
+                    console.log('Attempting to fetch OpenRouter API Key');
+                    
+                    // Retrieve API key from server-side environment variable
+                    const response = await fetch("{{ url_for('spark_agent.get_openrouter_api_key') }}");
+                    
+                    // Check response status
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Failed to fetch API key. Status:', response.status, response.statusText);
+                        console.error('Error details:', errorText);
+                        
+                        // Detailed error handling
+                        throw new Error(`API Key Retrieval Failed: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Validate response structure
+                    if (!data || !data.api_key) {
+                        console.error('Invalid API key response:', data);
+                        throw new Error('Invalid API key response from server');
+                    }
+
+                    let apiKey = data.api_key;
+                    console.log('Raw API Key Content:', apiKey);
+                    
+                    // Clean and validate API key
+                    apiKey = apiKey.trim().replace(/^.*?(sk-or-v1-[a-zA-Z0-9]+)/, '$1');
+                    console.log('Cleaned API Key:', apiKey);
+                    
+                    // Validate API key format
+                    const apiKeyRegex = /^sk-or-v1-[a-zA-Z0-9]+$/;
+                    if (!apiKeyRegex.test(apiKey)) {
+                        console.error('Invalid OpenRouter API Key format');
+                        throw new Error('Invalid API key format');
+                    }
+                    
+                    console.log('API Key successfully retrieved');
+                    return apiKey;
+                } catch (error) {
+                    console.error('Comprehensive Error in API Key Retrieval:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+
+                    // Throw a more descriptive error
+                    throw new Error(`Clé API OpenRouter invalide ou manquante. Détails : ${error.message}`);
+                }
+            };
+
+            // Fallback Response Generator
+            const FallbackResponseGenerator = {
+                /**
+                 * Generate a fallback response based on the error type
+                 * @param {Error} error - The original error
+                 * @returns {string} A user-friendly fallback message
+                 */
+                generateResponse(error) {
+                    console.error('Fallback Response Generation:', {
+                        errorName: error.name,
+                        errorMessage: error.message,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Categorize and respond to different error types
+                    const errorResponses = {
+                        'NetworkError': [
+                            "La connexion réseau est instable. Veuillez réessayer.",
+                            "Problème de communication temporaire. Merci de patienter."
+                        ],
+                        'APIError': [
+                            "Erreur de communication avec le service AI.",
+                            "Le service AI est momentanément indisponible."
+                        ],
+                        'default': [
+                            "Un problème technique est survenu.",
+                            "Service temporairement indisponible.",
+                            "Erreur système. Nos techniciens ont été informés."
+                        ]
+                    };
+
+                    // Select error category
+                    const category = error.message.includes('choices') ? 'APIError'
+                        : error.name === 'TypeError' ? 'NetworkError'
+                        : 'default';
+
+                    const responses = errorResponses[category];
+                    return responses[Math.floor(Math.random() * responses.length)];
+                }
+            };
+
+            // Function to send message using OpenRouter API
+            const sendMessageWithOpenRouter = async (messages, model, temperature) => {
+                try {
+                    // Fetch API key
+                    const apiKey = await fetchOpenRouterApiKey();
+                    if (!apiKey) {
+                        throw new Error('Clé API OpenRouter invalide ou manquante');
+                    }
+
+                    // Get prepared messages with system prompt
+                    const preparedMessages = await ConversationHistoryManager.prepareMessagesForAI();
+
+                    // Prepare request body
+                    const requestBody = {
+                        model: model || 'qwen/qwen-2-7b-instruct:free',
+                        messages: preparedMessages,
+                        temperature: temperature || 0.7,
+                        max_tokens: 300
+                    };
+
+                    // Fetch with OpenRouter configuration
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'HTTP-Referer': 'https://ona-spark.dz',
+                            'X-Title': 'OnaSpark Agent',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    // Check response status
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('OpenRouter API Error:', errorText);
+                        throw new Error(`Erreur API OpenRouter: ${errorText}`);
+                    }
+
+                    // Parse response
+                    const data = await response.json();
+
+                    // Validate response structure
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                        console.error('Invalid API response structure:', data);
+                        throw new Error('Réponse API invalide');
+                    }
+
+                    // Return AI response content
+                    return data.choices[0].message.content;
+
+                } catch (error) {
+                    console.error('Message sending error:', error);
+                    const fallbackResponse = FallbackResponseGenerator.generateResponse(error);
+                    const fallbackMessageElement = createMessageElement('error', fallbackResponse);
+                    messageContainer.appendChild(fallbackMessageElement);
+                    typingIndicator.style.display = 'none';
+                }
+            };
+
+            // Function to fetch default model configuration
             function fetchDefaultModel() {
                 fetch("{{ url_for('spark_agent.get_default_model_route') }}")
                     .then(response => response.json())
@@ -531,17 +731,156 @@
             }
 
             // Fetch system prompt
-            const fetchSystemPrompt = async () => {
-                // If DEFAULT_MODEL is not defined, use a fallback
-                const modelToUse = DEFAULT_MODEL || 'mistral-small';
-                
+            async function fetchSystemPrompt() {
                 try {
-                    const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
-                    return await response.text();
+                    const response = await fetch('{{ url_for("static", filename="spark_agent_system_prompt.txt") }}');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch system prompt');
+                    }
+                    const systemPrompt = await response.text();
+                    
+                    // Return the complete system prompt
+                    return systemPrompt;
                 } catch (error) {
                     console.error('Error fetching system prompt:', error);
-                    return "You are a helpful AI assistant.";
+                    // Fallback system prompt with core directives
+                    return `# Contexte Système pour Spark - Assistant IA pour les Travailleurs de l'ONA
+
+## !IMPORTANT : Directives Spécifiques
+- Toujours contextualiser les informations
+- Utiliser un langage professionnel
+- Fournir des informations basées sur les dernières normes
+- **Être TOUJOURS concis et direct**
+- **Limiter les réponses à 3-4 phrases maximum**
+- Aller à l'essentiel sans détails superflus
+
+## Identité et Mission
+- Nom: SparkAgent
+- Rôle: Assistant virtuel dédié aux travailleurs de l'ONA
+- Objectif Principal: Optimiser la productivité et faciliter le travail quotidien`;
                 }
+            }
+
+            // Conversation History Management Module
+            const ConversationHistoryManager = {
+                // Configuration constants
+                MAX_HISTORY_LENGTH: 5,
+                STORAGE_KEY: 'conversationHistory',
+
+                /**
+                 * Safely retrieve conversation history from localStorage
+                 * @returns {Array} Conversation history array
+                 */
+                getHistory() {
+                    try {
+                        const storedHistory = localStorage.getItem(this.STORAGE_KEY);
+                        let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
+
+                        // Validate and limit history length
+                        return conversationHistory.slice(-this.MAX_HISTORY_LENGTH);
+                    } catch (error) {
+                        console.error('Error retrieving conversation history:', error);
+                        return [];
+                    }
+                },
+
+                /**
+                 * Save a message to conversation history
+                 * @param {string} role - Message role (user/assistant)
+                 * @param {string} content - Message content
+                 */
+                saveMessage(role, content) {
+                    try {
+                        if (!content || !role) {
+                            console.warn('Attempted to save invalid message');
+                            return;
+                        }
+
+                        const conversationHistory = this.getHistory();
+                        conversationHistory.push({ role, content });
+
+                        // Limit history length
+                        const trimmedHistory = conversationHistory.slice(-this.MAX_HISTORY_LENGTH);
+
+                        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trimmedHistory));
+                    } catch (error) {
+                        console.error('Error saving message to conversation history:', error);
+                    }
+                },
+
+                /**
+                 * Clear entire conversation history
+                 */
+                clearHistory() {
+                    try {
+                        localStorage.removeItem(this.STORAGE_KEY);
+                        console.log('Conversation history cleared');
+                    } catch (error) {
+                        console.error('Error clearing conversation history:', error);
+                    }
+                },
+
+                /**
+                 * Prepare messages for AI context
+                 * @returns {Array} Prepared messages for AI
+                 */
+                async prepareMessagesForAI() {
+                    const history = this.getHistory();
+                    
+                    // Get the system prompt
+                    let systemPromptContent;
+                    try {
+                        systemPromptContent = await fetchSystemPrompt();
+                    } catch (error) {
+                        console.error('Error fetching system prompt:', error);
+                        systemPromptContent = 'Tu es SparkAgent, assistant virtuel professionnel de l\'ONA.';
+                    }
+
+                    // Add system prompt at the beginning
+                    const systemPrompt = {
+                        role: 'system',
+                        content: systemPromptContent
+                    };
+
+                    return [systemPrompt, ...history];
+                }
+            };
+
+            // Function to manage conversation history
+            const getConversationHistory = () => {
+                // Retrieve existing conversation history from localStorage
+                const storedHistory = localStorage.getItem('conversationHistory');
+                let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
+
+                // Limit history to last 5 messages to prevent context overflow
+                if (conversationHistory.length > 5) {
+                    conversationHistory = conversationHistory.slice(-5);
+                }
+
+                return conversationHistory;
+            };
+
+            // Function to save message to conversation history
+            const saveToConversationHistory = (role, content) => {
+                const storedHistory = localStorage.getItem('conversationHistory');
+                let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
+
+                // Add new message
+                conversationHistory.push({ role, content });
+
+                // Limit history to last 5 messages
+                if (conversationHistory.length > 5) {
+                    conversationHistory = conversationHistory.slice(-5);
+                }
+
+                // Save updated history back to localStorage
+                localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+            };
+
+            // Function to clear conversation history
+            const clearConversationHistory = () => {
+                localStorage.removeItem('conversationHistory');
+                console.log('Conversation history cleared');
             };
 
             // Call functions when the page loads
@@ -550,77 +889,151 @@
                 fetchDefaultModel();
             });
 
-            // Send message function implementation...
-            const sendMessage = async () => {
-                const userMessage = chatInput.value.trim();
+            // Main function to send messages
+            async function sendMessage() {
+                const userInput = document.getElementById('chatInput');
+                const messageContainer = document.getElementById('chatMessages');
+                const typingIndicator = document.getElementById('typingIndicator');
+
+                const userMessage = userInput.value.trim();
                 if (!userMessage) return;
 
-                // Add user message to chat
-                const userMessageEl = createMessageElement('user', userMessage);
-                chatMessages.appendChild(userMessageEl);
-                chatInput.value = '';
+                // Create and append user message
+                const userMessageElement = createMessageElement('user', userMessage);
+                messageContainer.appendChild(userMessageElement);
+                userInput.value = '';
                 scrollToBottom();
+
+                // Save user message to conversation history
+                ConversationHistoryManager.saveMessage('user', userMessage);
 
                 // Show typing indicator
                 typingIndicator.style.display = 'block';
 
                 try {
-                    // Retrieve settings
-                    const apiKey = await fetchMistralApiKey();
-                    const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
-                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
+                    // Prepare conversation history
+                    const conversationHistory = await ConversationHistoryManager.prepareMessagesForAI();
 
-                    if (!apiKey) {
-                        throw new Error('Clé API Mistral non configurée');
-                    }
+                    // Send message using OpenRouter
+                    const aiResponse = await sendMessageWithOpenRouter(
+                        conversationHistory, 
+                        DEFAULT_MODEL, 
+                        DEFAULT_TEMPERATURE
+                    );
 
-                    // Fetch system prompt
-                    const systemPrompt = await fetchSystemPrompt();
+                    // Save AI response to conversation history
+                    ConversationHistoryManager.saveMessage('assistant', aiResponse);
 
-                    // Send request to Mistral API
-                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [
-                                {role: 'system', content: systemPrompt},
-                                {role: 'user', content: userMessage}
-                            ],
-                            temperature: temperature,
-                            max_tokens: 1000,
-                            top_p: 1,
-                            stream: false
-                        })
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Erreur de communication avec l\'API');
-                    }
-
-                    const data = await response.json();
-                    const agentResponse = data.choices[0].message.content.trim();
+                    // Create and append AI response
+                    const aiMessageElement = createMessageElement('agent', aiResponse);
+                    messageContainer.appendChild(aiMessageElement);
+                    scrollToBottom();
 
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
-
-                    // Add agent message to chat
-                    const agentMessageEl = createMessageElement('agent', agentResponse);
-                    chatMessages.appendChild(agentMessageEl);
-                    scrollToBottom();
 
                 } catch (error) {
-                    // Hide typing indicator
+                    console.error('Message sending error:', error);
+                    const fallbackResponse = FallbackResponseGenerator.generateResponse(error);
+                    const fallbackMessageElement = createMessageElement('error', fallbackResponse);
+                    messageContainer.appendChild(fallbackMessageElement);
                     typingIndicator.style.display = 'none';
+                }
+            }
 
-                    // Add error message
-                    const errorMessageEl = createMessageElement('agent', `Erreur: ${error.message}`);
-                    chatMessages.appendChild(errorMessageEl);
-                    scrollToBottom();
+            // Function to fetch contact information
+            const fetchContactInfo = async (query) => {
+                try {
+                    // Validate input query
+                    if (!query || query.trim().length < 2) {
+                        return 'Veuillez fournir un terme de recherche plus spécifique.';
+                    }
+
+                    const response = await fetch("{{ url_for('static', filename='phonenames.txt') }}");
+                    const contactData = await response.text();
+                    
+                    // Advanced query normalization with comprehensive accent and character handling
+                    const normalizedQuery = query.toLowerCase().trim()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')  // Remove all diacritical marks
+                        .replace(/[éèêë]/g, 'e')
+                        .replace(/[àâä]/g, 'a')
+                        .replace(/[ôö]/g, 'o')
+                        .replace(/[ùûü]/g, 'u')
+                        .replace(/[ç]/g, 'c')
+                        .replace(/\s+/g, ' ');  // Normalize whitespace
+                    
+                    // Comprehensive search strategies with weighted matching
+                    const searchStrategies = [
+                        // High priority: Exact zone and role match
+                        {
+                            priority: 3,
+                            match: line => {
+                                const lowercaseLine = line.toLowerCase();
+                                return (
+                                    lowercaseLine.includes('zone') && 
+                                    lowercaseLine.includes('directrice') && 
+                                    lowercaseLine.includes(normalizedQuery)
+                                );
+                            }
+                        },
+                        // Medium priority: Partial zone and name match
+                        {
+                            priority: 2,
+                            match: line => {
+                                const lowercaseLine = line.toLowerCase();
+                                const zoneMatch = lowercaseLine.includes('zone');
+                                const nameMatch = lowercaseLine.includes(normalizedQuery);
+                                return zoneMatch || nameMatch;
+                            }
+                        },
+                        // Low priority: Broad text match
+                        {
+                            priority: 1,
+                            match: line => line.toLowerCase().includes(normalizedQuery)
+                        }
+                    ];
+                    
+                    // Enhanced matching with priority-based filtering
+                    const matchingLines = contactData.split('\n')
+                        .filter(line => searchStrategies.some(strategy => strategy.match(line)))
+                        .sort((a, b) => {
+                            const aMatches = searchStrategies.filter(s => s.match(a));
+                            const bMatches = searchStrategies.filter(s => s.match(b));
+                            return Math.max(...bMatches.map(m => m.priority)) - 
+                                   Math.max(...aMatches.map(m => m.priority));
+                        });
+                    
+                    // Process and format matching lines
+                    const contactResults = matchingLines
+                        .slice(0, 3)  // Limit to top 3 results
+                        .map(line => {
+                            const nameMatch = line.match(/Mme\.\s+([^0]+)/i) || 
+                                              line.match(/M\.\s+([^0]+)/i);
+                            const phoneMatch = line.match(/0\d{9}/);
+                            const emailMatch = line.match(/[\w.-]+@ona-dz\.com/);
+                            const roleMatch = line.match(/Directrice?\s+de\s+Zone/i);
+                            
+                            return {
+                                name: nameMatch ? nameMatch[1].trim() : 'Nom non trouvé',
+                                phone: phoneMatch ? phoneMatch[0] : 'Téléphone non disponible',
+                                email: emailMatch ? emailMatch[0] : 'E-mail non disponible',
+                                role: roleMatch ? roleMatch[0] : 'Rôle non spécifié'
+                            };
+                        });
+                    
+                    // Format and return results
+                    if (contactResults.length > 0) {
+                        return contactResults.map(contact => 
+                            `${contact.role}: ${contact.name}\nTéléphone: ${contact.phone}\nE-mail: ${contact.email}`
+                        ).join('\n\n');
+                    }
+                    
+                    // Fallback for no results
+                    return 'Aucune information de contact correspondante n\'a été trouvée. Veuillez affiner votre recherche.';
+                } catch (error) {
+                    console.error('Erreur lors de la recherche de contacts:', error);
+                    return 'Une erreur technique s\'est produite. Veuillez réessayer ultérieurement.';
                 }
             };
 
@@ -673,6 +1086,12 @@
 
             // Enhanced markdown-like parsing
             const parseMarkdown = (content) => {
+                // Truncate content to ensure conciseness (3-4 sentences max)
+                const truncateSentences = (text, maxSentences = 4) => {
+                    const sentences = text.split(/[.!?]+/).filter(s => s.trim() !== '');
+                    return sentences.slice(0, maxSentences).join('. ') + (sentences.length > maxSentences ? '...' : '');
+                };
+
                 // Escape HTML to prevent XSS
                 const escapeHtml = (unsafe) => {
                     return unsafe
@@ -682,6 +1101,9 @@
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;");
                 };
+
+                // Truncate content before further processing
+                content = truncateSentences(content);
 
                 // Code block parsing
                 content = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
