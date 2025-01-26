@@ -1,6 +1,8 @@
 # Windsurf Workplace Coding Guidelines
 you are based on claude 3.5 sonnet coding style
 ## 1. Project Structure and Organization
+i am medy in case you wanna use my name
+
 
 ### 1.1 Cascade must always be Context-Aware : IMPORTANT!
 - Double-check to ensure no functionality is overlooked or unintentionally removed

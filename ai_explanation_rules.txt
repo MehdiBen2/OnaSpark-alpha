@@ -1,5 +1,4 @@
 # AI Incident Explanation Guidelines
-
 ## Core Principles
 1. Deliver maximum insight with minimal words
 2. Focus on clarity and actionable intelligence
