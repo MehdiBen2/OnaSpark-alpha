@@ -902,6 +902,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
             return grid;
         }
+
+        // Add lightbox functionality for image viewing
+        function setupImageLightbox() {
+            const lightboxModal = document.getElementById('imageLightboxModal');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxImageTitle = document.getElementById('lightboxImageTitle');
+            const lightboxDownloadLink = document.getElementById('lightboxDownloadLink');
+
+            // Delegate event listener for view-image buttons
+            document.addEventListener('click', function(event) {
+                const viewImageButton = event.target.closest('.view-image');
+                if (viewImageButton) {
+                    event.preventDefault();
+                    const imageContainer = viewImageButton.closest('.gallery-item');
+                    const imageElement = imageContainer.querySelector('img');
+                    
+                    if (imageElement) {
+                        const imageSrc = imageElement.src;
+                        const imageTitle = imageElement.alt || 'Image';
+
+                        // Set lightbox image source and title
+                        lightboxImage.src = imageSrc;
+                        lightboxImageTitle.textContent = imageTitle;
+                        
+                        // Update download link
+                        lightboxDownloadLink.href = imageSrc;
+                        
+                        // Show the lightbox modal
+                        const lightboxModalInstance = new bootstrap.Modal(lightboxModal);
+                        lightboxModalInstance.show();
+                    }
+                }
+            });
+        }
+
+        setupImageLightbox();
+
+        // Trigger status badge update after details are loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if details are already loaded
+            const etatElement = document.getElementById('detailEtat');
+            if (etatElement && etatElement.textContent.trim()) {
+                updateStatusBadge();
+            }
+        });
     }
 
     // Trigger status badge update after details are loaded
