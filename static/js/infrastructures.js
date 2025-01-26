@@ -1,0 +1,915 @@
+// Infrastructure Management JavaScript
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Update status badge color based on infrastructure state
+    function updateStatusBadge() {
+        const etatElement = document.getElementById('detailEtat');
+        const etat = etatElement.textContent.trim().toLowerCase();
+        
+        // Remove existing classes
+        etatElement.classList.remove('badge-success', 'badge-warning', 'badge-danger');
+        
+        // Add appropriate badge class based on state
+        if (etat.includes('actif') || etat.includes('opérationnel')) {
+            etatElement.classList.add('badge');
+            etatElement.classList.add('badge-success');
+        } else if (etat.includes('maintenance') || etat.includes('en cours')) {
+            etatElement.classList.add('badge');
+            etatElement.classList.add('badge-warning');
+        } else {
+            etatElement.classList.add('badge');
+            etatElement.classList.add('badge-danger');
+        }
+    }
+
+    // Vérifier les dépendances
+    const deps = {
+        jQuery: typeof jQuery !== 'undefined',
+        Bootstrap: typeof bootstrap !== 'undefined',
+        DataTables: typeof $.fn.DataTable !== 'undefined'
+    };
+
+    // Initialiser uniquement si toutes les dépendances sont chargées
+    if (Object.values(deps).every(Boolean)) {
+        // Initialiser DataTable
+        if (document.getElementById('infrastructuresTable')) {
+            $('#infrastructuresTable').DataTable({
+                responsive: true,
+                language: {
+                    paginate: {
+                        first: '&laquo;',
+                        last: '&raquo;',
+                        next: '&rsaquo;',
+                        previous: '&lsaquo;'
+                    },
+                    search: 'Rechercher:',
+                    lengthMenu: 'Afficher _MENU_ entrées',
+                    info: 'Affichage de _START_ à _END_ sur _TOTAL_ entrées',
+                    infoEmpty: 'Aucune donnée disponible',
+                    infoFiltered: '(filtré de _MAX_ entrées totales)',
+                    zeroRecords: 'Aucun résultat trouvé'
+                }
+            });
+        }
+
+        // Gestionnaire d'enregistrement d'infrastructure
+        const saveButton = document.querySelector('#saveInfrastructureBtn');
+        if (saveButton) {
+            saveButton.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const formData = {
+                    nom: document.getElementById('nom').value,
+                    type: document.getElementById('type').value,
+                    localisation: document.getElementById('localisation').value,
+                    capacite: document.getElementById('capacite').value,
+                    etat: document.getElementById('etat').value
+                };
+
+                // Valider les données du formulaire
+                const missingFields = Object.entries(formData)
+                    .filter(([_, value]) => !value)
+                    .map(([key]) => key);
+
+                if (missingFields.length > 0) {
+                    alert('Veuillez remplir tous les champs: ' + missingFields.join(', '));
+                    return;
+                }
+
+                // Envoyer la requête
+                fetch('{{ url_for("infrastructures.create_infrastructure") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('infrastructureModal'));
+                        if (modal) {
+                            modal.hide();
+                        }
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur lors de l\'enregistrement: ' + error.message);
+                });
+            });
+        }
+
+        // Gestionnaire de suppression d'infrastructure
+        const deleteButtons = document.querySelectorAll('.delete-infrastructure');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                const infrastructureId = this.getAttribute('data-id');
+                
+                // Confirmer la suppression
+                if (!confirm('Êtes-vous sûr de vouloir supprimer cette infrastructure?')) {
+                    return;
+                }
+
+                // Envoyer la requête de suppression
+                fetch('{{ url_for("infrastructures.delete_infrastructure", id=0) }}'.replace('/0', `/${infrastructureId}`), {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    // Vérifier si la réponse est OK (statut dans la plage 200-299)
+                    if (!response.ok) {
+                        // Essayer de parser la réponse d'erreur en JSON
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || 'Erreur de suppression');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur lors de la suppression: ' + error.message);
+                });
+            });
+        });
+
+        // Function to fetch and display infrastructure files
+        function fetchInfrastructureFiles(infrastructureId) {
+            const existingFilesContainer = document.getElementById('existingFilesContainer');
+            existingFilesContainer.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            `;
+
+            fetch(`/departements/infrastructure/${infrastructureId}/files`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Impossible de récupérer les fichiers');
+                }
+                return response.json();
+            })
+            .then(filesData => {
+                const existingFilesContainer = document.getElementById('existingFilesContainer');
+                existingFilesContainer.innerHTML = '';
+
+                if (filesData.files.length === 0) {
+                    existingFilesContainer.innerHTML = `
+                        <div class="no-files-placeholder">
+                            <i class="fas fa-folder-open fa-3x opacity-50 mb-3"></i>
+                            <p>Aucun fichier téléchargé</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const imageFiles = filesData.files.filter(file => file.type.startsWith('image'));
+                const pdfFiles = filesData.files.filter(file => file.type === 'pdf');
+
+                const tabContainer = createFileTabContainer(imageFiles, pdfFiles);
+                existingFilesContainer.appendChild(tabContainer.container);
+
+                const contentContainer = document.createElement('div');
+                contentContainer.classList.add('file-content');
+
+                const imageContent = createFileGrid(imageFiles);
+                const pdfContent = createFileGrid(pdfFiles);
+
+                contentContainer.appendChild(imageContent);
+                existingFilesContainer.appendChild(contentContainer);
+
+                setupTabSwitching(imageContent, pdfContent, tabContainer.imageTab, tabContainer.pdfTab, contentContainer);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des fichiers:', error);
+                const existingFilesContainer = document.getElementById('existingFilesContainer');
+                existingFilesContainer.innerHTML = `
+                    <div class="no-files-placeholder text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-50"></i>
+                        <p>Impossible de charger les fichiers</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            });
+        }
+
+        function createFileTabContainer(imageFiles, pdfFiles) {
+            // Create tabs container
+            const tabContainer = document.createElement('div');
+            tabContainer.classList.add('file-tabs-container');
+            
+            // Create tabs section
+            const tabsSection = document.createElement('div');
+            tabsSection.classList.add('file-tabs');
+            
+            // Create info section
+            const infoSection = document.createElement('div');
+            infoSection.classList.add('file-tabs-info');
+            
+            // Create image tab
+            const imageTab = document.createElement('button');
+            imageTab.classList.add('btn', 'btn-outline-primary', 'active');
+            imageTab.id = 'imageTab';
+            imageTab.innerHTML = `
+                <i class="fas fa-file-image me-2"></i>
+                Images (${imageFiles.length})
+            `;
+            
+            // Create PDF tab
+            const pdfTab = document.createElement('button');
+            pdfTab.classList.add('btn', 'btn-outline-primary');
+            pdfTab.id = 'pdfTab';
+            pdfTab.innerHTML = `
+                <i class="fas fa-file-pdf me-2"></i>
+                PDFs (${pdfFiles.length})
+            `;
+            
+            // Create info text
+            infoSection.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                Affichage de tous les fichiers
+            `;
+            
+            // Append tabs to container
+            tabsSection.appendChild(imageTab);
+            tabsSection.appendChild(pdfTab);
+            
+            tabContainer.appendChild(tabsSection);
+            tabContainer.appendChild(infoSection);
+            
+            return {
+                container: tabContainer,
+                imageTab: imageTab,
+                pdfTab: pdfTab
+            };
+        }
+
+        function setupTabSwitching(imageContent, pdfContent, imageTab, pdfTab, contentContainer) {
+            imageTab.addEventListener('click', () => {
+                // Remove active class from both tabs
+                imageTab.classList.add('active');
+                pdfTab.classList.remove('active');
+                
+                // Switch content
+                contentContainer.innerHTML = '';
+                contentContainer.appendChild(imageContent);
+            });
+
+            pdfTab.addEventListener('click', () => {
+                // Remove active class from both tabs
+                pdfTab.classList.add('active');
+                imageTab.classList.remove('active');
+                
+                // Switch content
+                contentContainer.innerHTML = '';
+                contentContainer.appendChild(pdfContent);
+            });
+        }
+
+        function createFileGrid(files) {
+            const grid = document.createElement('div');
+            grid.classList.add('iphone-gallery-grid');
+
+            // Adjust grid columns based on number of files
+            const fileCount = files.length;
+            if (fileCount <= 2) {
+                grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            } else if (fileCount <= 4) {
+                grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            } else if (fileCount <= 6) {
+                grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            } else {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+            }
+
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('gallery-item');
+                
+                if (file.type.startsWith('image')) {
+                    fileItem.innerHTML = `
+                        <div class="gallery-item-content">
+                            <img src="${file.path}" alt="${file.name}" data-full-path="${file.path}">
+                            <div class="gallery-item-overlay">
+                                <div class="gallery-item-details">
+                                    <span class="gallery-item-name text-truncate">${file.name}</span>
+                                    <div class="gallery-item-actions">
+                                        <button class="btn btn-sm btn-light view-image" data-index="${index}">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                        <a href="${file.path}" class="btn btn-sm btn-light" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    fileItem.innerHTML = `
+                        <div class="gallery-item-content pdf-item">
+                            <div class="pdf-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="gallery-item-overlay">
+                                <div class="gallery-item-details">
+                                    <span class="gallery-item-name text-truncate">${file.name}</span>
+                                    <div class="gallery-item-actions">
+                                        <a href="${file.path}" class="btn btn-sm btn-light" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                grid.appendChild(fileItem);
+            });
+
+            return grid;
+        }
+
+        // Infrastructure row click handler
+        const infrastructureRows = document.querySelectorAll('.infrastructure-row');
+        infrastructureRows.forEach(row => {
+            row.addEventListener('click', function(event) {
+                // Prevent triggering if action buttons were clicked
+                if (event.target.closest('.btn-group')) return;
+
+                // Get infrastructure ID from the clicked row
+                const infrastructureId = this.getAttribute('data-id');
+                
+                // Fetch infrastructure details
+                fetch(`/departements/infrastructure/${infrastructureId}/details`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Impossible de récupérer les détails');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Populate modal with infrastructure details
+                    document.getElementById('detailNom').textContent = data.nom;
+                    document.getElementById('detailType').textContent = data.type;
+                    document.getElementById('detailLocalisation').textContent = data.localisation;
+                    document.getElementById('detailCapacite').textContent = data.capacite;
+                    document.getElementById('detailEtat').textContent = data.etat;
+
+                    // Fetch and display existing files
+                    fetchInfrastructureFiles(infrastructureId);
+
+                    // Set infrastructure ID on modal
+                    document.getElementById('infrastructureDetailsModal').setAttribute('data-infrastructure-id', infrastructureId);
+
+                    // Show the modal
+                    const infrastructureDetailsModal = new bootstrap.Modal(document.getElementById('infrastructureDetailsModal'));
+                    infrastructureDetailsModal.show();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des détails:', error);
+                    alert('Impossible de charger les détails de l\'infrastructure');
+                });
+            });
+        });
+
+        // File upload handler
+        const documentUpload = document.getElementById('documentUpload');
+        const uploadedFilesList = document.getElementById('uploadedFilesList');
+        
+        documentUpload.addEventListener('change', function(event) {
+            uploadedFilesList.innerHTML = ''; // Clear previous list
+            
+            Array.from(this.files).forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-2');
+                fileItem.innerHTML = `
+                    <span>
+                        <i class="fas ${file.type.includes('pdf') ? 'fa-file-pdf' : 'fa-file-image'} me-2"></i>
+                        ${file.name} (${(file.size / 1024).toFixed(2)} Ko)
+                    </span>
+                    <button type="button" class="btn btn-sm btn-danger remove-file" data-filename="${file.name}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                uploadedFilesList.appendChild(fileItem);
+
+                // Remove file functionality
+                fileItem.querySelector('.remove-file').addEventListener('click', function() {
+                    const fileName = this.getAttribute('data-filename');
+                    const updatedFiles = Array.from(documentUpload.files).filter(f => f.name !== fileName);
+                    
+                    // Create a new FileList
+                    const dataTransfer = new DataTransfer();
+                    updatedFiles.forEach(file => dataTransfer.items.add(file));
+                    
+                    documentUpload.files = dataTransfer.files;
+                    fileItem.remove();
+                });
+            });
+        });
+
+        // Add save infrastructure details handler
+        const saveInfrastructureDetailsBtn = document.getElementById('saveInfrastructureDetailsBtn');
+        if (saveInfrastructureDetailsBtn) {
+            saveInfrastructureDetailsBtn.addEventListener('click', async function(event) {
+                event.preventDefault();
+                const originalBtnText = this.innerHTML;
+                
+                try {
+                    // Show loading state
+                    this.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Enregistrement...
+                    `;
+                    this.disabled = true;
+
+                    // Get modal content for overlay
+                    const modalContent = document.getElementById('infrastructureDetailsModal').querySelector('.modal-content');
+                    if (!modalContent) {
+                        throw new Error('Modal content not found');
+                    }
+
+                    // Create loading overlay
+                    const loadingOverlay = document.createElement('div');
+                    loadingOverlay.classList.add('loading-overlay', 'position-absolute', 'top-0', 'start-0', 'w-100', 'h-100', 'd-flex', 'justify-content-center', 'align-items-center', 'bg-light', 'bg-opacity-75');
+                    loadingOverlay.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-grow text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    `;
+                    modalContent.style.position = 'relative';
+                    modalContent.appendChild(loadingOverlay);
+
+                    // Get infrastructure ID
+                    const infrastructureId = document.getElementById('infrastructureDetailsModal').getAttribute('data-infrastructure-id');
+                    if (!infrastructureId) {
+                        throw new Error('Aucune infrastructure sélectionnée');
+                    }
+
+                    // Get file input and prepare form data
+                    const documentUpload = document.getElementById('documentUpload');
+                    const files = documentUpload.files;
+
+                    const formData = new FormData();
+                    formData.append('infrastructure_id', infrastructureId);
+                    
+                    // Append files
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('files', files[i]);
+                    }
+
+                    // Use the correct route with infrastructure ID
+                    const uploadResponse = await fetch(`/departements/infrastructure/${infrastructureId}/upload-files`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        throw new Error(errorData.error || 'Erreur lors du téléchargement');
+                    }
+
+                    const uploadData = await uploadResponse.json();
+                    
+                    // Reset file input and list
+                    documentUpload.value = '';
+                    const uploadedFilesList = document.getElementById('uploadedFilesList');
+                    if (uploadedFilesList) uploadedFilesList.innerHTML = '';
+
+                    // Fetch updated file list
+                    await fetchInfrastructureFiles(infrastructureId);
+
+                    // Remove loading overlay
+                    modalContent.querySelector('.loading-overlay').remove();
+
+                    // Show success message
+                    const successToastEl = document.getElementById('successToast');
+                    if (successToastEl) {
+                        const messageEl = successToastEl.querySelector('.toast-body');
+                        if (messageEl) {
+                            messageEl.textContent = uploadData.message || 'Fichiers téléchargés avec succès';
+                        }
+                        bootstrap.Toast.getOrCreateInstance(successToastEl).show();
+                    }
+
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    
+                    // Remove loading overlay
+                    modalContent.querySelector('.loading-overlay').remove();
+
+                    // Show error message
+                    const errorToastEl = document.getElementById('errorToast');
+                    if (errorToastEl) {
+                        const messageEl = errorToastEl.querySelector('.toast-body');
+                        if (messageEl) {
+                            messageEl.textContent = error instanceof Error ? error.message : 'Erreur lors du téléchargement des fichiers';
+                        }
+                        bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
+                    }
+
+                } finally {
+                    // Remove loading state
+                    saveInfrastructureDetailsBtn.innerHTML = originalBtnText;
+                    saveInfrastructureDetailsBtn.disabled = false;
+                }
+            });
+        }
+
+        // Connect to STEP button handler
+        const connectStepBtn = document.getElementById('connectStepBtn');
+        if (connectStepBtn) {
+            connectStepBtn.addEventListener('click', function() {
+                const typeSelect = document.getElementById('type');
+                
+                // Ensure STEP is selected
+                if (typeSelect.value !== 'STEP') {
+                    // Show error toast
+                    const errorToastEl = document.getElementById('errorToast');
+                    if (errorToastEl) {
+                        const messageEl = errorToastEl.querySelector('.toast-body');
+                        if (messageEl) {
+                            messageEl.textContent = 'Veuillez sélectionner "Station d\'épuration" avant de connecter';
+                        }
+                        bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
+                    }
+                    return;
+                }
+
+                // Open modal or perform connection logic
+                const connectStepModal = new bootstrap.Modal(document.getElementById('connectStepModal'), {
+                    keyboard: false
+                });
+                connectStepModal.show();
+            });
+        }
+
+        // STEP Connection Configuration Modal Handler
+        const saveStepConnectionConfigBtn = document.getElementById('saveStepConnectionConfigBtn');
+        const toggleStepPasswordBtn = document.getElementById('toggleStepPassword');
+
+        if (toggleStepPasswordBtn) {
+            toggleStepPasswordBtn.addEventListener('click', function() {
+                const stepPasswordInput = document.getElementById('stepPassword');
+                const type = stepPasswordInput.type === 'password' ? 'text' : 'password';
+                stepPasswordInput.type = type;
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+
+        if (saveStepConnectionConfigBtn) {
+            saveStepConnectionConfigBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                // Validate form inputs
+                const stepIpAddress = document.getElementById('stepIpAddress');
+                const stepPort = document.getElementById('stepPort');
+                const stepProtocol = document.getElementById('stepProtocol');
+                const stepIdentifier = document.getElementById('stepIdentifier');
+                const stepTreatmentCapacity = document.getElementById('stepTreatmentCapacity');
+                const stepComplianceLevel = document.getElementById('stepComplianceLevel');
+                const stepEnvironmentalCertification = document.getElementById('stepEnvironmentalCertification');
+
+                // IP Address Validation
+                const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                if (!ipRegex.test(stepIpAddress.value)) {
+                    showValidationError('Adresse IP invalide', 'Veuillez entrer une adresse IP valide');
+                    stepIpAddress.focus();
+                    return;
+                }
+
+                // Port Validation
+                const portNum = parseInt(stepPort.value, 10);
+                if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+                    showValidationError('Port invalide', 'Veuillez entrer un port valide entre 1 et 65535');
+                    stepPort.focus();
+                    return;
+                }
+
+                // Validate required fields
+                const requiredFields = [
+                    stepProtocol, 
+                    stepIdentifier, 
+                    stepTreatmentCapacity, 
+                    stepComplianceLevel, 
+                    stepEnvironmentalCertification
+                ];
+
+                for (const field of requiredFields) {
+                    if (!field.value) {
+                        showValidationError('Champ requis', `Veuillez remplir le champ ${field.labels[0].textContent}`);
+                        field.focus();
+                        return;
+                    }
+                }
+
+                // Prepare configuration data
+                const stepConnectionConfig = {
+                    ipAddress: stepIpAddress.value,
+                    port: portNum,
+                    protocol: stepProtocol.value,
+                    identifier: stepIdentifier.value,
+                    treatmentCapacity: stepTreatmentCapacity.value,
+                    complianceLevel: stepComplianceLevel.value,
+                    environmentalCertification: stepEnvironmentalCertification.value,
+                    username: document.getElementById('stepUsername').value || null,
+                    connectionTimeout: document.getElementById('stepConnectionTimeout').value || 30
+                };
+
+                // Optional password handling (never log or expose)
+                const stepPassword = document.getElementById('stepPassword').value;
+                if (stepPassword) {
+                    stepConnectionConfig.passwordProvided = true;
+                }
+
+                // Send configuration to backend
+                fetch('/departements/infrastructure/step-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken() // Implement this function to get CSRF token
+                    },
+                    body: JSON.stringify(stepConnectionConfig)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la configuration de la connexion');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Show success toast
+                    const successToastEl = document.getElementById('successToast');
+                    if (successToastEl) {
+                        const messageEl = successToastEl.querySelector('.toast-body');
+                        if (messageEl) {
+                            messageEl.textContent = data.message || 'Configuration de la STEP enregistrée avec succès';
+                        }
+                        bootstrap.Toast.getOrCreateInstance(successToastEl).show();
+                    }
+
+                    // Close the modal
+                    const stepConnectionConfigModal = bootstrap.Modal.getInstance(document.getElementById('stepConnectionConfigModal'));
+                    if (stepConnectionConfigModal) {
+                        stepConnectionConfigModal.hide();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    
+                    // Show error toast
+                    const errorToastEl = document.getElementById('errorToast');
+                    if (errorToastEl) {
+                        const messageEl = errorToastEl.querySelector('.toast-body');
+                        if (messageEl) {
+                            messageEl.textContent = error.message || 'Impossible de configurer la connexion STEP';
+                        }
+                        bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
+                    }
+                });
+            });
+        }
+
+        // Validation error helper function
+        function showValidationError(title, message) {
+            const errorToastEl = document.getElementById('errorToast');
+            if (errorToastEl) {
+                const titleEl = errorToastEl.querySelector('.toast-header strong');
+                const messageEl = errorToastEl.querySelector('.toast-body');
+                
+                if (titleEl) titleEl.textContent = title;
+                if (messageEl) messageEl.textContent = message;
+                
+                bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
+            }
+        }
+
+        // Placeholder for CSRF token retrieval (implement according to your backend)
+        function getCsrfToken() {
+            const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfTokenElement ? csrfTokenElement.value : '';
+        }
+
+        // Existing fetchInfrastructureFiles function (from previous implementation)
+        function fetchInfrastructureFiles(infrastructureId) {
+            const existingFilesContainer = document.getElementById('existingFilesContainer');
+            if (!existingFilesContainer) return Promise.resolve();
+
+            existingFilesContainer.innerHTML = `
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            `;
+
+            return fetch(`/departements/infrastructure/${infrastructureId}/files`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Impossible de récupérer les fichiers');
+                }
+                return response.json();
+            })
+            .then(filesData => {
+                existingFilesContainer.innerHTML = '';
+
+                if (filesData.files.length === 0) {
+                    existingFilesContainer.innerHTML = `
+                        <div class="no-files-placeholder">
+                            <i class="fas fa-folder-open fa-3x opacity-50 mb-3"></i>
+                            <p>Aucun fichier téléchargé</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const imageFiles = filesData.files.filter(file => file.type.startsWith('image'));
+                const pdfFiles = filesData.files.filter(file => file.type === 'pdf');
+
+                const tabContainer = createFileTabContainer(imageFiles, pdfFiles);
+                existingFilesContainer.appendChild(tabContainer.container);
+
+                const contentContainer = document.createElement('div');
+                contentContainer.classList.add('file-content');
+
+                const imageContent = createFileGrid(imageFiles);
+                const pdfContent = createFileGrid(pdfFiles);
+
+                contentContainer.appendChild(imageContent);
+                existingFilesContainer.appendChild(contentContainer);
+
+                setupTabSwitching(imageContent, pdfContent, tabContainer.imageTab, tabContainer.pdfTab, contentContainer);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des fichiers:', error);
+                existingFilesContainer.innerHTML = `
+                    <div class="no-files-placeholder text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-50"></i>
+                        <p>Impossible de charger les fichiers</p>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            });
+        }
+
+        // Existing helper functions for file tab and grid creation
+        function createFileTabContainer(imageFiles, pdfFiles) {
+            const tabContainer = document.createElement('div');
+            tabContainer.classList.add('file-tabs-container');
+            
+            const tabsSection = document.createElement('div');
+            tabsSection.classList.add('file-tabs');
+            
+            const infoSection = document.createElement('div');
+            infoSection.classList.add('file-tabs-info');
+            
+            const imageTab = document.createElement('button');
+            imageTab.classList.add('btn', 'btn-outline-primary', 'active');
+            imageTab.id = 'imageTab';
+            imageTab.innerHTML = `
+                <i class="fas fa-file-image me-2"></i>
+                Images (${imageFiles.length})
+            `;
+            
+            const pdfTab = document.createElement('button');
+            pdfTab.classList.add('btn', 'btn-outline-primary');
+            pdfTab.id = 'pdfTab';
+            pdfTab.innerHTML = `
+                <i class="fas fa-file-pdf me-2"></i>
+                PDFs (${pdfFiles.length})
+            `;
+            
+            infoSection.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                Affichage de tous les fichiers
+            `;
+            
+            tabsSection.appendChild(imageTab);
+            tabsSection.appendChild(pdfTab);
+            
+            tabContainer.appendChild(tabsSection);
+            tabContainer.appendChild(infoSection);
+            
+            return {
+                container: tabContainer,
+                imageTab: imageTab,
+                pdfTab: pdfTab
+            };
+        }
+
+        function setupTabSwitching(imageContent, pdfContent, imageTab, pdfTab, contentContainer) {
+            imageTab.addEventListener('click', () => {
+                imageTab.classList.add('active');
+                pdfTab.classList.remove('active');
+                contentContainer.innerHTML = '';
+                contentContainer.appendChild(imageContent);
+            });
+
+            pdfTab.addEventListener('click', () => {
+                pdfTab.classList.add('active');
+                imageTab.classList.remove('active');
+                contentContainer.innerHTML = '';
+                contentContainer.appendChild(pdfContent);
+            });
+        }
+
+        function createFileGrid(files) {
+            const grid = document.createElement('div');
+            grid.classList.add('iphone-gallery-grid');
+
+            const fileCount = files.length;
+            if (fileCount <= 2) {
+                grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            } else if (fileCount <= 4) {
+                grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            } else if (fileCount <= 6) {
+                grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            } else {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+            }
+
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('gallery-item');
+                
+                if (file.type.startsWith('image')) {
+                    fileItem.innerHTML = `
+                        <div class="gallery-item-content">
+                            <img src="${file.path}" alt="${file.name}" data-full-path="${file.path}">
+                            <div class="gallery-item-overlay">
+                                <div class="gallery-item-details">
+                                    <span class="gallery-item-name text-truncate">${file.name}</span>
+                                    <div class="gallery-item-actions">
+                                        <button class="btn btn-sm btn-light view-image" data-index="${index}">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                        <a href="${file.path}" class="btn btn-sm btn-light" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    fileItem.innerHTML = `
+                        <div class="gallery-item-content pdf-item">
+                            <div class="pdf-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="gallery-item-overlay">
+                                <div class="gallery-item-details">
+                                    <span class="gallery-item-name text-truncate">${file.name}</span>
+                                    <div class="gallery-item-actions">
+                                        <a href="${file.path}" class="btn btn-sm btn-light" download>
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                grid.appendChild(fileItem);
+            });
+
+            return grid;
+        }
+    }
+
+    // Trigger status badge update after details are loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if details are already loaded
+        const etatElement = document.getElementById('detailEtat');
+        if (etatElement && etatElement.textContent.trim()) {
+            updateStatusBadge();
+        }
+    });
+});
