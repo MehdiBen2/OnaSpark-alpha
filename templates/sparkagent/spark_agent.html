@@ -594,7 +594,7 @@
 
                     // Prepare request body
                     const requestBody = {
-                        model: model || 'mistral-small',
+                        model: model || 'mistral-large-latest',
                         messages: messages,
                         temperature: temperature || 0.7,
                         max_tokens: 300
@@ -671,14 +671,14 @@
             // Function to fetch default model configuration
             const fetchDefaultModel = async () => {
                 try {
-                    // Use a default model configuration
-                    window.DEFAULT_MODEL = 'mistral-small';
+                    // Use Mistral Large as the default model
+                    window.DEFAULT_MODEL = 'mistral-large-latest';
                     window.DEFAULT_TEMPERATURE = 0.7;
-                    console.log('Default model configuration set');
+                    console.log('Default model configuration set to Mistral Large');
                 } catch (error) {
-                    console.error('Error setting default model:', error);
+                    console.error('Erreur lors de la configuration du modèle:', error);
                     // Fallback to hardcoded values
-                    window.DEFAULT_MODEL = 'mistral-small';
+                    window.DEFAULT_MODEL = 'mistral-large-latest';
                     window.DEFAULT_TEMPERATURE = 0.7;
                 }
             };
@@ -686,116 +686,135 @@
             // Fetch system prompt
             async function fetchSystemPrompt() {
                 try {
-                    const response = await fetch('{{ url_for("static", filename="spark_agent_system_prompt.txt") }}');
+                    console.log(' Tentative de chargement du système de prompt...');
+                    const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
                     if (!response.ok) {
-                        throw new Error('Failed to fetch system prompt');
+                        throw new Error('Impossible de charger le système de prompt');
                     }
-                    const systemPrompt = await response.text();
+                    window.systemPrompt = await response.text();
                     
-                    // Return the complete system prompt
-                    return systemPrompt;
+                    // Detailed logging and verification
+                    console.log(' Système de prompt chargé avec succès');
+                    console.log(' Contenu du système de prompt:');
+                    console.log(window.systemPrompt);
+                    
+                    // Verify key sections
+                    const promptSections = [
+                        'Contexte Système',
+                        'Directives Essentielles',
+                        'Identité',
+                        'Identification Spéciale'
+                    ];
+                    
+                    const foundSections = promptSections.filter(section => 
+                        window.systemPrompt.includes(section)
+                    );
+                    
+                    console.log(' Sections vérifiées:', foundSections);
+                    
+                    if (foundSections.length === promptSections.length) {
+                        console.log(' Système de prompt complet et valide !');
+                    } else {
+                        console.warn(' Certaines sections du système de prompt sont manquantes');
+                    }
+                    
+                    return window.systemPrompt;
                 } catch (error) {
-                    console.error('Error fetching system prompt:', error);
-                    // Fallback system prompt with core directives
-                    return `# Contexte Système pour Spark - Assistant IA pour les Travailleurs de l'ONA
-
-## !IMPORTANT : Directives Spécifiques
-- Toujours contextualiser les informations
-- Utiliser un langage professionnel
-- Fournir des informations basées sur les dernières normes
-- **Être TOUJOURS concis et direct**
-- **Limiter les réponses à 3-4 phrases maximum**
-- Aller à l'essentiel sans détails superflus
-
-## Identité et Mission
-- Nom: SparkAgent
-- Rôle: Assistant virtuel dédié aux travailleurs de l'ONA
-- Objectif Principal: Optimiser la productivité et faciliter le travail quotidien`;
+                    console.error(' Erreur lors du chargement du système de prompt:', error);
+                    window.systemPrompt = `# Contexte Système par défaut
+- Toujours parler en français
+- Être professionnel et concis
+- Aider efficacement les travailleurs de l'ONA`;
+                    return window.systemPrompt;
                 }
-            }
+            };
 
             // Conversation History Management Module
             const ConversationHistoryManager = {
                 // Configuration constants
                 MAX_HISTORY_LENGTH: 5,
-                STORAGE_KEY: 'conversationHistory',
 
-                /**
-                 * Safely retrieve conversation history from localStorage
-                 * @returns {Array} Conversation history array
-                 */
-                getHistory() {
+                // Prepare messages for AI context
+                prepareMessagesForAI: async function() {
                     try {
-                        const storedHistory = localStorage.getItem(this.STORAGE_KEY);
-                        let conversationHistory = storedHistory ? JSON.parse(storedHistory) : [];
+                        // Retrieve conversation history
+                        const history = this.getHistory();
 
-                        // Validate and limit history length
-                        return conversationHistory.slice(-this.MAX_HISTORY_LENGTH);
+                        // Prepare messages array, starting with system prompt
+                        const messages = [
+                            {
+                                role: 'system', 
+                                content: window.systemPrompt || `# Contexte Système par défaut
+- Toujours parler en français
+- Être professionnel et concis
+- Aider efficacement les travailleurs de l'ONA`
+                            }
+                        ];
+
+                        // Detailed logging of system prompt usage
+                        console.log('🤖 Préparation des messages pour l\'IA');
+                        console.log('📋 Système de prompt utilisé:');
+                        console.log(messages[0].content);
+                        console.log('🔢 Nombre de messages historiques:', history.length);
+
+                        // Add conversation history, limiting to MAX_HISTORY_LENGTH
+                        const recentHistory = history.slice(-this.MAX_HISTORY_LENGTH);
+                        messages.push(...recentHistory.map(msg => ({
+                            role: msg.role,
+                            content: msg.content
+                        })));
+
+                        console.log('✅ Messages préparés pour l\'envoi à l\'IA');
+                        console.log('📊 Structure des messages:', messages.map(m => m.role));
+
+                        return messages;
                     } catch (error) {
-                        console.error('Error retrieving conversation history:', error);
+                        console.error('❌ Erreur lors de la préparation des messages:', error);
+                        return [
+                            {
+                                role: 'system', 
+                                content: `# Contexte Système par défaut
+- Toujours parler en français
+- Être professionnel et concis
+- Aider efficacement les travailleurs de l'ONA`
+                            }
+                        ];
+                    }
+                },
+
+                // Other existing methods remain the same
+                getHistory: function() {
+                    try {
+                        const historyJson = localStorage.getItem('conversationHistory') || '[]';
+                        return JSON.parse(historyJson);
+                    } catch (error) {
+                        console.error('Erreur lors de la récupération de l\'historique:', error);
                         return [];
                     }
                 },
 
-                /**
-                 * Save a message to conversation history
-                 * @param {string} role - Message role (user/assistant)
-                 * @param {string} content - Message content
-                 */
-                saveMessage(role, content) {
+                saveMessage: function(role, content) {
                     try {
-                        if (!content || !role) {
-                            console.warn('Attempted to save invalid message');
-                            return;
-                        }
-
-                        const conversationHistory = this.getHistory();
-                        conversationHistory.push({ role, content });
+                        const history = this.getHistory();
+                        history.push({ role, content });
 
                         // Limit history length
-                        const trimmedHistory = conversationHistory.slice(-this.MAX_HISTORY_LENGTH);
+                        if (history.length > this.MAX_HISTORY_LENGTH) {
+                            history.shift();
+                        }
 
-                        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(trimmedHistory));
+                        localStorage.setItem('conversationHistory', JSON.stringify(history));
                     } catch (error) {
-                        console.error('Error saving message to conversation history:', error);
+                        console.error('Erreur lors de la sauvegarde du message:', error);
                     }
                 },
 
-                /**
-                 * Clear entire conversation history
-                 */
-                clearHistory() {
+                clearHistory: function() {
                     try {
-                        localStorage.removeItem(this.STORAGE_KEY);
-                        console.log('Conversation history cleared');
+                        localStorage.removeItem('conversationHistory');
                     } catch (error) {
-                        console.error('Error clearing conversation history:', error);
+                        console.error('Erreur lors de la suppression de l\'historique:', error);
                     }
-                },
-
-                /**
-                 * Prepare messages for AI context
-                 * @returns {Array} Prepared messages for AI
-                 */
-                async prepareMessagesForAI() {
-                    const history = this.getHistory();
-                    
-                    // Get the system prompt
-                    let systemPromptContent;
-                    try {
-                        systemPromptContent = await fetchSystemPrompt();
-                    } catch (error) {
-                        console.error('Error fetching system prompt:', error);
-                        systemPromptContent = 'Tu es SparkAgent, assistant virtuel professionnel de l\'ONA.';
-                    }
-
-                    // Add system prompt at the beginning
-                    const systemPrompt = {
-                        role: 'system',
-                        content: systemPromptContent
-                    };
-
-                    return [systemPrompt, ...history];
                 }
             };
 
@@ -836,11 +855,53 @@
                 console.log('Conversation history cleared');
             };
 
+            // Function to load application settings
+            function loadSettings() {
+                try {
+                    console.log('🔧 Chargement des paramètres de l\'application');
+                    
+                    // Default settings
+                    const defaultSettings = {
+                        language: 'fr',
+                        theme: 'light',
+                        notifications: true,
+                        chatHistoryLimit: 50
+                    };
+
+                    // Try to retrieve saved settings from localStorage
+                    const savedSettings = localStorage.getItem('sparkAgentSettings');
+                    
+                    if (savedSettings) {
+                        try {
+                            const parsedSettings = JSON.parse(savedSettings);
+                            Object.assign(defaultSettings, parsedSettings);
+                            console.log('✅ Paramètres personnalisés chargés');
+                        } catch (parseError) {
+                            console.warn('⚠️ Erreur lors du parsing des paramètres sauvegardés', parseError);
+                        }
+                    }
+
+                    // Apply settings (placeholder for actual implementation)
+                    console.log('📝 Paramètres appliqués:', defaultSettings);
+                    
+                    return defaultSettings;
+                } catch (error) {
+                    console.error('❌ Erreur lors du chargement des paramètres:', error);
+                    return {
+                        language: 'fr',
+                        theme: 'light',
+                        notifications: true,
+                        chatHistoryLimit: 50
+                    };
+                }
+            };
+
             // Call functions when the page loads
             document.addEventListener('DOMContentLoaded', () => {
                 fetchMistralApiKey();
                 fetchDefaultModel();
                 fetchSystemPrompt();
+                loadSettings();
             });
 
             // Main function to send messages
