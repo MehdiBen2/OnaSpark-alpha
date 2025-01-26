@@ -380,6 +380,32 @@
                 display: block;
             }
         }
+
+        /* Login Notice Styles */
+        .login-notice .alert-info {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(30, 60, 114, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .login-notice .alert-info i {
+            color: #1e3c72;
+            margin-right: 15px;
+        }
+
+        .login-notice .alert-info strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .login-notice .alert-info .text-muted {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body class="login-body">
@@ -411,6 +437,15 @@
                         <div class="col-md-6 right-side">
                             <div class="p-4">
                                 <h2 class="form-title">Connexion à l'office</h2>
+                                <div class="login-notice mb-4">
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                                        <div>
+                                            <strong>Authentification requise</strong>
+                                            <p class="mb-0 text-muted">Veuillez vous connecter avec vos identifiants pour accéder à la plateforme OnaSpark.</p>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% with messages = get_flashed_messages() %}
                                     {% if messages %}
                                         {% for message in messages %}
