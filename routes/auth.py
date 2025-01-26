@@ -127,6 +127,38 @@ def login():
     
     return render_template('auth/login.html')
 
+@auth.route('/login/v2', methods=['GET', 'POST'])
+def login_v2():
+    """
+    Handle user login process for v2 login page.
+    
+    Returns:
+        Union[str, dict, Response]: Login page or login response
+    """
+    # Check if user is already authenticated
+    if current_user.is_authenticated:
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        return handle_login_success(current_user, is_ajax)
+    
+    # Handle login form submission
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        user, error = validate_login_credentials(username, password)
+        
+        if user:
+            return handle_login_success(user, is_ajax)
+        
+        # If login fails
+        if is_ajax:
+            return {'success': False, 'message': error or 'Identifiants invalides'}
+        
+        flash(error or 'Identifiants invalides', 'danger')
+    
+    return render_template('auth/loginv2.html')
+
 @auth.route('/logout')
 @login_required
 def logout():
