@@ -78,20 +78,35 @@
                                     <td class="text-break">{{ user.assigned_zone.name if user.assigned_zone else '-' }}</td>
                                     <td class="text-break">{{ user.assigned_unit.name if user.assigned_unit else '-' }}</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary edit-user me-2" data-user-id="{{ user.id }}" 
-                                                    data-username="{{ user.username }}"
-                                                    data-nickname="{{ user.nickname }}"
-                                                    data-role="{{ user.role }}"
-                                                    data-zone="{{ user.assigned_zone.id if user.assigned_zone else '' }}"
-                                                    data-unit="{{ user.assigned_unit.id if user.assigned_unit else '' }}"
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Modifier l'utilisateur">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger delete-user" data-user-id="{{ user.id }}" data-bs-toggle="tooltip" title="Supprimer l'utilisateur">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                                        <div class="actions-wrapper">
+                                            <div class="actions-cell">
+                                                <div class="actions-dropdown">
+                                                    <button class="action-btn actions-toggle" type="button">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <div class="actions-menu">
+                                                        <button class="action-btn btn-primary edit-user me-2" 
+                                                                data-user-id="{{ user.id }}" 
+                                                                data-username="{{ user.username }}"
+                                                                data-nickname="{{ user.nickname }}"
+                                                                data-role="{{ user.role }}"
+                                                                data-zone="{{ user.assigned_zone.id if user.assigned_zone else '' }}"
+                                                                data-unit="{{ user.assigned_unit.id if user.assigned_unit else '' }}"
+                                                                data-bs-toggle="tooltip" 
+                                                                title="Modifier l'utilisateur">
+                                                            <i class="fas fa-edit"></i>
+                                                            <span class="btn-text">Modifier</span>
+                                                        </button>
+                                                        <button class="action-btn btn-danger delete-user" 
+                                                                data-user-id="{{ user.id }}" 
+                                                                data-bs-toggle="tooltip" 
+                                                                title="Supprimer l'utilisateur">
+                                                            <i class="fas fa-trash"></i>
+                                                            <span class="btn-text">Supprimer</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -291,22 +306,139 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/users.css') }}">
 <style>
-.btn-loading {
-    position: relative;
-    color: #ffffff !important;
-    background-color: #007bff !important;
-}
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 0.9rem;
+        transition: all 0.2s ease-in-out;
+        border: none;
+    }
+    
+    .actions-cell {
+        min-width: 180px;
+        position: relative;
+    }
+    
+    .actions-dropdown {
+        position: relative;
+        display: inline-block;
+    }
 
-.btn-loading .spinner-border {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-}
+    .actions-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: #ffffff;
+        min-width: 180px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        z-index: 1000;
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
 
-.btn-loading .button-text {
-    margin-left: 25px;
-}
+    .actions-menu.show {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .actions-menu .action-btn {
+        width: 100%;
+        height: 38px;
+        border-radius: 8px;
+        display: flex;
+        gap: 0.5rem;
+        padding: 0 1rem;
+        justify-content: flex-start;
+        transition: all 0.2s ease;
+        color: white;
+    }
+
+    .actions-menu .action-btn:hover {
+        opacity: 0.9;
+    }
+
+    .actions-menu .btn-primary {
+        background-color: #2196F3;
+    }
+    
+    .actions-menu .btn-danger {
+        background-color: #F44336;
+    }
+
+    .actions-toggle {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+    }
+
+    .actions-toggle:hover {
+        opacity: 0.9;
+    }
+
+    @media (min-width: 769px) {
+        .actions-toggle {
+            display: none;
+        }
+        .actions-menu {
+            display: flex !important;
+            position: static;
+            box-shadow: none;
+            background: none;
+            min-width: auto;
+            padding: 0;
+            flex-direction: row;
+            gap: 0.25rem;
+            border: none;
+        }
+        .actions-menu .action-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .btn-text {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .actions-wrapper {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-text {
+            margin-left: 0.5rem;
+            font-weight: 500;
+            color: white;
+        }
+        .actions-menu {
+            background-color: #F5F5F5;
+        }
+        .actions-menu::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background-color: #F5F5F5;
+            transform: rotate(45deg);
+            border-left: 1px solid rgba(0,0,0,0.08);
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+        .actions-menu .action-btn {
+            margin-bottom: 2px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -791,6 +923,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
     const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltips.forEach(tooltip => new bootstrap.Tooltip(tooltip));
+
+    // Action dropdown toggle
+    document.querySelectorAll('.actions-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const menu = this.nextElementSibling;
+            menu.classList.toggle('show');
+        });
+    });
 });
 </script>
 {% endblock %}
