@@ -63,6 +63,22 @@
             max-height: 100%;
             object-fit: contain;
         }
+
+        .btn-spark {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-left: 10px;
+        }
+        .btn-spark:hover {
+            background: linear-gradient(135deg, #ff4757, #ff6b6b);
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -102,6 +118,7 @@
                 <div class="buttons">
                     <button class="btn btn-glass" onclick="showLoadingAndRedirect('{{ url_for('landing.main_landing') }}')">Commencer</button>
                     <button class="btn btn-primary" onclick="showLoadingAndRedirect('{{ url_for('serve_docs') }}')">Documentation</button>
+                    <button class="btn btn-spark" onclick="showIntroVideo()">Spark</button>
                 </div>
             </div>
             <div>
@@ -285,6 +302,10 @@
 
         // Call the function when the page loads
         window.addEventListener('load', selectRandomLogo);
+
+        function showIntroVideo() {
+            window.location.href = "{{ url_for('landing.introspark') }}";
+        }
     </script>
     <script src="{{ url_for('static', filename='js/cycling-text.js') }}"></script>
 </body>

@@ -39,3 +39,10 @@ def hero():
     if current_user.is_authenticated:
         return redirect(url_for(MAIN_DASHBOARD))
     return render_template('landing/hero.html')
+
+@landing.route('/introspark')
+def introspark():
+    """Direct route to the introspark introduction page"""
+    if current_user.is_authenticated:
+        return redirect(url_for(MAIN_DASHBOARD))
+    return render_template('landing/introspark.html')
