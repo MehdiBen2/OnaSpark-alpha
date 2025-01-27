@@ -10,15 +10,9 @@ centers = Blueprint('centers', __name__)
 @centers.route('/admin/centers')
 @login_required
 def list_centers():
-    # Fetch units with their associated centers
-    units = Unit.query.options(
-        db.joinedload(Unit.centers)  # Eagerly load centers to avoid N+1 query
-    ).all()
-    
-    # Fetch zones for the zone dropdown in the modal
+    centers = Center.query.all()
     zones = Zone.query.all()
-    
-    return render_template('admin/centers.html', units=units, zones=zones)
+    return render_template('admin/centers.html', centers=centers, zones=zones)
 
 @centers.route('/admin/centers/new', methods=['POST'])
 @login_required
