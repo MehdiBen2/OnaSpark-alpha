@@ -379,46 +379,14 @@
     {% block content %}{% endblock %}
 
     <!-- Core JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Explicit jQuery load logging
-        console.log('jQuery loaded:', typeof jQuery !== 'undefined');
-        console.log('jQuery version:', jQuery ? jQuery.fn.jquery : 'Not loaded');
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Explicit Bootstrap load logging
-        console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined');
-    </script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script>
-        // Explicit DataTables load logging
-        console.log('DataTables loaded:', typeof $.fn.DataTable !== 'undefined');
-    </script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Global script dependencies:', {
-                jQuery: typeof jQuery,
-                jQueryVersion: jQuery ? jQuery.fn.jquery : 'Not loaded',
-                bootstrap: typeof bootstrap,
-                DataTables: typeof $.fn.DataTable
-            });
-
-            // Initialize dropdowns and tooltips
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
-
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-    </script>
+    <!-- Notification System -->
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 
     {% block page_scripts %}{% endblock %}
     {% block extra_js %}{% endblock %}

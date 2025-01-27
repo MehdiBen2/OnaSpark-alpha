@@ -469,58 +469,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let isEditing = false;
     let currentUserId = null;
 
-    // Toast notification function
-    function showToast(message, type = 'success') {
-        const flashContainer = document.querySelector('.notification-container');
-        if (!flashContainer) return;
-
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.setAttribute('role', 'alert');
-
-        const iconClass = {
-            'success': 'fa-check-circle text-success',
-            'error': 'fa-times-circle text-danger',
-            'warning': 'fa-exclamation-triangle text-warning',
-            'info': 'fa-info-circle text-info'
-        }[type] || 'fa-info-circle text-info';
-
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${iconClass} notification-icon"></i>
-                <span class="notification-message">${message}</span>
-            </div>
-            <button type="button" class="notification-close" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        `;
-
-        // Add close event listener
-        const closeButton = notification.querySelector('.notification-close');
-        closeButton.addEventListener('click', () => {
-            notification.style.transform = 'translateX(-100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        });
-
-        // Append and trigger animation
-        flashContainer.appendChild(notification);
-        
-        // Force reflow
-        notification.offsetHeight;
-        
-        // Slide in animation
-        notification.style.transform = 'translateX(0)';
-        notification.style.opacity = '1';
-
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => {
-            notification.style.transform = 'translateX(-100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        }, 5000);
-    }
-
     // Role descriptions
     const roleDescriptions = {
         'Admin': 'Accès administrateur complet avec capacité d\'assigner des rôles et des permissions aux utilisateurs. Peut choisir les zones et les unités pour les autres utilisateurs.',
@@ -732,13 +680,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         unitSelect.innerHTML = '<option value="">Aucune unité disponible</option>';
                     }
                 } else {
-                    showToast(data.message || 'Erreur lors du chargement des unités', 'error');
+                    window.Notifications.error(data.message || 'Erreur lors du chargement des unités');
                     unitSelect.innerHTML = '<option value="">Erreur de chargement</option>';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showToast('Erreur lors du chargement des unités', 'error');
+                window.Notifications.error('Erreur lors du chargement des unités');
                 unitSelect.innerHTML = '<option value="">Erreur de chargement</option>';
             })
             .finally(() => {
@@ -834,26 +782,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Response data:', data);
 
                 if (data.success) {
-                    showToast(data.message || (isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès'), 'success');
+                    window.Notifications.success(data.message || (isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès'));
                     panel.classList.remove('open');
                     location.reload();
                 } else {
-                    showToast(data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur'), 'error');
+                    window.Notifications.error(data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur'));
                     throw new Error(data.message);
                 }
             } else {
                 if (response.ok) {
-                    showToast(isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès', 'success');
+                    window.Notifications.success(isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès');
                     panel.classList.remove('open');
                     location.reload();
                 } else {
-                    showToast(isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur', 'error');
+                    window.Notifications.error(isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur');
                     throw new Error('Erreur de serveur');
                 }
             }
         } catch (error) {
             console.error('Error during form submission:', error);
-            showToast(error.message || 'Une erreur est survenue lors de la communication avec le serveur', 'error');
+            window.Notifications.error(error.message || 'Une erreur est survenue lors de la communication avec le serveur');
         } finally {
             // Re-enable the submit button
             const submitButton = this.querySelector('button[type="submit"]');
@@ -891,14 +839,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (response.ok) {
-                showToast('Utilisateur supprimé avec succès', 'success');
+                window.Notifications.success('Utilisateur supprimé avec succès');
                 location.reload();
             } else {
                 throw new Error(data.error || data.message || 'Erreur lors de la suppression');
             }
         } catch (error) {
             console.error('Error:', error);
-            showToast(error.message, 'error');
+            window.Notifications.error(error.message);
         } finally {
             deleteModal.hide();
             currentUserToDelete = null;
