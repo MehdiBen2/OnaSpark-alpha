@@ -31,6 +31,44 @@
             max-height: 100%;
             object-fit: contain;
         }
+        .loader {
+            display: block;
+            --height-of-loader: 6px;
+            --loader-color: #0071e2;
+            width: 200px;
+            height: var(--height-of-loader);
+            border-radius: 30px;
+            background-color: rgba(0,0,0,0.2);
+            position: relative;
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .loader::before {
+            content: "";
+            position: absolute;
+            background: var(--loader-color);
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            border-radius: 30px;
+            animation: moving 2s ease-in-out infinite;
+        }
+
+        @keyframes moving {
+            50% {
+                width: 100%;
+            }
+            100% {
+                width: 0;
+                right: 0;
+                left: unset;
+            }
+        }
     </style>
 </head>
 <body>
@@ -41,6 +79,7 @@
             Your browser does not support the video tag.
         </video>
     </div>
+    <div class="loader"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
