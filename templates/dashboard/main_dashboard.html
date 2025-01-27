@@ -113,10 +113,18 @@
                     <div class="collapsible-content">
                         <div class="action-group">
                             <a href="{{ url_for('users.manage_users') }}" class="action-btn danger">
-                                <i class="fas fa-users"></i>Gestion des Utilisateurs
+                                <i class="fas fa-users"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Gestion des Utilisateurs</span>
+                                    <span class="action-description">Gérez et configurez les comptes utilisateurs de votre organisation</span>
+                                </div>
                             </a>
                             <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
-                                <i class="fas fa-building"></i>Gestion des Unités
+                                <i class="fas fa-building"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Gestion des Unités</span>
+                                    <span class="action-description">Administrez et organisez les unités opérationnelles</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -134,16 +142,28 @@
                         <div class="action-group">
                             {% if current_user.role == 'Admin' %}
                             <a href="{{ url_for('list_zones') }}" class="action-btn info">
-                                <i class="fas fa-map-marker-alt"></i>Gestion des Zones
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Gestion des Zones</span>
+                                    <span class="action-description">Visualisez et gérez les zones géographiques de l'organisation</span>
+                                </div>
                             </a>
                             {% endif %}
 
                             {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
                             <a href="{{ url_for('list_units') }}" class="action-btn primary">
-                                <i class="fas fa-building"></i>Liste des Unités
+                                <i class="fas fa-building"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Liste des Unités</span>
+                                    <span class="action-description">Consultez et gérez les différentes unités opérationnelles</span>
+                                </div>
                             </a>
                             <a href="{{ url_for('list_centers') }}" class="action-btn success">
-                                <i class="fas fa-hospital"></i>Liste des Centres
+                                <i class="fas fa-hospital"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Liste des Centres</span>
+                                    <span class="action-description">Explorez et administrez les centres de l'organisation</span>
+                                </div>
                             </a>
                             {% endif %}
                         </div>
@@ -160,10 +180,18 @@
                     <div class="collapsible-content">
                         <div class="action-group">
                             <a href="{{ url_for('rapports') }}" class="action-btn primary">
-                                <i class="fas fa-file-alt"></i>Nouveau Rapport
+                                <i class="fas fa-file-alt"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Nouveau Rapport</span>
+                                    <span class="action-description">Créez et soumettez un nouveau rapport d'incident</span>
+                                </div>
                             </a>
                             <a href="{{ url_for('incidents.incident_list') }}" class="action-btn secondary">
-                                <i class="fas fa-list"></i>Liste des Incidents
+                                <i class="fas fa-list"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Liste des Incidents</span>
+                                    <span class="action-description">Consultez et suivez tous les incidents signalés</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -178,13 +206,25 @@
                     <div class="collapsible-content">
                         <div class="action-group">
                             <a href="https://webmail.ona-dz.com/owa/" class="action-btn info" target="_blank">
-                                <i class="fas fa-envelope"></i>Webmail ONA
+                                <i class="fas fa-envelope"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Webmail ONA</span>
+                                    <span class="action-description">Accédez à votre messagerie professionnelle</span>
+                                </div>
                             </a>
                             <a href="https://apex.ona-dz.com/ords/r/dpmg/dpmg-workforce/login?session=29000178296122" class="action-btn warning" target="_blank">
-                                <i class="fas fa-car"></i>Gestion du Parc Roulant
+                                <i class="fas fa-car"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Gestion du Parc Roulant</span>
+                                    <span class="action-description">Gérez et suivez le parc automobile de l'organisation</span>
+                                </div>
                             </a>
-                            <a href="{{ url_for('spark_agent') }}" class="action-btn success" target="_blank" style="background: linear-gradient(135deg, #4A90E2 0%, #50C878 100%); color: white;">
-                                <i class="fas fa-bolt"></i>OnaSpark Agent
+                            <a href="{{ url_for('spark_agent') }}" class="action-btn success" target="_blank">
+                                <i class="fas fa-bolt"></i>
+                                <div class="action-content">
+                                    <span class="action-title">OnaSpark Agent</span>
+                                    <span class="action-description">Accédez à l'agent intelligent de gestion</span>
+                                </div>
                             </a>
                         </div>
                     </div>
