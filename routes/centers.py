@@ -10,9 +10,17 @@ centers = Blueprint('centers', __name__)
 @centers.route('/admin/centers')
 @login_required
 def list_centers():
-    centers = Center.query.all()
+    # Get all units with their centers, ordered by unit name
+    if current_user.role == 'Admin':
+        units = Unit.query.order_by(Unit.name).all()
+        page_title = "Liste des Centres de toutes les zones de l'ONA"
+    else:
+        # For non-admin users, only show centers from their assigned zone
+        units = Unit.query.filter_by(zone_id=current_user.zone_id).order_by(Unit.name).all()
+        page_title = f"Liste des Centres de la zone {current_user.zone.name}"
+    
     zones = Zone.query.all()
-    return render_template('admin/centers.html', centers=centers, zones=zones)
+    return render_template('admin/centers.html', units=units, zones=zones, page_title=page_title)
 
 @centers.route('/admin/centers/new', methods=['POST'])
 @login_required
