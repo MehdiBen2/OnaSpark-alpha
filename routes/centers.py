@@ -4,23 +4,15 @@ from models import db, Center, Unit, Zone
 from utils.decorators import admin_required
 import traceback
 import uuid
-from sqlalchemy.orm import joinedload
 
 centers = Blueprint('centers', __name__)
 
 @centers.route('/admin/centers')
 @login_required
 def list_centers():
-    # Fetch units with their associated centers, including zone information
-    units = Unit.query.options(
-        joinedload(Unit.centers),
-        joinedload(Unit.zone)
-    ).all()
-    
-    # Fetch zones for the zone dropdown in the modal
+    centers = Center.query.all()
     zones = Zone.query.all()
-    
-    return render_template('admin/centers.html', units=units, zones=zones)
+    return render_template('admin/centers.html', centers=centers, zones=zones)
 
 @centers.route('/admin/centers/new', methods=['POST'])
 @login_required
