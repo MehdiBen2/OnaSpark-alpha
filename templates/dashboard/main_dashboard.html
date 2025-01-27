@@ -116,14 +116,14 @@
                                 <i class="fas fa-users"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Utilisateurs</span>
-                                    <span class="action-description">Gérez les profils et accès des utilisateurs de l'Ona</span>
+                                    <span class="action-description">Gérez les profils et accès des utilisateurs de l'ONA</span>
                                 </div>
                             </a>
                             <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Unités</span>
-                                    <span class="action-description">Gérez les différentes unités des zones de l'Ona</span>
+                                    <span class="action-description">Gérez les différentes unités des zones de l'ONA</span>
                                 </div>
                             </a>
                         </div>
@@ -135,7 +135,7 @@
                 {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
                 <div class="collapsible-section">
                     <div class="collapsible-header">
-                        <span><i class="fas fa-map-marked-alt me-2"></i>Gestion des Zones</span>
+                        <span><i class="fas fa-map-marked-alt me-2"></i>Gestion des differentes entites de l'ONA</span>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="collapsible-content">
