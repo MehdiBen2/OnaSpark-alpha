@@ -240,9 +240,8 @@ body {
 #ai-explanation-btn {
     border: none;
     color: #fff;
-    background-image: linear-gradient(30deg, #3b38e0, #3bb4c4);
+    background-image: linear-gradient(50deg, #3b38e0, #3bb4c4, #703bc4);
     border-radius: 20px;
-    background-size: 100% auto;
     font-family: inherit;
     font-size: 15px;
     padding: 0.5em 1.3em;
@@ -251,12 +250,26 @@ body {
     right: 10px;
     z-index: 10;
     transition: all 0.3s ease;
+    background-size: 200% auto;
+    animation: gradientFlow 5s ease infinite;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #ai-explanation-btn:hover {
-    background-position: right center;
-    background-size: 200% auto;
-    animation: pulse512 1.5s infinite;
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 #deep-analysis-spark-btn {
