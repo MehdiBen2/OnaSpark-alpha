@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, User, Unit, Zone
+from models import db, User, Unit, Zone, Incident
 from utils.decorators import admin_required
 from utils.roles import UserRole
 from datetime import datetime
@@ -81,13 +81,58 @@ def edit_user(user_id):
 @login_required
 @admin_required
 def delete_user(user_id):
-    if user_id == current_user.id:
-        return jsonify({'error': 'Cannot delete your own account'}), 400
+    try:
+        if user_id == current_user.id:
+            current_app.logger.warning(f'Attempted to delete own account: User ID {user_id}')
+            return jsonify({'error': 'Cannot delete your own account'}), 400
+        
+        user = User.query.get_or_404(user_id)
+        
+        # Check if user has any incidents
+        from models import Incident  # Import here to avoid circular import
+        
+        # Log detailed user information before deletion attempt
+        current_app.logger.info(f'Attempting to delete user: ID={user_id}, Username={user.username}, Role={user.role}')
+        
+        # Count incidents with detailed logging
+        try:
+            # Use user_id instead of created_by
+            incident_count = Incident.query.filter_by(user_id=user_id).count()
+            current_app.logger.info(f'Incident count for user {user_id}: {incident_count}')
+        except Exception as count_error:
+            current_app.logger.error(f'Error counting incidents for user {user_id}: {str(count_error)}')
+            incident_count = -1
+        
+        if incident_count > 0:
+            current_app.logger.warning(f'Cannot delete user {user_id} - {incident_count} incidents exist')
+            return jsonify({
+                'error': f'Impossible de supprimer cet utilisateur. Il a {incident_count} incident(s) créé(s).',
+                'incidents_count': incident_count
+            }), 400
+        
+        # Attempt to delete user with additional logging
+        try:
+            # First, nullify any references to this user in other tables
+            Incident.query.filter_by(user_id=user_id).update({Incident.user_id: None})
+            
+            db.session.delete(user)
+            db.session.commit()
+            current_app.logger.info(f'Successfully deleted user: ID={user_id}, Username={user.username}')
+            return jsonify({'message': 'User deleted successfully'}), 200
+        except Exception as delete_error:
+            db.session.rollback()
+            current_app.logger.error(f'Error deleting user {user_id}: {str(delete_error)}')
+            return jsonify({
+                'error': 'Erreur lors de la suppression de l\'utilisateur',
+                'details': str(delete_error)
+            }), 500
     
-    user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    return jsonify({'message': 'User deleted successfully'})
+    except Exception as e:
+        current_app.logger.error(f'Unexpected error in delete_user: {str(e)}', exc_info=True)
+        return jsonify({
+            'error': 'Une erreur inattendue est survenue',
+            'details': str(e)
+        }), 500
 
 @users.route('/admin/users/<int:user_id>/get')
 @login_required

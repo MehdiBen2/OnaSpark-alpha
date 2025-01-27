@@ -832,21 +832,41 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/admin/users/${currentUserToDelete}/delete`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
 
-            const data = await response.json();
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Réponse du serveur invalide. Veuillez contacter un administrateur.');
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('JSON parsing error:', parseError);
+                window.Notifications.error('Erreur de traitement de la réponse du serveur');
+                return;
+            }
             
             if (response.ok) {
                 window.Notifications.success('Utilisateur supprimé avec succès');
                 location.reload();
             } else {
-                throw new Error(data.error || data.message || 'Erreur lors de la suppression');
+                // Specific handling for incidents error
+                if (data.incidents_count) {
+                    window.Notifications.error(data.error || `Impossible de supprimer l'utilisateur. Il a ${data.incidents_count} incident(s) créé(s).`);
+                } else {
+                    // Generic error handling
+                    window.Notifications.error(data.error || data.message || 'Erreur lors de la suppression');
+                }
             }
         } catch (error) {
-            console.error('Error:', error);
-            window.Notifications.error(error.message);
+            console.error('Error during user deletion:', error);
+            window.Notifications.error(error.message || 'Une erreur inattendue est survenue');
         } finally {
             deleteModal.hide();
             currentUserToDelete = null;
