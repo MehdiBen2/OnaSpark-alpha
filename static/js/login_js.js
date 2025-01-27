@@ -69,6 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const loginError = document.getElementById('loginError');
                 loginError.textContent = data.message || "Une erreur s'est produite lors de la connexion.";
                 loginError.classList.remove('d-none');
+                
+                // Add shake animation to form for invalid credentials
+                loginForm.classList.add('shake-animation');
+                setTimeout(() => {
+                    loginForm.classList.remove('shake-animation');
+                }, 500);
             }
         } catch (error) {
             console.error('Error:', error);
