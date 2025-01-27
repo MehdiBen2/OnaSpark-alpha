@@ -44,7 +44,7 @@ class Unit(db.Model):
     director_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     # Relationships
-    centers = db.relationship('Center', backref='unit', lazy=True, cascade='all, delete-orphan')
+    centers = db.relationship('Center', backref='unit', lazy='joined', cascade='all, delete-orphan')
     users = db.relationship('User', backref='assigned_unit', lazy=True, foreign_keys='User.unit_id')
     director = db.relationship('User', foreign_keys=[director_id], backref='directed_unit', lazy=True)
     incidents = db.relationship('Incident', backref='unit', lazy=True)

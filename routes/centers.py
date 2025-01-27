@@ -4,23 +4,37 @@ from models import db, Center, Unit, Zone
 from utils.decorators import admin_required
 import traceback
 import uuid
+from sqlalchemy.orm import joinedload
 
 centers = Blueprint('centers', __name__)
 
-@centers.route('/admin/centers')
+@centers.route('/admin/centres/listes_par_zone')
 @login_required
-def list_centers():
-    # Get all units with their centers, ordered by unit name
+def centres_listes_par_zone():
+    # Debug print
+    print("Entering centres_listes_par_zone route")
+    
+    # Get all zones with their units and centres
     if current_user.role == 'Admin':
-        units = Unit.query.order_by(Unit.name).all()
+        zones = Zone.query.options(
+            joinedload(Zone.units).joinedload(Unit.centers)
+        ).all()
         page_title = "Liste des Centres de toutes les zones de l'ONA"
     else:
-        # For non-admin users, only show centers from their assigned zone
-        units = Unit.query.filter_by(zone_id=current_user.zone_id).order_by(Unit.name).all()
+        # For non-admin users, only show centres from their assigned zone
+        zones = Zone.query.filter_by(id=current_user.zone_id).options(
+            joinedload(Zone.units).joinedload(Unit.centers)
+        ).all()
         page_title = f"Liste des Centres de la zone {current_user.zone.name}"
     
-    zones = Zone.query.all()
-    return render_template('admin/centers.html', units=units, zones=zones, page_title=page_title)
+    # Add logging
+    current_app.logger.info(f"Retrieved zones: {len(zones)}")
+    for zone in zones:
+        current_app.logger.info(f"Zone: {zone.name}, Units: {len(zone.units)}")
+        for unit in zone.units:
+            current_app.logger.info(f"Unit: {unit.name}, Centers: {len(unit.centers)}")
+    
+    return render_template('admin/centres_listes.html', zones=zones, page_title=page_title)
 
 @centers.route('/admin/centers/new', methods=['POST'])
 @login_required
@@ -40,19 +54,19 @@ def new_center():
         if not name:
             flash('Le nom du centre est requis.', 'danger')
             current_app.logger.warning("Center creation failed: Name is required")
-            return redirect(url_for('centers.list_centers'))
+            return redirect(url_for('centers.centres_listes_par_zone'))
 
         if not unit_id:
             flash('L\'unité est requise.', 'danger')
             current_app.logger.warning("Center creation failed: Unit is required")
-            return redirect(url_for('centers.list_centers'))
+            return redirect(url_for('centers.centres_listes_par_zone'))
 
         # Verify the unit exists
         unit = Unit.query.get(unit_id)
         if not unit:
             flash('L\'unité sélectionnée n\'existe pas.', 'danger')
             current_app.logger.error(f"Center creation failed: Unit with ID {unit_id} not found")
-            return redirect(url_for('centers.list_centers'))
+            return redirect(url_for('centers.centres_listes_par_zone'))
 
         # Generate a unique code for the center
         # Format: ZONE_CODE-UNIT_CODE-RANDOM_4_CHARS
@@ -79,4 +93,4 @@ def new_center():
         current_app.logger.error(traceback.format_exc())
         flash(f'Erreur lors de la création du centre: {str(e)}', 'danger')
 
-    return redirect(url_for('centers.list_centers'))
+    return redirect(url_for('centers.centres_listes_par_zone'))

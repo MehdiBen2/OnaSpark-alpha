@@ -158,11 +158,11 @@
                                     <span class="action-description">Visualisez les listes des unités de chaque zone</span>
                                 </div>
                             </a>
-                            <a href="{{ url_for('list_centers') }}" class="action-btn success">
-                                <i class="fas fa-hospital"></i>
+                            <a href="{{ url_for('centers.centres_listes_par_zone') }}" class="action-btn success">
+                                <i class="fas fa-map-marker-alt"></i>
                                 <div class="action-content">
-                                    <span class="action-title">Liste des Centres</span>
-                                    <span class="action-description">Explorez les centres des differentes unités de l'Ona</span>
+                                    <span class="action-title">Liste des Centres par Zone</span>
+                                    <span class="action-description">Explorez les centres détaillés par zone et unité</span>
                                 </div>
                             </a>
                             {% endif %}
@@ -344,11 +344,6 @@
                             <div class="stat-icon">
                                 <i class="fas fa-check-circle"></i>
                             </div>
-                            
-
-                            
-                            
-                            
                             <div class="stat-number">
                                 <div class="loading-dots">
                                     <div class="dot"></div>
