@@ -190,7 +190,7 @@ function updateUnits(zoneSelect) {
     // Show loading state
     unitSelect.innerHTML = '<option value="">Chargement des unités...</option>';
 
-    fetch(`/get_units_by_zone/${zoneId}`)
+    fetch(`/api/units/${zoneId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
