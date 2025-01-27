@@ -366,6 +366,43 @@
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
 }
 
+.action-btn.success.spark-agent {
+    background: linear-gradient(45deg, #0077BE, #09bd5a, #8f16618f, #0b3a92);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.action-btn.success.spark-agent:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 119, 190, 0.3);
+}
+
+.action-btn.success.spark-agent .action-title {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    font-weight: 700;
+}
+
+.action-btn.success.spark-agent .action-description {
+    color: rgba(255,255,255,0.9);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.action-btn.success.spark-agent i {
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 .incident-card {
     background: white;
     border-radius: var(--card-radius);
