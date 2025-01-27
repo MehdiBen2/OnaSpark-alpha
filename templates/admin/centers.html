@@ -39,43 +39,48 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Nom</th>
                                     <th>Unité</th>
                                     <th>Zone</th>
-                                    <th>Description</th>
-                                    <th>Contact</th>
-                                    {% if current_user.role in ['Admin', 'Unit Officer'] %}
-                                    <th>Actions</th>
-                                    {% endif %}
+                                    <th>Centres</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for center in centers %}
+                                {% for unit in units %}
                                 <tr>
-                                    <td><span class="badge bg-primary">{{ center.code }}</span></td>
-                                    <td>{{ center.name }}</td>
-                                    <td>{{ center.unit.name }}</td>
-                                    <td>{{ center.unit.zone.name }}</td>
-                                    <td>{{ center.description }}</td>
                                     <td>
-                                        {% if center.email %}
-                                        <i class="fas fa-envelope me-2"></i>{{ center.email }}<br>
-                                        {% endif %}
-                                        {% if center.phone %}
-                                        <i class="fas fa-phone me-2"></i>{{ center.phone }}
+                                        <span class="badge bg-primary">{{ unit.code }}</span>
+                                        {{ unit.name }}
+                                    </td>
+                                    <td>{{ unit.zone.name }}</td>
+                                    <td>
+                                        {% if unit.centers %}
+                                        <div class="list-group">
+                                            {% for center in unit.centers %}
+                                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-info me-2">{{ center.code }}</span>
+                                                    {{ center.name }}
+                                                    {% if center.description %}
+                                                    <small class="text-muted d-block">{{ center.description }}</small>
+                                                    {% endif %}
+                                                </div>
+                                                {% if current_user.role in ['Admin', 'Unit Officer'] %}
+                                                <div>
+                                                    <button class="btn btn-sm btn-outline-primary me-2" title="Modifier">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">Aucun centre</span>
                                         {% endif %}
                                     </td>
-                                    {% if current_user.role in ['Admin', 'Unit Officer'] %}
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary me-2" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
