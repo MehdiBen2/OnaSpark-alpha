@@ -28,6 +28,7 @@ from utils.incident_utils import get_user_incident_counts  # Import from new uti
 from routes.spark_agent_routes import get_mistral_api_key, spark_agent
 from routes.main_dashboard import main_dashboard
 from routes.departement import departement  # Add this import
+from routes.centers import centers
 
 # Load environment variables
 load_dotenv()
@@ -64,6 +65,7 @@ app.register_blueprint(profiles)
 app.register_blueprint(units)
 app.register_blueprint(documentation)
 app.register_blueprint(database_admin)
+app.register_blueprint(centers)
 
 # Remove the old route definition for statistiques
 # This is now handled by the departement Blueprint

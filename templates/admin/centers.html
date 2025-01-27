@@ -97,7 +97,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="newCenterForm" method="POST">
+                <form id="newCenterForm" method="POST" action="{{ url_for('centers.new_center') }}">
                     <div class="mb-3">
                         <label for="name" class="form-label">Nom</label>
                         <input type="text" class="form-control" id="name" name="name" required>
