@@ -116,14 +116,14 @@
                                 <i class="fas fa-users"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Utilisateurs</span>
-                                    <span class="action-description">Gérez et configurez les comptes utilisateurs de votre organisation</span>
+                                    <span class="action-description">Gérez les profils et accès des utilisateurs de l'Ona</span>
                                 </div>
                             </a>
                             <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Unités</span>
-                                    <span class="action-description">Administrez et organisez les unités opérationnelles</span>
+                                    <span class="action-description">Gérez les différentes unités des zones de l'Ona</span>
                                 </div>
                             </a>
                         </div>
@@ -145,7 +145,7 @@
                                 <i class="fas fa-map-marker-alt"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Zones</span>
-                                    <span class="action-description">Visualisez et gérez les zones géographiques de l'organisation</span>
+                                    <span class="action-description">Gérez les différentes Zones de l'Ona</span>
                                 </div>
                             </a>
                             {% endif %}
@@ -155,14 +155,14 @@
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
                                     <span class="action-title">Liste des Unités</span>
-                                    <span class="action-description">Consultez et gérez les différentes unités opérationnelles</span>
+                                    <span class="action-description">Visualisez les listes des unités de chaque zone</span>
                                 </div>
                             </a>
                             <a href="{{ url_for('list_centers') }}" class="action-btn success">
                                 <i class="fas fa-hospital"></i>
                                 <div class="action-content">
                                     <span class="action-title">Liste des Centres</span>
-                                    <span class="action-description">Explorez et administrez les centres de l'organisation</span>
+                                    <span class="action-description">Explorez les centres des differentes unités de l'Ona</span>
                                 </div>
                             </a>
                             {% endif %}
@@ -174,7 +174,7 @@
                 <!-- Incident Management Section -->
                 <div class="collapsible-section">
                     <div class="collapsible-header">
-                        <span><i class="fas fa-exclamation-triangle me-2"></i>Gestion des Incidents</span>
+                        <span><i class="fas fa-exclamation-triangle me-2"></i>Gestion des rapports</span>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="collapsible-content">
@@ -183,14 +183,14 @@
                                 <i class="fas fa-file-alt"></i>
                                 <div class="action-content">
                                     <span class="action-title">Nouveau Rapport</span>
-                                    <span class="action-description">Créez et soumettez un nouveau rapport d'incident</span>
+                                    <span class="action-description">Créez un nouveau rapport ou bilans</span>
                                 </div>
                             </a>
-                            <a href="{{ url_for('incidents.incident_list') }}" class="action-btn secondary">
+                            <a href="{{ url_for('incidents.incident_list') }}" class="action-btn danger">
                                 <i class="fas fa-list"></i>
                                 <div class="action-content">
                                     <span class="action-title">Liste des Incidents</span>
-                                    <span class="action-description">Consultez et suivez tous les incidents signalés</span>
+                                    <span class="action-description">Visualisez la liste des incidents existants de chaque entité de l'ona en détail</span>
                                 </div>
                             </a>
                         </div>
@@ -209,21 +209,21 @@
                                 <i class="fas fa-envelope"></i>
                                 <div class="action-content">
                                     <span class="action-title">Webmail ONA</span>
-                                    <span class="action-description">Accédez à votre messagerie professionnelle</span>
+                                    <span class="action-description">Communication interne des services d'assainissement</span>
                                 </div>
                             </a>
                             <a href="https://apex.ona-dz.com/ords/r/dpmg/dpmg-workforce/login?session=29000178296122" class="action-btn warning" target="_blank">
                                 <i class="fas fa-car"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion du Parc Roulant</span>
-                                    <span class="action-description">Gérez et suivez le parc automobile de l'organisation</span>
+                                    <span class="action-description">Gérez les véhicules d'intervention et de maintenance</span>
                                 </div>
                             </a>
                             <a href="{{ url_for('spark_agent') }}" class="action-btn success spark-agent" target="_blank">
                                 <i class="fas fa-bolt"></i>
                                 <div class="action-content">
                                     <span class="action-title">OnaSpark Agent</span>
-                                    <span class="action-description">Accédez à l'agent intelligent de gestion</span>
+                                    <span class="action-description">Assistant intelligent pour la gestion hydraulique</span>
                                 </div>
                             </a>
                         </div>

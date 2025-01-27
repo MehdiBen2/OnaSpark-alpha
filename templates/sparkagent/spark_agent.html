@@ -348,6 +348,48 @@
                 overflow-y: auto;
             }
         }
+
+        /* Modal Content with Solid Border, Rounded Corners, and Emitting Light */
+        .modal-content {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            border: 3px solid #0077BE; /* Solid blue border */
+            box-shadow: 
+                0 0 20px rgba(185, 29, 159, 0.747),
+                0 0 40px rgba(0, 255, 162, 0.685),
+                0 0 60px rgba(1, 60, 255, 0.658);
+            transition: all 0.5s ease;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle at center, 
+                rgba(0, 119, 190, 0.2) 0%, 
+                rgba(0, 168, 107, 0.1) 50%, 
+                rgba(143, 22, 97, 0.05) 100%
+            );
+            opacity: 0.6;
+            animation: lightPulse 5s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes lightPulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0.6;
+                transform: scale(1.05);
+            }
+        }
     </style>
 </head>
 <body>
