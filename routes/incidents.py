@@ -8,7 +8,7 @@ from datetime import datetime
 from functools import wraps
 from utils.decorators import admin_required
 from utils.pdf_generator import create_incident_pdf
-from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, MERGE_INCIDENT, BATCH_MERGE
+from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, BATCH_MERGE
 import os
 import json
 from typing import Dict, Any, Optional
@@ -464,56 +464,6 @@ def export_all_incidents_pdf():
     except Exception as e:
         flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
         return redirect(url_for(INCIDENT_LIST))
-
-@incidents.route('/incident/<int:incident_id>/merge', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def merge_incident(incident_id):
-    incident = Incident.query.get_or_404(incident_id)
-    units = Unit.query.filter(Unit.id != incident.unit_id).all()
-    
-    if request.method == 'POST':
-        new_unit_id = request.form.get('new_unit')
-        merge_note = request.form.get('merge_note')
-        
-        if not new_unit_id:
-            flash('Veuillez sélectionner une unité de destination.', 'danger')
-            return redirect(url_for(MERGE_INCIDENT, incident_id=incident_id))
-            
-        try:
-            # Update the incident's unit
-            new_unit = Unit.query.get(new_unit_id)
-            old_unit_name = incident.unit.name if incident.unit else "Unité non spécifiée"
-            
-            incident.unit_id = new_unit_id
-            
-            # Add merge note to mesures_prises if provided
-            if merge_note:
-                merge_info = f"\n\n[Fusion d'unité le {datetime.now().strftime('%d/%m/%Y %H:%M')}]\n"
-                merge_info += f"Transféré de l'unité '{old_unit_name}' vers '{new_unit.name}'\n"
-                merge_info += f"Note: {merge_note}"
-                
-                if incident.mesures_prises:
-                    incident.mesures_prises += merge_info
-                else:
-                    incident.mesures_prises = merge_info
-            
-            db.session.commit()
-            flash(f'L\'incident a été fusionné avec succès vers l\'unité {new_unit.name}.', 'success')
-            current_app.logger.info(f"Flash message set: L'incident a été fusionné avec succès vers l'unité {new_unit.name}")
-            current_app.logger.info(f"Session data: {dict(session)}")
-            
-            # Invalidate incident count cache
-            cache.delete(get_incident_cache_key(current_user))
-            
-            return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Erreur lors de la fusion de l\'incident: {str(e)}', 'danger')
-            return redirect(url_for(MERGE_INCIDENT, incident_id=incident_id))
-    
-    return render_template('incidents/merge_incident.html', incident=incident, units=units)
 
 @incidents.route('/incidents/batch_merge', methods=['GET', 'POST'])
 @login_required

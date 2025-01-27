@@ -53,7 +53,6 @@ DELETE_INCIDENT = 'incidents.delete'
 RESOLVE_INCIDENT = 'incidents.resolve'
 EXPORT_INCIDENT_PDF = 'incidents.export_pdf'
 EXPORT_ALL_INCIDENTS_PDF = 'incidents.export_all_pdf'
-MERGE_INCIDENT = 'incidents.merge'
 BATCH_MERGE = 'incidents.batch_merge'
 
 # Incident routes
@@ -65,7 +64,6 @@ DELETE_INCIDENT = 'incidents.delete'
 RESOLVE_INCIDENT = 'incidents.resolve'
 EXPORT_INCIDENT_PDF = 'incidents.export_pdf'
 EXPORT_ALL_INCIDENTS_PDF = 'incidents.export_all_pdf'
-MERGE_INCIDENT = 'incidents.merge'
 BATCH_MERGE = 'incidents.batch_merge'
 
 # Auth routes
