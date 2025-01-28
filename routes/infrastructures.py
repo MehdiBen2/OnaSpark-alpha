@@ -128,7 +128,7 @@ def create_infrastructure():
 @login_required
 def delete_infrastructure(id):
     """
-    Delete an infrastructure by its ID.
+    Delete an infrastructure by its ID and remove all associated files.
     
     Args:
         id (int): The ID of the infrastructure to delete.
@@ -140,12 +140,26 @@ def delete_infrastructure(id):
         # Find the infrastructure by ID
         infrastructure = Infrastructure.query.get_or_404(id)
         
+        # Create a directory path for infrastructure files
+        import os
+        import shutil
+        
+        upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
+        
+        # Remove associated files directory if it exists
+        if os.path.exists(upload_dir):
+            try:
+                shutil.rmtree(upload_dir)
+                logger.info(f"Deleted files directory for infrastructure {id}")
+            except Exception as file_error:
+                logger.error(f"Error deleting files for infrastructure {id}: {str(file_error)}")
+        
         # Delete the infrastructure
         db.session.delete(infrastructure)
         db.session.commit()
         
         return jsonify({
-            'message': 'Infrastructure supprimée avec succès.',
+            'message': 'Infrastructure et fichiers associés supprimés avec succès.',
             'status': 'success'
         }), 200
     

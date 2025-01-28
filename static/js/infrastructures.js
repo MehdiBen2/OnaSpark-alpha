@@ -151,6 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Confirmation de suppression dans le modal
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteButtonText = confirmDeleteBtn.querySelector('.delete-btn-text');
+        const deleteSpinner = confirmDeleteBtn.querySelector('.delete-spinner');
+        
         if (confirmDeleteBtn) {
             confirmDeleteBtn.addEventListener('click', function(event) {
                 if (!currentInfrastructureId) {
@@ -158,66 +161,80 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Envoyer la requête de suppression
-                fetch(`/departements/infrastructures/delete/${currentInfrastructureId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    // Check if response is not OK
-                    if (!response.ok) {
-                        // Try to parse error response as JSON
-                        return response.text().then(text => {
-                            try {
-                                const errorData = JSON.parse(text);
-                                throw new Error(errorData.message || 'Erreur de suppression');
-                            } catch (jsonError) {
-                                // If parsing fails, throw the original text
-                                throw new Error(text || 'Erreur de suppression non spécifiée');
+                // Disable button and show spinner
+                confirmDeleteBtn.disabled = true;
+                deleteButtonText.classList.add('d-none');
+                deleteSpinner.classList.remove('d-none');
+
+                // Mandatory 2-second delay before deletion
+                setTimeout(() => {
+                    // Envoyer la requête de suppression
+                    fetch(`/departements/infrastructures/delete/${currentInfrastructureId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        // Check if response is not OK
+                        if (!response.ok) {
+                            // Try to parse error response as JSON
+                            return response.text().then(text => {
+                                try {
+                                    const errorData = JSON.parse(text);
+                                    throw new Error(errorData.message || 'Erreur de suppression');
+                                } catch (jsonError) {
+                                    // If parsing fails, throw the original text
+                                    throw new Error(text || 'Erreur de suppression non spécifiée');
+                                }
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Show success toast
+                        const successToast = document.getElementById('successToast');
+                        if (successToast) {
+                            const successMessage = document.getElementById('successToastMessage');
+                            if (successMessage) {
+                                successMessage.textContent = data.message || 'Infrastructure et fichiers supprimés avec succès';
                             }
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Show success toast
-                    const successToast = document.getElementById('successToast');
-                    if (successToast) {
-                        const successMessage = document.getElementById('successToastMessage');
-                        if (successMessage) {
-                            successMessage.textContent = data.message || 'Infrastructure supprimée avec succès';
+                            new bootstrap.Toast(successToast).show();
+                        } else {
+                            alert(data.message || 'Infrastructure et fichiers supprimés avec succès');
                         }
-                        new bootstrap.Toast(successToast).show();
-                    } else {
-                        alert(data.message || 'Infrastructure supprimée avec succès');
-                    }
 
-                    // Hide the delete modal
-                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-                    if (deleteModal) {
-                        deleteModal.hide();
-                    }
-
-                    // Reload the page or remove the row from the table
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Erreur de suppression:', error);
-                    
-                    // Show error toast or alert
-                    const errorToast = document.getElementById('errorToast');
-                    if (errorToast) {
-                        const errorMessage = document.getElementById('errorToastMessage');
-                        if (errorMessage) {
-                            errorMessage.textContent = `Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`;
+                        // Hide the delete modal
+                        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                        if (deleteModal) {
+                            deleteModal.hide();
                         }
-                        new bootstrap.Toast(errorToast).show();
-                    } else {
-                        alert(`Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`);
-                    }
-                });
+
+                        // Reload the page or remove the row from the table
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Erreur de suppression:', error);
+                        
+                        // Show error toast or alert
+                        const errorToast = document.getElementById('errorToast');
+                        if (errorToast) {
+                            const errorMessage = document.getElementById('errorToastMessage');
+                            if (errorMessage) {
+                                errorMessage.textContent = `Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`;
+                            }
+                            new bootstrap.Toast(errorToast).show();
+                        } else {
+                            alert(`Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`);
+                        }
+                    })
+                    .finally(() => {
+                        // Re-enable button and hide spinner
+                        confirmDeleteBtn.disabled = false;
+                        deleteButtonText.classList.remove('d-none');
+                        deleteSpinner.classList.add('d-none');
+                    });
+                }, 2000); // 2-second mandatory delay
             });
         }
 
