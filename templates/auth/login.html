@@ -43,7 +43,7 @@
             background: rgba(30, 60, 114, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 3rem;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -56,7 +56,13 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 3rem;
+            padding: 2rem;
+        }
+
+        .logo-img {
+            max-width: 300px;
+            margin: -1rem 0;
+            filter: brightness(1.1);
         }
 
         .form-control {
@@ -104,12 +110,6 @@
             border-color: #1e3c72;
             color: #1e3c72;
             transform: translateY(-2px);
-        }
-
-        .logo-img {
-            max-width: 300px;
-            margin: -1rem 0;
-            filter: brightness(1.1);
         }
 
         .water-phrase {
@@ -369,6 +369,99 @@
             }
         }
 
+        /* PC Screen Size Adjustments */
+        @media (max-width: 1366px) {
+            .login-container {
+                max-width: 900px;
+            }
+            .left-side, .right-side {
+                padding: 1.5rem;
+            }
+            .form-title {
+                margin-bottom: 1rem;
+            }
+            .mb-4 {
+                margin-bottom: 1rem !important;
+            }
+            .login-notice {
+                margin-bottom: 1rem !important;
+            }
+            .login-notice .alert {
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .login-container {
+                max-width: 800px;
+            }
+            .left-side, .right-side {
+                padding: 1.25rem;
+            }
+            .form-control {
+                padding: 0.5rem 1rem;
+            }
+            .btn {
+                padding: 0.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .spark-heading {
+                margin-top: -0.5rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .login-container {
+                max-width: 700px;
+            }
+            .left-side, .right-side {
+                padding: 1rem;
+            }
+            .p-4 {
+                padding: 1rem !important;
+            }
+        }
+
+        /* Login Notice Styles */
+        .login-notice .alert-info {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(30, 60, 114, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem;
+        }
+
+        .login-notice .alert-info i {
+            color: #1e3c72;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .login-notice .alert-info strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+        }
+
+        .login-notice .alert-info .text-muted {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+
+        .login-notice .alert-info .me-3 {
+            margin-right: 0.5rem !important;
+        }
+
+        .login-notice {
+            margin-bottom: 1rem;
+        }
+
         /* Mobile Warning Styles */
         .mobile-warning {
             position: fixed;
@@ -389,32 +482,6 @@
             .mobile-warning {
                 display: block;
             }
-        }
-
-        /* Login Notice Styles */
-        .login-notice .alert-info {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(30, 60, 114, 0.2);
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .login-notice .alert-info i {
-            color: #1e3c72;
-            margin-right: 15px;
-        }
-
-        .login-notice .alert-info strong {
-            color: #1e3c72;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .login-notice .alert-info .text-muted {
-            font-size: 0.9rem;
-            opacity: 0.8;
         }
 
         @keyframes shake {
