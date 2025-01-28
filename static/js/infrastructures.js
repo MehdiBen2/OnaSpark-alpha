@@ -141,17 +141,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Gestionnaire de suppression d'infrastructure
         const deleteButtons = document.querySelectorAll('.delete-infrastructure');
+        let currentInfrastructureId = null;
+        
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
-                const infrastructureId = this.getAttribute('data-id');
-                
-                // Confirmer la suppression
-                if (!confirm('Êtes-vous sûr de vouloir supprimer cette infrastructure?')) {
+                currentInfrastructureId = this.getAttribute('data-id');
+            });
+        });
+
+        // Confirmation de suppression dans le modal
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function(event) {
+                if (!currentInfrastructureId) {
+                    console.error('Aucun ID d\'infrastructure sélectionné');
                     return;
                 }
 
                 // Envoyer la requête de suppression
-                fetch(`/departements/infrastructures/delete/${infrastructureId}`, {
+                fetch(`/departements/infrastructures/delete/${currentInfrastructureId}`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json'
@@ -174,10 +182,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    if (data.message) {
-                        alert(data.message);
-                        location.reload();
+                    // Show success toast
+                    const successToast = document.getElementById('successToast');
+                    if (successToast) {
+                        const successMessage = document.getElementById('successToastMessage');
+                        if (successMessage) {
+                            successMessage.textContent = data.message || 'Infrastructure supprimée avec succès';
+                        }
+                        new bootstrap.Toast(successToast).show();
+                    } else {
+                        alert(data.message || 'Infrastructure supprimée avec succès');
                     }
+
+                    // Hide the delete modal
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                    if (deleteModal) {
+                        deleteModal.hide();
+                    }
+
+                    // Reload the page or remove the row from the table
+                    location.reload();
                 })
                 .catch(error => {
                     console.error('Erreur de suppression:', error);
@@ -195,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
-        });
+        }
 
         // Function to fetch and display infrastructure files
         function fetchInfrastructureFiles(infrastructureId) {
