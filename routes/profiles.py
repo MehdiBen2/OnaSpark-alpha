@@ -21,83 +21,93 @@ def create_profile():
         try:
             # Get form data
             form_data = {
-                'first_name': request.form.get('first_name'),
-                'last_name': request.form.get('last_name'),
-                'date_of_birth': request.form.get('date_of_birth'),
-                'email': request.form.get('email'),
-                'professional_number': request.form.get('professional_number'),
-                'job_function': request.form.get('job_function'),
-                'recruitment_date': request.form.get('recruitment_date')
+                'first_name': request.form.get('first_name', '').strip(),
+                'last_name': request.form.get('last_name', '').strip(),
+                'date_of_birth': request.form.get('date_of_birth', '').strip(),
+                'email': request.form.get('email', '').strip(),
+                'professional_number': request.form.get('professional_number', '').strip(),
+                'job_function': request.form.get('job_function', '').strip(),
+                'recruitment_date': request.form.get('recruitment_date', '').strip()
             }
 
-            # Define required fields and validations
-            required_fields = [
-                'first_name', 'last_name', 'date_of_birth', 
-                'email', 'professional_number', 'job_function', 'recruitment_date'
-            ]
+            # Check for empty fields
+            empty_fields = [field for field in form_data if not form_data[field]]
+            if empty_fields:
+                error_msg = 'Les champs suivants sont obligatoires : ' + ', '.join(empty_fields)
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_msg})
+                flash(error_msg, 'error')
+                return render_template('profiles/create_profile.html', form_data=form_data)
 
-            def validate_unique_profile(data):
-                # Check if profile already exists
-                if current_user.profile:
-                    return 'Le profil existe déjà'
-                return None
+            # Check if professional number is already in use
+            existing_profile = UserProfile.query.filter_by(
+                professional_number=form_data['professional_number']
+            ).first()
+            if existing_profile:
+                error_msg = 'Ce numéro professionnel est déjà utilisé'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_msg})
+                flash(error_msg, 'error')
+                return render_template('profiles/create_profile.html', form_data=form_data)
 
-            def validate_professional_number(data):
-                # Check if professional number is already in use
-                existing_profile = UserProfile.query.filter_by(
-                    professional_number=data['professional_number']
-                ).first()
-                return 'Ce numéro professionnel est déjà utilisé' if existing_profile else None
-
-            def validate_email_format(data):
-                # Validate email format
-                if not FormValidator.validate_email(data['email']):
-                    return 'Format d\'email invalide'
-                return None
-
-            def validate_dates(data):
-                # Validate date formats
-                for date_field in ['date_of_birth', 'recruitment_date']:
-                    if not FormValidator.validate_date(data[date_field]):
-                        return f'Format de date invalide pour {date_field}'
-                return None
-
-            # Perform validation
-            validation_result = FormValidator.validate_form(
-                form_data, 
-                required_fields, 
-                [
-                    validate_unique_profile,
-                    validate_professional_number,
-                    validate_email_format,
-                    validate_dates
-                ]
-            )
-
-            # If validation fails, re-render the form
-            if validation_result:
-                return render_template('profiles/create_profile.html', form_data=validation_result)
+            # Check if email is already in use
+            existing_email = UserProfile.query.filter_by(
+                email=form_data['email']
+            ).first()
+            if existing_email:
+                error_msg = 'Cette adresse email est déjà utilisée'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_msg})
+                flash(error_msg, 'error')
+                return render_template('profiles/create_profile.html', form_data=form_data)
 
             # Create new profile
-            profile = UserProfile(
-                first_name=form_data['first_name'],
-                last_name=form_data['last_name'],
-                date_of_birth=datetime.strptime(form_data['date_of_birth'], '%Y-%m-%d').date(),
-                email=form_data['email'],
-                professional_number=form_data['professional_number'],
-                job_function=form_data['job_function'],
-                recruitment_date=datetime.strptime(form_data['recruitment_date'], '%Y-%m-%d'),
-                user_id=current_user.id
-            )
+            try:
+                profile = UserProfile(
+                    first_name=form_data['first_name'],
+                    last_name=form_data['last_name'],
+                    date_of_birth=datetime.strptime(form_data['date_of_birth'], '%Y-%m-%d').date(),
+                    email=form_data['email'],
+                    professional_number=form_data['professional_number'],
+                    job_function=form_data['job_function'],
+                    recruitment_date=datetime.strptime(form_data['recruitment_date'], '%Y-%m-%d'),
+                    user_id=current_user.id
+                )
 
-            db.session.add(profile)
-            db.session.commit()
-            flash('Profil créé avec succès', 'success')
-            return redirect(url_for(PROFILE_VIEW))
+                db.session.add(profile)
+                db.session.commit()
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'success': True,
+                        'redirect': url_for(PROFILE_VIEW)
+                    })
+
+                flash('Profil créé avec succès', 'success')
+                return redirect(url_for(PROFILE_VIEW))
+
+            except Exception as e:
+                db.session.rollback()
+                if 'UNIQUE constraint' in str(e):
+                    if 'professional_number' in str(e):
+                        error_msg = 'Ce numéro professionnel est déjà utilisé'
+                    elif 'email' in str(e):
+                        error_msg = 'Cette adresse email est déjà utilisée'
+                    else:
+                        error_msg = 'Une erreur de doublon s\'est produite'
+                else:
+                    error_msg = 'Erreur lors de la création du profil: ' + str(e)
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_msg})
+                flash(error_msg, 'error')
+                return render_template('profiles/create_profile.html', form_data=form_data)
 
         except Exception as e:
-            db.session.rollback()
-            form_data = handle_form_exception(e, form_data)
+            error_msg = 'Une erreur inattendue s\'est produite: ' + str(e)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': error_msg})
+            flash(error_msg, 'error')
             return render_template('profiles/create_profile.html', form_data=form_data)
 
     return render_template('profiles/create_profile.html', form_data={})
