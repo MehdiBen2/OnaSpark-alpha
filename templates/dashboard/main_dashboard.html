@@ -64,6 +64,24 @@
         opacity: 1;
         transform: translateY(0);
     }
+
+    /* Logo slide-in animation */
+    @keyframes slideInLogo {
+        0% {
+            opacity: 0;
+            transform: translateX(-50px) scale(0.9);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    .ona-logo {
+        animation: slideInLogo 1.2s ease-out forwards;
+        opacity: 0;
+        animation-delay: 0.3s;
+    }
 </style>
 {% endblock %}
 
@@ -373,6 +391,17 @@
     const ANIMATION_DURATION = 1500;
     const FADE_DURATION = 300;
 
+    // Logo slide-in initialization
+    function initLogoAnimation() {
+        const logo = document.querySelector('.ona-logo');
+        if (logo) {
+            logo.style.opacity = '0';
+            requestAnimationFrame(() => {
+                logo.style.animationPlayState = 'running';
+            });
+        }
+    }
+
     // Show numbers with optimized animation
     function showNumbers() {
         // Use requestAnimationFrame for better performance
@@ -433,42 +462,46 @@
         firstContent.classList.add('active');
     }
 
-    showNumbers();
+    // Initialization on DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initLogoAnimation();
+        showNumbers();
+    });
+
+    // Format date in French
+    function formatDateInFrench(date) {
+        const months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        
+        return `${day} ${month} ${year}`;
+    }
+
+    // Update date and time
+    function updateDateTime() {
+        const now = new Date();
+        const dateElement = document.getElementById('current-date');
+        const timeElement = document.getElementById('current-time');
+        
+        if (dateElement) {
+            dateElement.textContent = formatDateInFrench(now);
+        }
+        
+        if (timeElement) {
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            timeElement.textContent = `${hours}:${minutes}`;
+        }
+    }
+
+    // Update immediately and then every minute
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
 })();
-
-// Format date in French
-function formatDateInFrench(date) {
-    const months = [
-        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-    ];
-    
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    
-    return `${day} ${month} ${year}`;
-}
-
-// Update date and time
-function updateDateTime() {
-    const now = new Date();
-    const dateElement = document.getElementById('current-date');
-    const timeElement = document.getElementById('current-time');
-    
-    if (dateElement) {
-        dateElement.textContent = formatDateInFrench(now);
-    }
-    
-    if (timeElement) {
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        timeElement.textContent = `${hours}:${minutes}`;
-    }
-}
-
-// Update immediately and then every minute
-updateDateTime();
-setInterval(updateDateTime, 60000);
 </script>
 {% endblock %}
