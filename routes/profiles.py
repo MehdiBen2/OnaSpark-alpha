@@ -14,6 +14,40 @@ from utils.url_endpoints import (
 
 profiles = Blueprint('profiles', __name__)
 
+FIELD_LABELS = {
+    'first_name': 'Prénom',
+    'last_name': 'Nom de famille',
+    'date_of_birth': 'Date de naissance',
+    'email': 'Adresse e-mail',
+    'professional_number': 'Numéro professionnel',
+    'job_function': 'Fonction',
+    'recruitment_date': 'Date de recrutement'
+}
+
+def validate_profile_creation(form_data):
+    """
+    Validate profile creation form data with enhanced error messages.
+    
+    Args:
+        form_data (dict): Dictionary of form submission data
+    
+    Returns:
+        tuple: (is_valid, error_message)
+    """
+    # Identify missing required fields
+    missing_fields = [
+        FIELD_LABELS.get(field, field) 
+        for field in ['first_name', 'last_name', 'date_of_birth', 'email', 
+                      'professional_number', 'job_function', 'recruitment_date'] 
+        if not form_data.get(field)
+    ]
+    
+    # Generate error message if fields are missing
+    if missing_fields:
+        return False, f"Les champs suivants sont obligatoires : {', '.join(missing_fields)}"
+    
+    return True, ""
+
 @profiles.route('/profile/create', methods=['GET', 'POST'], endpoint='create_profile')
 @login_required
 def create_profile():
@@ -30,13 +64,12 @@ def create_profile():
                 'recruitment_date': request.form.get('recruitment_date', '').strip()
             }
 
-            # Check for empty fields
-            empty_fields = [field for field in form_data if not form_data[field]]
-            if empty_fields:
-                error_msg = 'Les champs suivants sont obligatoires : ' + ', '.join(empty_fields)
+            # Validate form data
+            is_valid, error_message = validate_profile_creation(form_data)
+            if not is_valid:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify({'success': False, 'message': error_msg})
-                flash(error_msg, 'error')
+                    return jsonify({'success': False, 'message': error_message})
+                flash(error_message, 'error')
                 return render_template('profiles/create_profile.html', form_data=form_data)
 
             # Check if professional number is already in use

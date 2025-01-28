@@ -38,25 +38,25 @@
                                     </div>
                                     
                                     <div class="mb-4">
-                                        <label for="first_name" class="form-label">Prénom</label>
+                                        <label for="first_name" class="form-label">Prénom <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                                             <input type="text" class="form-control" id="first_name" name="first_name" 
-                                                value="{{ form_data.get('first_name', '') }}" required>
+                                                placeholder="Entrez votre prénom" value="{{ form_data.get('first_name', '') }}" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="last_name" class="form-label">Nom</label>
+                                        <label for="last_name" class="form-label">Nom de famille <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
                                             <input type="text" class="form-control" id="last_name" name="last_name" 
-                                                value="{{ form_data.get('last_name', '') }}" required>
+                                                placeholder="Entrez votre nom de famille" value="{{ form_data.get('last_name', '') }}" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="date_of_birth" class="form-label">Date de Naissance</label>
+                                        <label for="date_of_birth" class="form-label">Date de naissance <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                             <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
@@ -65,11 +65,11 @@
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="email" class="form-label">Email</label>
+                                        <label for="email" class="form-label">Adresse e-mail <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                             <input type="email" class="form-control" id="email" name="email" 
-                                                value="{{ form_data.get('email', '') }}" required>
+                                                placeholder="exemple@entreprise.com" value="{{ form_data.get('email', '') }}" required>
                                         </div>
                                     </div>
                                 </div>
@@ -88,25 +88,25 @@
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="professional_number" class="form-label">Numéro Professionnel</label>
+                                        <label for="professional_number" class="form-label">Numéro professionnel <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-id-card"></i></span>
                                             <input type="text" class="form-control" id="professional_number" name="professional_number" 
-                                                value="{{ form_data.get('professional_number', '') }}" required>
+                                                placeholder="Entrez votre numéro professionnel" value="{{ form_data.get('professional_number', '') }}" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="job_function" class="form-label">Fonction</label>
+                                        <label for="job_function" class="form-label">Fonction <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
                                             <input type="text" class="form-control" id="job_function" name="job_function" 
-                                                value="{{ form_data.get('job_function', '') }}" required>
+                                                placeholder="Votre fonction dans l'entreprise" value="{{ form_data.get('job_function', '') }}" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="recruitment_date" class="form-label">Date de Recrutement</label>
+                                        <label for="recruitment_date" class="form-label">Date de recrutement <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
                                             <input type="date" class="form-control" id="recruitment_date" name="recruitment_date" 
