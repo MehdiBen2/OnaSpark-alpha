@@ -141,7 +141,7 @@
                             </div>
                         </div>
                         <div>
-                            <button id="createCentreBtn" class="btn btn-primary w-100">
+                            <button id="createCentreBtn" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createCentreModal">
                                 <i class="fas fa-plus me-2"></i>
                                 Créer un Centre
                             </button>
@@ -196,6 +196,63 @@
         </div>
     </div>
 </div>
+
+<!-- Create Centre Modal -->
+<div class="modal fade" id="createCentreModal" tabindex="-1" aria-labelledby="createCentreModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createCentreModalLabel">
+                    <i class="fas fa-plus me-2"></i>Créer un Nouveau Centre
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCentreForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="centreCode" class="form-label">Code du Centre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="centreCode" name="code" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="centreName" class="form-label">Nom du Centre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="centreName" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="centreEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="centreEmail" name="email">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="centrePhone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="centrePhone" name="phone">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="centreZone" class="form-label">Zone <span class="text-danger">*</span></label>
+                            <select class="form-select" id="centreZone" name="zone_id" required>
+                                <option value="">Sélectionner une Zone</option>
+                                {% for zone in zones %}
+                                    <option value="{{ zone.id }}">{{ zone.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="centreUnit" class="form-label">Unité <span class="text-danger">*</span></label>
+                            <select class="form-select" id="centreUnit" name="unit_id" required disabled>
+                                <option value="">Sélectionner d'abord une Zone</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveCentreBtn">
+                    <i class="fas fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block page_scripts %}
@@ -228,13 +285,101 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Zone and Unit population
+    const centreZoneSelect = document.getElementById('centreZone');
+    const centreUnitSelect = document.getElementById('centreUnit');
+
+    // Preprocess zones data for easier lookup
+    const zonesData = {
+        {% for zone in zones %}
+        "{{ zone.id }}": {
+            name: "{{ zone.name }}",
+            units: [
+                {% for unit in zone.units %}
+                {
+                    id: "{{ unit.id }}",
+                    name: "{{ unit.name }}"
+                },
+                {% endfor %}
+            ]
+        },
+        {% endfor %}
+    };
+
+    centreZoneSelect.addEventListener('change', function() {
+        const selectedZoneId = this.value;
+        
+        // Reset unit select
+        centreUnitSelect.innerHTML = '<option value="">Sélectionner une Unité</option>';
+        
+        if (selectedZoneId) {
+            // Enable unit select
+            centreUnitSelect.disabled = false;
+            
+            // Populate units for the selected zone
+            const zoneUnits = zonesData[selectedZoneId].units;
+            
+            zoneUnits.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit.id;
+                option.textContent = unit.name;
+                centreUnitSelect.appendChild(option);
+            });
+        } else {
+            // Disable unit select if no zone is selected
+            centreUnitSelect.disabled = true;
+        }
+    });
+
     // Create Centre Button Handler
     const createCentreBtn = document.getElementById('createCentreBtn');
-    createCentreBtn.addEventListener('click', function() {
-        // TODO: Implement centre creation logic
-        // This could open a modal or slide-in panel for creating a new centre
-        console.log('Create new centre clicked');
-        // window.Notifications.info('Centre creation functionality coming soon');
+    const createCentreModal = new bootstrap.Modal(document.getElementById('createCentreModal'));
+    const createCentreForm = document.getElementById('createCentreForm');
+    const saveCentreBtn = document.getElementById('saveCentreBtn');
+
+    saveCentreBtn.addEventListener('click', function() {
+        // Ensure both zone and unit are selected
+        const zoneSelect = document.getElementById('centreZone');
+        const unitSelect = document.getElementById('centreUnit');
+        
+        if (!zoneSelect.value) {
+            alert('Veuillez sélectionner une Zone');
+            zoneSelect.focus();
+            return false;
+        }
+        
+        if (!unitSelect.value) {
+            alert('Veuillez sélectionner une Unité');
+            unitSelect.focus();
+            return false;
+        }
+
+        // Proceed with form submission if all validations pass
+        if (createCentreForm.checkValidity()) {
+            const formData = new FormData(createCentreForm);
+            
+            fetch("{{ url_for('centers.new_center') }}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.text();
+            })
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur est survenue lors de la création du centre');
+            });
+        } else {
+            // Trigger form validation
+            createCentreForm.reportValidity();
+        }
     });
 
     // Search Input Functionality
