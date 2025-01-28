@@ -193,9 +193,11 @@ body {
 }
 
 .sidebar-header {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    height: 60px; /* Adjust height as needed */
     padding: 0 20px 20px;
     border-bottom: 1px solid var(--outlook-border);
 }
@@ -214,6 +216,16 @@ body {
     font-size: 1.2rem;
     transition: color 0.3s ease;
     opacity: 0.7;
+    position: absolute;
+    z-index: 1000;
+    display: block;
+    right: 10px;
+    top: 10px;
+}
+
+.outlook-sidebar.collapsed .sidebar-toggle {
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .sidebar-toggle:hover {
@@ -314,6 +326,10 @@ body {
 
     .outlook-sidebar.mobile-open {
         transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+        display: block;  
     }
 }
 
@@ -543,12 +559,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sidebar && sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
+            sidebarToggle.classList.toggle('active');  // Add active state to toggle button
         });
 
         // Mobile responsiveness
         function handleMobileSidebar() {
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('mobile-sidebar');
+                sidebarToggle.style.display = 'block';  // Ensure toggle is visible on mobile
                 
                 // Close sidebar when clicking outside
                 document.addEventListener('click', function(event) {
@@ -562,6 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 sidebar.classList.remove('mobile-sidebar');
                 sidebar.classList.remove('mobile-open');
+                sidebarToggle.style.display = 'block';  // Ensure toggle is visible on desktop
             }
         }
 
