@@ -164,10 +164,12 @@ def reuse_section(section):
 @app.route('/departements/reuse/rapports')
 @login_required
 def rapports():
+    
     # Get the count of incidents (you can modify this based on your needs)
     incident_counts = get_user_incident_counts(current_user)
-    total_incidents = incident_counts['total_incidents']
-    return render_template('departement/rapports.html', total_incidents=total_incidents)
+    incidents_count = incident_counts['total_incidents']
+    return render_template('departement/rapports.html', incidents_count=incidents_count)
+
 
 @app.route('/units')
 @login_required
