@@ -73,13 +73,34 @@ def statistiques():
     # Calculate resolution rate with safe division
     resolution_rate = (resolved_incidents / total_incidents * 100) if total_incidents > 0 else 0
 
+    # Get recently resolved incidents
+    if is_admin:
+        recent_resolved = Incident.query.filter_by(status='Résolu').order_by(Incident.date_resolution.desc()).limit(5).all()
+    elif not current_user.unit_id and current_user.zone_id:
+        recent_resolved = Incident.query.filter(
+            Incident.unit_id.in_(unit_ids),
+            Incident.status=='Résolu'
+        ).order_by(Incident.date_resolution.desc()).limit(5).all()
+    else:
+        recent_resolved = Incident.query.filter_by(
+            unit_id=current_unit.id if current_unit else None,
+            status='Résolu'
+        ).order_by(Incident.date_resolution.desc()).limit(5).all()
+
     # Prepare incident stats with default values if no incidents
     incident_stats = {
         'total_incidents': total_incidents or 0,
         'critical_incidents': critical_incidents or 0,
         'resolved_incidents': resolved_incidents or 0,
         'resolution_rate': round(resolution_rate, 2) if total_incidents > 0 else 0,
-        'is_admin': is_admin
+        'is_admin': is_admin,
+        'recent_resolved': [{
+            'resolution_date': incident.date_resolution.strftime('%d/%m/%Y %H:%M'),
+            'type': incident.nature_cause,
+            'location': f"{incident.wilaya}, {incident.commune}",
+            'resolution_duration': str(incident.date_resolution - incident.date_incident).split('.')[0] if incident.date_resolution else "N/A",
+            'priority': 'high' if incident.gravite == 'Critique' else ('medium' if incident.gravite == 'Élevée' else 'low')
+        } for incident in recent_resolved] if recent_resolved else []
     }
 
     return render_template(

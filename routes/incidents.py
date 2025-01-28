@@ -382,8 +382,8 @@ def resolve_incident(incident_id):
     incident.date_resolution = datetime.now()
     db.session.commit()
     
-    flash('L\'incident a été marqué comme résolu.', 'success')
-    current_app.logger.info(f"Flash message set: L'incident a été marqué comme résolu")
+    flash("L'incident a été marqué comme résolu.", 'success')
+    current_app.logger.info("Flash message set: L'incident a été marqué comme résolu")
     current_app.logger.info(f"Session data: {dict(session)}")
     
     # Invalidate incident count cache

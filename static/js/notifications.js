@@ -90,7 +90,7 @@ class NotificationManager {
             transform: translateX(-100%);
             transition: all 0.3s ease;
         `;
-        notificationElement.textContent = notification.message;
+        notificationElement.innerHTML = this.decodeHtmlEntities(notification.message);
 
         // Add to container
         notificationContainer.appendChild(notificationElement);
@@ -135,6 +135,17 @@ class NotificationManager {
             // Process next notification in queue
             this.processQueue();
         }, 300);
+    }
+
+    /**
+     * Decode HTML entities to their corresponding characters
+     * @param {string} html - String with HTML entities
+     * @returns {string} Decoded string
+     */
+    decodeHtmlEntities(html) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
     }
 
     /**

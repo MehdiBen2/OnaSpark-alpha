@@ -365,7 +365,7 @@
                     <div class="notification {{ category }}" role="alert">
                         <div class="notification-content">
                             <i class="fas fa-info-circle notification-icon"></i>
-                            <span class="notification-message">{{ message }}</span>
+                            <span class="notification-message">{{ message|safe }}</span>
                         </div>
                         <button type="button" class="notification-close" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
