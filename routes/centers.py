@@ -75,7 +75,7 @@ def new_center():
         # Create the center
         center = Center(
             name=name,
-            code=unique_code,
+            code=uuid.uuid4().hex[:8].upper(),  # Auto-generate code
             description=description or '',
             email=email or None,
             phone=phone or None,
