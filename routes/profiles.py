@@ -131,6 +131,8 @@ def view_user_profile(user_id):
 def edit_profile():
     profile = current_user.profile
     if not profile:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': 'Profile not found'})
         flash('Profile not found', 'error')
         return redirect(url_for(PROFILE_CREATE))
 
@@ -185,8 +187,10 @@ def edit_profile():
                 ]
             )
 
-            # If validation fails, re-render the form
+            # If validation fails, handle based on request type
             if validation_result:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'errors': validation_result})
                 return render_template('profiles/edit_profile.html', profile=profile, form_data=validation_result)
 
             # Update profile
@@ -199,15 +203,21 @@ def edit_profile():
             profile.recruitment_date = datetime.strptime(form_data['recruitment_date'], '%Y-%m-%d')
 
             db.session.commit()
-            flash('Profile updated successfully', 'success')
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True})
+            
+            flash('Profil mis à jour avec succès', 'success')
             return redirect(url_for(PROFILE_VIEW))
 
         except Exception as e:
             db.session.rollback()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': str(e)})
             form_data = handle_form_exception(e, form_data)
             return render_template('profiles/edit_profile.html', profile=profile, form_data=form_data)
 
-    return render_template('profiles/edit_profile.html', profile=profile, form_data={})
+    return render_template('profiles/edit_profile.html', profile=profile)
 
 @profiles.route('/profile/<int:user_id>/edit', methods=['GET', 'POST'], endpoint='edit_user_profile')
 @login_required

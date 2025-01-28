@@ -530,6 +530,58 @@ body {
 .download-link:hover {
     text-decoration: underline;
 }
+
+/* Editable Field Styles */
+.editable-field {
+    width: 100%;
+    margin-top: 4px;
+}
+
+.editable-field input.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background-color: #fff;
+}
+
+.editable-field input.form-control:focus {
+    border-color: #0078d4;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 120, 212, 0.25);
+}
+
+.tab-content.editing .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tab-content.editing .info-item label {
+    font-weight: 500;
+    color: #605e5c;
+}
+
+/* Button state styles */
+.btn-edit {
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    background-color: #0078d4;
+    color: white;
+}
+
+.editing .btn-edit {
+    background-color: #28a745;
+    color: white;
+}
+
+.editing .btn-edit:hover {
+    background-color: #218838;
+}
 </style>
 
 <script>
@@ -590,5 +642,132 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+{% block page_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButton = document.querySelector('.btn-edit');
+        const personalTab = document.getElementById('personal');
+        const professionalTab = document.getElementById('professional');
+        let isEditing = false;
+        
+        // Create the form and add it to the DOM immediately
+        const editForm = document.createElement('form');
+        editForm.id = 'profile-edit-form';
+        editForm.method = 'POST';
+        editForm.action = "{{ url_for('profiles.edit_profile', profile_id=profile.id) }}";
+        editForm.classList.add('profile-edit-form');
+        document.querySelector('.outlook-content').appendChild(editForm);
+
+        // Store original content
+        const originalPersonalContent = personalTab.innerHTML;
+        const originalProfessionalContent = professionalTab.innerHTML;
+
+        editButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleEditMode();
+        });
+
+        function toggleEditMode() {
+            isEditing = !isEditing;
+            
+            if (isEditing) {
+                // Enter edit mode
+                personalTab.classList.add('editing');
+                professionalTab.classList.add('editing');
+                editButton.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
+                convertToEditableFields(personalTab);
+                convertToEditableFields(professionalTab);
+            } else {
+                // Collect all form data
+                const formData = new FormData();
+                const inputs = document.querySelectorAll('.info-item input');
+                
+                inputs.forEach(input => {
+                    let value = input.value;
+                    // Format date values to match Python's expected format
+                    if (input.type === 'date') {
+                        value = value.split('/').reverse().join('-');
+                    }
+                    formData.append(input.name, value);
+                });
+
+                // Submit form data via AJAX
+                fetch(editForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Refresh the page to show updated data
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue lors de la sauvegarde.');
+                        // Revert back to edit mode if there's an error
+                        isEditing = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la sauvegarde.');
+                    // Revert back to edit mode if there's an error
+                    isEditing = true;
+                });
+            }
+        }
+
+        function convertToEditableFields(container) {
+            const infoItems = container.querySelectorAll('.info-item');
+            infoItems.forEach(item => {
+                const label = item.querySelector('label').textContent;
+                const span = item.querySelector('span');
+                const value = span.textContent.trim();
+                
+                // Convert field names to match Python model
+                let fieldName = label.toLowerCase()
+                    .replace('prénom', 'first_name')
+                    .replace('nom', 'last_name')
+                    .replace('date de naissance', 'date_of_birth')
+                    .replace('numéro professionnel', 'professional_number')
+                    .replace('fonction', 'job_function')
+                    .replace('date de recrutement', 'recruitment_date')
+                    .replace(/\s+/g, '_');
+
+                const inputType = label.toLowerCase().includes('date') ? 'date' : 
+                                label.toLowerCase().includes('email') ? 'email' : 'text';
+                
+                const input = document.createElement('input');
+                input.type = inputType;
+                input.name = fieldName;
+                
+                // Format date values for input
+                if (inputType === 'date' && value) {
+                    const parts = value.split('/');
+                    if (parts.length === 3) {
+                        input.value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                } else {
+                    input.value = value;
+                }
+                
+                input.classList.add('form-control');
+                input.required = true;
+
+                // Create a wrapper div to maintain layout
+                const inputWrapper = document.createElement('div');
+                inputWrapper.classList.add('editable-field');
+                inputWrapper.appendChild(input);
+
+                // Replace span with input wrapper
+                span.replaceWith(inputWrapper);
+            });
+        }
+    });
+</script>
+{% endblock %}
 
 {% endblock %}
