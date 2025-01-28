@@ -8,7 +8,7 @@ from datetime import datetime
 from functools import wraps
 from utils.decorators import admin_required
 from utils.pdf_generator import create_incident_pdf
-from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT, BATCH_MERGE
+from utils.url_endpoints import SELECT_UNIT, INCIDENT_LIST, VIEW_INCIDENT
 import os
 import json
 from typing import Dict, Any, Optional
@@ -148,7 +148,8 @@ def list_incidents():
         'pagination': pagination,
         'current_page': page,
         'status_filter': status_filter,
-        'total_incidents': pagination.total
+        'total_incidents': pagination.total,
+        'current_time': datetime.now()  # Add current time
     }
     
     return render_template('incidents/incident_list.html', **context)
@@ -373,13 +374,22 @@ def resolve_incident(incident_id):
         return redirect(url_for(INCIDENT_LIST))
     
     mesures_prises = request.form.get('mesures_prises')
+    resolution_date = request.form.get('resolution_date')
+    resolution_time = request.form.get('resolution_time')
+    
+    try:
+        resolution_datetime = datetime.strptime(f"{resolution_date} {resolution_time}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        flash('Format de date ou d\'heure invalide.', 'error')
+        return redirect(url_for(INCIDENT_LIST))
+    
     if not mesures_prises:
         flash('Veuillez décrire les mesures prises pour résoudre l\'incident.', 'danger')
         return redirect(url_for(INCIDENT_LIST))
     
     incident.status = 'Résolu'
     incident.mesures_prises = mesures_prises
-    incident.date_resolution = datetime.now()
+    incident.resolution_datetime = resolution_datetime
     db.session.commit()
     
     flash("L'incident a été marqué comme résolu.", 'success')
@@ -464,59 +474,6 @@ def export_all_incidents_pdf():
     except Exception as e:
         flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
         return redirect(url_for(INCIDENT_LIST))
-
-@incidents.route('/incidents/batch_merge', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def batch_merge():
-    units = Unit.query.all()
-    
-    if request.method == 'POST':
-        source_unit_id = request.form.get('source_unit')
-        target_unit_id = request.form.get('target_unit')
-        incident_ids = request.form.getlist('incidents')
-        merge_note = request.form.get('merge_note')
-        
-        if not all([source_unit_id, target_unit_id, incident_ids]):
-            flash('Veuillez sélectionner les unités source et destination et au moins un incident.', 'danger')
-            return redirect(url_for(BATCH_MERGE))
-            
-        try:
-            source_unit = Unit.query.get(source_unit_id)
-            target_unit = Unit.query.get(target_unit_id)
-            
-            # Add merge note
-            merge_info = f"\n\n[Fusion en lot le {datetime.now().strftime('%d/%m/%Y %H:%M')}]\n"
-            merge_info += f"Transféré de l'unité '{source_unit.name}' vers '{target_unit.name}'\n"
-            if merge_note:
-                merge_info += f"Note: {merge_note}"
-            
-            # Update all selected incidents
-            for incident_id in incident_ids:
-                incident = Incident.query.get(incident_id)
-                if incident and incident.unit_id == int(source_unit_id):
-                    incident.unit_id = target_unit_id
-                    if incident.mesures_prises:
-                        incident.mesures_prises += merge_info
-                    else:
-                        incident.mesures_prises = merge_info
-            
-            db.session.commit()
-            flash(f'{len(incident_ids)} incidents ont été fusionnés avec succès vers l\'unité {target_unit.name}.', 'success')
-            current_app.logger.info(f"Flash message set: {len(incident_ids)} incidents ont été fusionnés avec succès vers l'unité {target_unit.name}")
-            current_app.logger.info(f"Session data: {dict(session)}")
-            
-            # Invalidate incident count cache
-            cache.delete(get_incident_cache_key(current_user))
-            
-            return redirect(url_for(INCIDENT_LIST))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Erreur lors de la fusion des incidents: {str(e)}', 'danger')
-            return redirect(url_for(BATCH_MERGE))
-    
-    return render_template('incidents/batch_merge.html', units=units)
 
 @incidents.route('/get_ai_explanation', methods=['GET', 'POST'])
 @login_required
