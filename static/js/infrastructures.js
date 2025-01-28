@@ -77,17 +77,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Envoyer la requête
-                fetch('{{ url_for("infrastructures.create_infrastructure") }}', {
+                fetch('/departements/infrastructure/create', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(formData)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    // Check if response is not OK
+                    if (!response.ok) {
+                        // Try to parse error response as JSON
+                        return response.text().then(text => {
+                            try {
+                                const errorData = JSON.parse(text);
+                                throw new Error(errorData.message || errorData.error || 'Erreur de création');
+                            } catch (jsonError) {
+                                // If parsing fails, throw the original text
+                                throw new Error(text || 'Erreur de création non spécifiée');
+                            }
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.message) {
-                        alert(data.message);
+                        // Show success toast or alert
+                        const successToast = document.getElementById('successToast');
+                        if (successToast) {
+                            const successMessage = document.getElementById('successToastMessage');
+                            if (successMessage) {
+                                successMessage.textContent = data.message;
+                            }
+                            new bootstrap.Toast(successToast).show();
+                        } else {
+                            alert(data.message);
+                        }
+                        
                         const modal = bootstrap.Modal.getInstance(document.getElementById('infrastructureModal'));
                         if (modal) {
                             modal.hide();
@@ -96,7 +122,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    alert('Erreur lors de l\'enregistrement: ' + error.message);
+                    console.error('Erreur de création:', error);
+                    
+                    // Show error toast or alert
+                    const errorToast = document.getElementById('errorToast');
+                    if (errorToast) {
+                        const errorMessage = document.getElementById('errorToastMessage');
+                        if (errorMessage) {
+                            errorMessage.textContent = `Erreur lors de la création de l'infrastructure: ${error.message || 'Erreur inconnue'}`;
+                        }
+                        new bootstrap.Toast(errorToast).show();
+                    } else {
+                        alert(`Erreur lors de la création de l'infrastructure: ${error.message || 'Erreur inconnue'}`);
+                    }
                 });
             });
         }
@@ -113,18 +151,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Envoyer la requête de suppression
-                fetch('{{ url_for("infrastructures.delete_infrastructure", id=0) }}'.replace('/0', `/${infrastructureId}`), {
+                fetch(`/departements/infrastructures/delete/${infrastructureId}`, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json'
                     }
                 })
                 .then(response => {
-                    // Vérifier si la réponse est OK (statut dans la plage 200-299)
+                    // Check if response is not OK
                     if (!response.ok) {
-                        // Essayer de parser la réponse d'erreur en JSON
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || 'Erreur de suppression');
+                        // Try to parse error response as JSON
+                        return response.text().then(text => {
+                            try {
+                                const errorData = JSON.parse(text);
+                                throw new Error(errorData.message || 'Erreur de suppression');
+                            } catch (jsonError) {
+                                // If parsing fails, throw the original text
+                                throw new Error(text || 'Erreur de suppression non spécifiée');
+                            }
                         });
                     }
                     return response.json();
@@ -136,7 +180,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 })
                 .catch(error => {
-                    alert('Erreur lors de la suppression: ' + error.message);
+                    console.error('Erreur de suppression:', error);
+                    
+                    // Show error toast or alert
+                    const errorToast = document.getElementById('errorToast');
+                    if (errorToast) {
+                        const errorMessage = document.getElementById('errorToastMessage');
+                        if (errorMessage) {
+                            errorMessage.textContent = `Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`;
+                        }
+                        new bootstrap.Toast(errorToast).show();
+                    } else {
+                        alert(`Erreur lors de la suppression de l'infrastructure: ${error.message || 'Erreur inconnue'}`);
+                    }
                 });
             });
         });
@@ -737,6 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(filesData => {
+                const existingFilesContainer = document.getElementById('existingFilesContainer');
                 existingFilesContainer.innerHTML = '';
 
                 if (filesData.files.length === 0) {
