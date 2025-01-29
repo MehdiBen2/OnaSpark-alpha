@@ -11,3 +11,9 @@ Flask-Migrate==4.0.5
 waitress==2.1.2
 requests==2.32.3
 Flask-Caching==2.1.0
+# Excel and Spreadsheet Libraries
+xlrd==2.0.1
+openpyxl==3.1.2
+XlsxWriter==3.1.9
+handsontable==2.0.0
+xlsx==0.6.3
