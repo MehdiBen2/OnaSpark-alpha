@@ -5,7 +5,109 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/MainDashboard.css') }}">
 <style>
-    /* Loading animation with optimized performance */
+    :root {
+        /* Fluent Design 2 Color Palette */
+        --fluent-primary: #0078d4;
+        --fluent-secondary: #605e5c;
+        --fluent-background: #f3f2f1;
+        --fluent-text-primary: #323130;
+        --fluent-text-secondary: #605e5c;
+        --fluent-border-light: #e1dfdd;
+        
+        /* Spacing and Typography */
+        --fluent-spacing-s: 4px;
+        --fluent-spacing-m: 8px;
+        --fluent-spacing-l: 16px;
+        --fluent-spacing-xl: 24px;
+        
+        /* Elevation and Depth */
+        --fluent-shadow-1: 0 2px 4px rgba(0, 0, 0, 0.1);
+        --fluent-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.12);
+        --fluent-shadow-3: 0 8px 16px rgba(0, 0, 0, 0.14);
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--fluent-background);
+        color: var(--fluent-text-primary);
+        line-height: 1.5;
+    }
+
+    .dashboard-wrapper {
+        background-color: var(--fluent-background);
+        padding: var(--fluent-spacing-xl);
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--fluent-primary) 0%, color-mix(in srgb, var(--fluent-primary) 80%, white) 100%);
+        border-radius: 12px;
+        box-shadow: var(--fluent-shadow-2);
+        color: white;
+        padding: var(--fluent-spacing-xl);
+        margin-bottom: var(--fluent-spacing-xl);
+    }
+
+    .collapsible-section {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: var(--fluent-shadow-1);
+        margin-bottom: var(--fluent-spacing-l);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .collapsible-section:hover {
+        box-shadow: var(--fluent-shadow-2);
+    }
+
+    .collapsible-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--fluent-spacing-l);
+        cursor: pointer;
+        border-bottom: 1px solid var(--fluent-border-light);
+        transition: background-color 0.3s ease;
+    }
+
+    .collapsible-header:hover {
+        background-color: color-mix(in srgb, var(--fluent-background) 90%, black);
+    }
+
+    .action-group {
+        display: grid;
+        gap: var(--fluent-spacing-m);
+        padding: var(--fluent-spacing-l);
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--fluent-spacing-l);
+        padding: var(--fluent-spacing-l);
+        border-radius: 8px;
+        text-decoration: none;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--fluent-shadow-2);
+    }
+
+    .stat-card {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: var(--fluent-shadow-1);
+        padding: var(--fluent-spacing-l);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--fluent-shadow-2);
+    }
+
+    /* Loading animation remains the same */
     .loading-dots {
         display: inline-flex;
         align-items: center;
@@ -23,7 +125,7 @@
     .loading-dots .dot {
         width: 8px;
         height: 8px;
-        background-color: var(--primary-color, #4A90E2);
+        background-color: var(--fluent-primary, #4A90E2);
         border-radius: 50%;
         transform: scale(0.8);
         opacity: 0.6;
