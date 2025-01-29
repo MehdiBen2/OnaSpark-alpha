@@ -51,8 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 // Disable default search
                 searching: false,
-                // Enable length menu
-                lengthChange: true,
+                // Disable length menu
+                lengthChange: false,
                 // Default page length
                 pageLength: 10,
                 // Possible page lengths
