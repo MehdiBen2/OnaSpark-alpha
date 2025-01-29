@@ -409,3 +409,31 @@ def get_infrastructure_files(id):
     except Exception as e:
         logger.error(f"Error retrieving infrastructure files: {str(e)}")
         return jsonify({'error': 'Impossible de récupérer les fichiers'}), 500
+
+@infrastructures.route('/infrastructure/<int:infrastructure_id>/delete-file', methods=['POST'])
+@login_required
+def delete_infrastructure_file(infrastructure_id):
+    try:
+        # Get filename from request data
+        filename = request.form.get('filename')
+        if not filename:
+            return jsonify({'error': 'Filename not provided'}), 400
+
+        # Construct the file path
+        file_path = os.path.join(
+            'static', 'uploads', 'infrastructures', str(infrastructure_id), filename
+        )
+
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        # Delete the file
+        os.remove(file_path)
+
+        # Return success response
+        return jsonify({'message': 'File deleted successfully'}), 200
+
+    except Exception as e:
+        logger.error(f"Error deleting file: {str(e)}")
+        return jsonify({'error': 'Failed to delete file'}), 500
