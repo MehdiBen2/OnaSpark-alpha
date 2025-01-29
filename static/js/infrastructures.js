@@ -635,10 +635,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Connect to STEP button handler
+        // Remove Connect to STEP button handler
         const connectStepBtn = document.getElementById('connectStepBtn');
         if (connectStepBtn) {
-            connectStepBtn.addEventListener('click', function() {
+            connectStepBtn.removeEventListener('click', function() {
                 const typeSelect = document.getElementById('type');
                 
                 // Ensure STEP is selected
@@ -661,153 +661,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 connectStepModal.show();
             });
+            connectStepBtn.remove(); // Remove the button from the DOM
         }
 
-        // STEP Connection Configuration Modal Handler
+        // Remove STEP Connection Configuration Modal Handler
         const saveStepConnectionConfigBtn = document.getElementById('saveStepConnectionConfigBtn');
         const toggleStepPasswordBtn = document.getElementById('toggleStepPassword');
 
         if (toggleStepPasswordBtn) {
-            toggleStepPasswordBtn.addEventListener('click', function() {
+            toggleStepPasswordBtn.removeEventListener('click', function() {
                 const stepPasswordInput = document.getElementById('stepPassword');
                 const type = stepPasswordInput.type === 'password' ? 'text' : 'password';
                 stepPasswordInput.type = type;
                 this.querySelector('i').classList.toggle('fa-eye');
                 this.querySelector('i').classList.toggle('fa-eye-slash');
             });
+            toggleStepPasswordBtn.remove();
         }
 
         if (saveStepConnectionConfigBtn) {
-            saveStepConnectionConfigBtn.addEventListener('click', function(event) {
-                event.preventDefault();
-                
-                // Validate form inputs
-                const stepIpAddress = document.getElementById('stepIpAddress');
-                const stepPort = document.getElementById('stepPort');
-                const stepProtocol = document.getElementById('stepProtocol');
-                const stepIdentifier = document.getElementById('stepIdentifier');
-                const stepTreatmentCapacity = document.getElementById('stepTreatmentCapacity');
-                const stepComplianceLevel = document.getElementById('stepComplianceLevel');
-                const stepEnvironmentalCertification = document.getElementById('stepEnvironmentalCertification');
-
-                // IP Address Validation
-                const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-                if (!ipRegex.test(stepIpAddress.value)) {
-                    showValidationError('Adresse IP invalide', 'Veuillez entrer une adresse IP valide');
-                    stepIpAddress.focus();
-                    return;
-                }
-
-                // Port Validation
-                const portNum = parseInt(stepPort.value, 10);
-                if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-                    showValidationError('Port invalide', 'Veuillez entrer un port valide entre 1 et 65535');
-                    stepPort.focus();
-                    return;
-                }
-
-                // Validate required fields
-                const requiredFields = [
-                    stepProtocol, 
-                    stepIdentifier, 
-                    stepTreatmentCapacity, 
-                    stepComplianceLevel, 
-                    stepEnvironmentalCertification
-                ];
-
-                for (const field of requiredFields) {
-                    if (!field.value) {
-                        showValidationError('Champ requis', `Veuillez remplir le champ ${field.labels[0].textContent}`);
-                        field.focus();
-                        return;
-                    }
-                }
-
-                // Prepare configuration data
-                const stepConnectionConfig = {
-                    ipAddress: stepIpAddress.value,
-                    port: portNum,
-                    protocol: stepProtocol.value,
-                    identifier: stepIdentifier.value,
-                    treatmentCapacity: stepTreatmentCapacity.value,
-                    complianceLevel: stepComplianceLevel.value,
-                    environmentalCertification: stepEnvironmentalCertification.value,
-                    username: document.getElementById('stepUsername').value || null,
-                    connectionTimeout: document.getElementById('stepConnectionTimeout').value || 30
-                };
-
-                // Optional password handling (never log or expose)
-                const stepPassword = document.getElementById('stepPassword').value;
-                if (stepPassword) {
-                    stepConnectionConfig.passwordProvided = true;
-                }
-
-                // Send configuration to backend
-                fetch('/departements/infrastructure/step-connection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken() // Implement this function to get CSRF token
-                    },
-                    body: JSON.stringify(stepConnectionConfig)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erreur lors de la configuration de la connexion');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Show success toast
-                    const successToastEl = document.getElementById('successToast');
-                    if (successToastEl) {
-                        const messageEl = successToastEl.querySelector('.toast-body');
-                        if (messageEl) {
-                            messageEl.textContent = data.message || 'Configuration de la STEP enregistrée avec succès';
-                        }
-                        bootstrap.Toast.getOrCreateInstance(successToastEl).show();
-                    }
-
-                    // Close the modal
-                    const stepConnectionConfigModal = bootstrap.Modal.getInstance(document.getElementById('stepConnectionConfigModal'));
-                    if (stepConnectionConfigModal) {
-                        stepConnectionConfigModal.hide();
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    
-                    // Show error toast
-                    const errorToastEl = document.getElementById('errorToast');
-                    if (errorToastEl) {
-                        const messageEl = errorToastEl.querySelector('.toast-body');
-                        if (messageEl) {
-                            messageEl.textContent = error.message || 'Impossible de configurer la connexion STEP';
-                        }
-                        bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
-                    }
-                });
+            saveStepConnectionConfigBtn.removeEventListener('click', function(event) {
+                // Remove entire STEP connection configuration logic
             });
-        }
-
-        // Validation error helper function
-        function showValidationError(title, message) {
-            const errorToastEl = document.getElementById('errorToast');
-            if (errorToastEl) {
-                const titleEl = errorToastEl.querySelector('.toast-header strong');
-                const messageEl = errorToastEl.querySelector('.toast-body');
-                
-                if (titleEl) titleEl.textContent = title;
-                if (messageEl) messageEl.textContent = message;
-                
-                bootstrap.Toast.getOrCreateInstance(errorToastEl).show();
-            }
-        }
-
-        // Placeholder for CSRF token retrieval (implement according to your backend)
-        function getCsrfToken() {
-            const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
-            return csrfTokenElement ? csrfTokenElement.value : '';
+            saveStepConnectionConfigBtn.remove();
         }
 
         // Existing fetchInfrastructureFiles function (from previous implementation)
