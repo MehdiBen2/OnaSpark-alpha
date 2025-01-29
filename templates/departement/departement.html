@@ -322,25 +322,6 @@
     .bg-warning { background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%); }
     .bg-danger { background: linear-gradient(135deg, #dc3545 0%, #e4606d 100%); }
 
-    /* Gray out all department cards except exploitation */
-    .department-card {
-        opacity: 0.5;
-        filter: grayscale(100%);
-        transition: all 0.3s ease;
-    }
-
-    /* Keep exploitation card normal */
-    .department-card:has(.icon-wrapper.bg-success) {
-        opacity: 1;
-        filter: none;
-    }
-
-    /* Disable hover effects on grayed out cards */
-    .department-card:not(:has(.icon-wrapper.bg-success)):hover {
-        transform: none;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-    }
-
     @media (max-width: 768px) {
         .page-header {
             padding: 2rem 0 4rem;
