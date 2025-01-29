@@ -8,7 +8,7 @@ import os
 from dotenv import load_dotenv
 import random
 from functools import wraps
-from models import db, User, Unit, Incident, Zone, Center
+from models import db, User, Unit, Incident, Zone, Center, Infrastructure
 from routes.auth import auth
 from routes.profiles import profiles
 from routes.incidents import incidents
@@ -450,6 +450,27 @@ def get_mistral_api_key_route():
     Wrapper route for the Mistral API key retrieval function.
     """
     return get_mistral_api_key()
+
+@app.route('/departements/infrastructure/<int:infrastructure_id>', methods=['GET'])
+def get_infrastructure_details(infrastructure_id):
+    try:
+        # Get infrastructure details from database
+        infrastructure = Infrastructure.query.get_or_404(infrastructure_id)
+        
+        return jsonify({
+            'success': True,
+            'infrastructure': {
+                'id': infrastructure.id,
+                'nom': infrastructure.nom,
+                'type': infrastructure.type,
+                'localisation': infrastructure.localisation,
+                'capacite': infrastructure.capacite,
+                'etat': infrastructure.etat,
+                'epuration_type': infrastructure.epuration_type
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # Add error handling for common HTTP errors and exceptions
 @app.errorhandler(404)
