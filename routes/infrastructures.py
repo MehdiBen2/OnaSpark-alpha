@@ -199,96 +199,147 @@ def get_infrastructure_details(id):
 @infrastructures.route('/infrastructure/<int:id>/upload-files', methods=['POST'])
 @login_required
 def upload_infrastructure_files(id):
+    # Import necessary modules at the top of the function for comprehensive error tracking
+    import os
+    import re
+    import traceback
+    import sys
+    import shutil
+    
     try:
+        # Validate infrastructure existence first
         infrastructure = Infrastructure.query.get_or_404(id)
         
-        # Log initial file upload attempt
-        logger.info(f"Attempting to upload files for infrastructure {id}")
+        # Extensive logging for debugging
+        logger.info(f"Starting file upload for infrastructure {id}")
+        logger.info(f"Current user: {current_user.username}")
         
-        # Check if files are present
-        if 'files' not in request.files:
-            logger.warning(f"No files found in request for infrastructure {id}")
-            return jsonify({'error': 'Aucun fichier téléchargé'}), 400
+        # Log all request details for debugging
+        logger.info(f"Request method: {request.method}")
+        logger.info(f"Request content type: {request.content_type}")
         
-        files = request.files.getlist('files')
+        # Comprehensive file retrieval
+        try:
+            files = request.files.getlist('files')
+            logger.info(f"Request files keys: {list(request.files.keys())}")
+        except Exception as file_list_error:
+            logger.error(f"Error retrieving file list: {str(file_list_error)}")
+            logger.error(traceback.format_exc())
+            return jsonify({
+                'error': 'Erreur lors de la récupération des fichiers',
+                'details': str(file_list_error)
+            }), 400
         
-        # Log number of files in the request
-        logger.info(f"Total files in request: {len(files)}")
+        # Validate files
+        if not files:
+            logger.warning("No files found in the upload request")
+            return jsonify({
+                'error': 'Aucun fichier téléchargé',
+                'details': 'La liste de fichiers est vide'
+            }), 400
         
-        # Create a directory for infrastructure files if it doesn't exist
-        upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
-        os.makedirs(upload_dir, exist_ok=True)
+        # Validate each file
+        valid_files = [f for f in files if f.filename]
+        if not valid_files:
+            logger.warning("No valid files found in the upload")
+            return jsonify({
+                'error': 'Aucun fichier valide téléchargé',
+                'details': 'Tous les noms de fichiers sont vides'
+            }), 400
         
-        # Maximum number of files allowed per infrastructure
+        # Create upload directory with error handling
+        try:
+            upload_dir = os.path.join('static', 'uploads', 'infrastructures', str(id))
+            os.makedirs(upload_dir, exist_ok=True)
+        except Exception as dir_error:
+            logger.error(f"Error creating upload directory: {str(dir_error)}")
+            return jsonify({
+                'error': 'Impossible de créer le répertoire de téléchargement',
+                'details': str(dir_error)
+            }), 500
+        
+        # Maximum number of files allowed
         MAX_FILES = 10
+        existing_files = [
+            f for f in os.listdir(upload_dir) 
+            if os.path.isfile(os.path.join(upload_dir, f)) 
+            and not f.startswith('.') 
+            and not f.startswith('temp_')
+        ]
         
-        # Count existing files
-        existing_files = [f for f in os.listdir(upload_dir) 
-                          if os.path.isfile(os.path.join(upload_dir, f)) 
-                          and not f.startswith('.') 
-                          and not f.startswith('temp_')]
-        
-        # Check if adding new files would exceed the limit
-        if len(existing_files) + len(files) > MAX_FILES:
+        if len(existing_files) + len(valid_files) > MAX_FILES:
             logger.warning(f"Upload would exceed max file limit of {MAX_FILES}")
             return jsonify({
                 'error': f'Limite maximale de {MAX_FILES} fichiers atteinte',
                 'current_files': len(existing_files)
             }), 400
         
-        # Sanitize location for filename (remove spaces, special characters)
+        # Sanitize filename function
         def sanitize_filename(text):
             return re.sub(r'[^\w\s-]', '', text.lower().replace(' ', '_'))
         
-        # Save each file
+        # Save files with comprehensive error handling
         saved_files = []
-        for index, file in enumerate(files, len(existing_files) + 1):
-            if file.filename == '':
-                logger.warning(f"Skipping empty filename at index {index}")
-                continue
-            
-            logger.info(f"Processing file: {file.filename}")
-            
-            # Generate a unique filename with infrastructure number and location
-            file_extension = os.path.splitext(file.filename)[1].lower()
-            sanitized_location = sanitize_filename(infrastructure.localisation)
-            
-            # Create new filename: infra{id}_{location}_{index}{extension}
-            new_filename = f"infra{id}_{sanitized_location}_{index}{file_extension}"
-            temp_path = os.path.join(upload_dir, f"temp_{new_filename}")
-            file.save(temp_path)
-            
-            # Compress image if it's an image file
-            compression_result = None
-            if file_extension in ['.jpg', '.jpeg', '.png', '.webp']:
-                try:
-                    final_path = os.path.join(upload_dir, new_filename)
-                    compression_result = compress_image(temp_path, final_path)
-                    os.remove(temp_path)  # Remove temporary file
-                    logger.info(f"Successfully compressed {new_filename}")
-                except Exception as e:
-                    logger.warning(f"Compression failed for {new_filename}: {str(e)}")
-                    # Use original file if compression fails
-                    final_path = os.path.join(upload_dir, new_filename)
-                    os.rename(temp_path, final_path)
-            else:
-                # For non-image files, just rename
+        for index, file in enumerate(valid_files, len(existing_files) + 1):
+            try:
+                # Generate unique filename
+                file_extension = os.path.splitext(file.filename)[1].lower()
+                sanitized_location = sanitize_filename(infrastructure.localisation)
+                new_filename = f"infra{id}_{sanitized_location}_{index}{file_extension}"
+                temp_path = os.path.join(upload_dir, f"temp_{new_filename}")
                 final_path = os.path.join(upload_dir, new_filename)
-                os.rename(temp_path, final_path)
-            
-            # Store relative path for frontend
-            relative_path = os.path.join('uploads', 'infrastructures', str(id), new_filename)
-            saved_files.append({
-                'name': new_filename,
-                'original_name': file.filename,
-                'path': relative_path,
-                'type': file.content_type,
-                'location': infrastructure.localisation,
-                'compression': compression_result
-            })
+                
+                # Save file with safe file handling
+                file.save(temp_path)
+                logger.info(f"Saved temporary file: {temp_path}")
+                
+                # Compress if image
+                compression_result = None
+                try:
+                    if file_extension in ['.jpg', '.jpeg', '.png', '.webp']:
+                        compression_result = compress_image(temp_path, final_path)
+                        logger.info(f"Successfully compressed {new_filename}")
+                    else:
+                        # For non-image files, copy the file
+                        shutil.copy2(temp_path, final_path)
+                except Exception as compress_error:
+                    logger.warning(f"Compression/copy failed for {new_filename}: {str(compress_error)}")
+                    # Fallback to copying the file
+                    shutil.copy2(temp_path, final_path)
+                
+                # Remove temporary file
+                try:
+                    os.remove(temp_path)
+                except Exception as remove_error:
+                    logger.warning(f"Could not remove temporary file {temp_path}: {str(remove_error)}")
+                
+                # Store file info
+                relative_path = os.path.join('uploads', 'infrastructures', str(id), new_filename)
+                saved_files.append({
+                    'name': new_filename,
+                    'original_name': file.filename,
+                    'path': relative_path,
+                    'type': file.content_type,
+                    'location': infrastructure.localisation,
+                    'compression': compression_result
+                })
+                
+            except Exception as file_save_error:
+                logger.error(f"Error processing file {file.filename}: {str(file_save_error)}")
+                logger.error(traceback.format_exc())
+                # Continue processing other files even if one fails
+                continue
         
-        # Log the number of files saved
-        logger.info(f"Uploaded {len(saved_files)} files for infrastructure {id}")
+        # Check if any files were successfully saved
+        if not saved_files:
+            logger.error("No files were successfully uploaded")
+            return jsonify({
+                'error': 'Aucun fichier n\'a pu être téléchargé',
+                'details': 'Échec du traitement de tous les fichiers'
+            }), 500
+        
+        # Log successful upload
+        logger.info(f"Successfully uploaded {len(saved_files)} files for infrastructure {id}")
         
         return jsonify({
             'message': f'{len(saved_files)} fichier(s) téléchargé(s) avec succès',
@@ -296,9 +347,16 @@ def upload_infrastructure_files(id):
             'total_files': len(existing_files) + len(saved_files)
         }), 200
     
-    except Exception as e:
-        logger.error(f"Error uploading infrastructure files: {str(e)}")
-        return jsonify({'error': 'Erreur lors du téléchargement des fichiers'}), 500
+    except Exception as unexpected_error:
+        # Catch-all error handling with full traceback
+        logger.error(f"Unexpected error in file upload: {str(unexpected_error)}")
+        logger.error(traceback.format_exc())
+        
+        return jsonify({
+            'error': 'Erreur inattendue lors du téléchargement',
+            'details': str(unexpected_error),
+            'traceback': traceback.format_exc()
+        }), 500
 
 @infrastructures.route('/infrastructure/<int:id>/files', methods=['GET'])
 @login_required
