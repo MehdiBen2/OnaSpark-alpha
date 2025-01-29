@@ -1,9 +1,7 @@
 # Windsurf Workplace Coding Guidelines
 you are based on claude 3.5 sonnet coding style
+
 ## 1. Project Structure and Organization
-i am medy in case you wanna use my name
-
-
 ### 1.1 Cascade must always be Context-Aware : IMPORTANT!
 - Double-check to ensure no functionality is overlooked or unintentionally removed
 - Maintain the overall system integrity and keep everything functional
@@ -32,7 +30,6 @@ i am medy in case you wanna use my name
 - Maintain a clear and logical directory structure
 
 ## 2. Coding Practices
-
 ### 2.1 Hard Coding Prohibition
 - NEVER hard-code values, configurations, or sensitive information
 - Use environment variables, configuration files, or constants for all configurable values
@@ -49,7 +46,6 @@ i am medy in case you wanna use my name
 - Implement proper error handling and validation for all endpoints
 
 ## 3. Configuration and Environment
-
 ### 3.1 Dependency Management
 - Maintain an up-to-date `requirements.txt` file
 - Pin specific versions of dependencies
@@ -59,7 +55,6 @@ i am medy in case you wanna use my name
 - Use `python-dotenv` for managing environment variables
 
 ## 4. Code Quality and Best Practices
-
 ### 4.1 Code Review Guidelines
 - All code changes must go through a peer review process
 - Follow PEP 8 style guidelines for Python code
@@ -67,7 +62,6 @@ i am medy in case you wanna use my name
 - Write comprehensive docstrings for all functions and classes
 
 ### 4.2 Error Handling
-
 - Implement robust error handling and logging
 - Use specific exception types
 - Log errors with sufficient context for debugging
@@ -75,7 +69,6 @@ i am medy in case you wanna use my name
 ## 5. Security Considerations
 
 ### 5.1 Input Validation
-
 - Implement proper authentication and authorization checks
 
 ### 5.2 Sensitive Data Protection
@@ -84,36 +77,29 @@ i am medy in case you wanna use my name
 - Implement proper access controls
 
 ## 6. Performance and Optimization
-
 ### 6.1 Database Interactions
-
 - Use database indexing and query optimization techniques
 - Implement caching where appropriate
 - Minimize database round trips
 
 ### 6.2 Code Efficiency
-
 - Avoid unnecessary computations
 - Use list comprehensions and generator expressions
 - Profile and optimize performance-critical code paths
 
 
 ## 8. Documentation
-
 ### 8.1 Code Documentation
-
 - Maintain a comprehensive README.md
 - Document dependencies, and running instructions
 - Keep inline comments clear and concise
 - Update documentation with each significant change
 
 ### 9. UX/UI Design Principles
-
 9.1 Consistent Layout and Design , use same design as other templates in our app
 Use a consistent layout across all pages.
 Ensure responsive design for different screen sizes.
 
 
 ---
-
 **Note**: These guidelines are living documents. They should be regularly reviewed and updated to reflect the evolving needs of the project and best practices in software development.
