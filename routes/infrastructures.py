@@ -103,6 +103,10 @@ def create_infrastructure():
             etat=data['etat']
         )
         
+        # Add epuration type for STEP
+        if data['type'] == 'STEP' and data.get('epurationType'):
+            new_infrastructure.epuration_type = data['epurationType']
+        
         db.session.add(new_infrastructure)
         db.session.commit()
         

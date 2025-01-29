@@ -259,6 +259,7 @@ class Infrastructure(db.Model):
     localisation = db.Column(db.String(200), nullable=False)
     capacite = db.Column(db.Float, nullable=False)
     etat = db.Column(db.String(50), nullable=False, default='Opérationnel', index=True)
+    epuration_type = db.Column(db.String(100), nullable=True, index=True)
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)

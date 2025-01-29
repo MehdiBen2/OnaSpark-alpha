@@ -92,16 +92,37 @@ document.addEventListener('DOMContentLoaded', function() {
         // Gestionnaire d'enregistrement d'infrastructure
         const saveButton = document.querySelector('#saveInfrastructureBtn');
         if (saveButton) {
+            // Add type selection handler
+            const typeSelect = document.getElementById('type');
+            const epurationTypeContainer = document.getElementById('epurationType-container');
+            const epurationTypeSelect = document.getElementById('epurationType');
+
+            typeSelect.addEventListener('change', function() {
+                if (this.value === 'STEP') {
+                    epurationTypeContainer.classList.remove('d-none');
+                    epurationTypeSelect.required = true;
+                } else {
+                    epurationTypeContainer.classList.add('d-none');
+                    epurationTypeSelect.required = false;
+                    epurationTypeSelect.value = ''; // Reset selection
+                }
+            });
+
             saveButton.addEventListener('click', function(event) {
                 event.preventDefault();
 
                 const formData = {
                     nom: document.getElementById('nom').value,
-                    type: document.getElementById('type').value,
+                    type: typeSelect.value,
                     localisation: document.getElementById('localisation').value,
                     capacite: document.getElementById('capacite').value,
                     etat: document.getElementById('etat').value
                 };
+
+                // Add epuration type for Station d'Épuration
+                if (formData.type === 'STEP') {
+                    formData.epurationType = epurationTypeSelect.value;
+                }
 
                 // Valider les données du formulaire
                 const missingFields = Object.entries(formData)
