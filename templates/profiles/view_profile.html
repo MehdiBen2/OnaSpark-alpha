@@ -1,8 +1,15 @@
 {% extends "base/base.html" %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<style>
+{{ self.page_style() }}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="outlook-profile-container">
-    <div class="outlook-sidebar" id="sidebar">
+<div class="fluent-profile-container">
+    <div class="fluent-sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="{{ url_for('static', filename='images/ona_blogo.png') }}" alt="ONA Logo" class="sidebar-logo">
             <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
@@ -11,15 +18,15 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li class="active">
+                <li class="active" data-section="profile">
                     <i class="fas fa-user"></i>
-                    <span>Profil</span>
+                    <span>Profile</span>
                 </li>
-                <li>
+                <li data-section="career">
                     <i class="fas fa-briefcase"></i>
-                    <span>Carrière</span>
+                    <span>Career</span>
                 </li>
-                <li>
+                <li data-section="contact">
                     <i class="fas fa-envelope"></i>
                     <span>Contact</span>
                 </li>
@@ -27,69 +34,69 @@
         </nav>
     </div>
 
-    <div class="outlook-main-content">
+    <div class="fluent-main-content">
         {% if not profile %}
-            <div class="outlook-empty-state">
+            <div class="fluent-empty-state">
                 <div class="empty-state-content">
                     <i class="fas fa-user-circle"></i>
-                    <h3>Profil non créé</h3>
-                    <p>Vous n'avez pas encore configuré votre profil professionnel</p>
-                    <a href="{{ url_for('profiles.create_profile') }}" class="btn-create">
+                    <h3>Profile Not Created</h3>
+                    <p>You have not yet set up your professional profile</p>
+                    <a href="{{ url_for('profiles.create_profile') }}" class="fluent-btn fluent-btn-primary">
                         <i class="fas fa-plus-circle"></i>
-                        <span>Créer mon profil</span>
+                        <span>Create Profile</span>
                     </a>
                 </div>
             </div>
         {% else %}
-            <div class="outlook-header">
+            <div class="fluent-header">
                 <div class="profile-header">
                     <div class="avatar-wrapper">
                         <div class="avatar">
                             <i class="fas fa-user"></i>
                         </div>
-                        <span class="status-badge" title="Actif"></span>
+                        <span class="status-badge" title="Active"></span>
                     </div>
                     <h1>{{ profile.first_name }} {{ profile.last_name }}</h1>
                     <p class="job-title">{{ profile.job_function }}</p>
                     
                     {% if not is_admin_view %}
                     <div class="profile-actions">
-                        <button class="btn-edit">
+                        <button class="fluent-btn fluent-btn-secondary btn-edit">
                             <i class="fas fa-pen"></i>
-                            Modifier
+                            Edit
                         </button>
-                        <button class="btn-settings">
+                        <button class="fluent-btn fluent-btn-tertiary btn-settings">
                             <i class="fas fa-cog"></i>
-                            Paramètres
+                            Settings
                         </button>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="outlook-tabs">
+            <div class="fluent-tabs">
                 <div class="tabs">
-                    <button class="tab active" data-tab="personal">Informations Personnelles</button>
-                    <button class="tab" data-tab="professional">Informations Professionnelles</button>
+                    <button class="tab active" data-tab="personal">Personal Information</button>
+                    <button class="tab" data-tab="professional">Professional Information</button>
                     <button class="tab" data-tab="documents">Documents</button>
                 </div>
             </div>
 
-            <div class="outlook-content">
+            <div class="fluent-content">
                 <div class="tab-content active" id="personal">
                     <div class="content-section">
-                        <h2>Détails Personnels</h2>
+                        <h2>Personal Details</h2>
                         <div class="info-grid">
                             <div class="info-item">
-                                <label>Prénom</label>
+                                <label>First Name</label>
                                 <span>{{ profile.first_name }}</span>
                             </div>
                             <div class="info-item">
-                                <label>Nom</label>
+                                <label>Last Name</label>
                                 <span>{{ profile.last_name }}</span>
                             </div>
                             <div class="info-item">
-                                <label>Date de naissance</label>
+                                <label>Date of Birth</label>
                                 <span>{{ profile.date_of_birth.strftime('%d/%m/%Y') }}</span>
                             </div>
                             <div class="info-item">
@@ -102,23 +109,23 @@
 
                 <div class="tab-content" id="professional">
                     <div class="content-section">
-                        <h2>Détails Professionnels</h2>
+                        <h2>Professional Details</h2>
                         <div class="info-grid">
                             <div class="info-item">
-                                <label>Numéro Professionnel</label>
+                                <label>Professional Number</label>
                                 <span>{{ profile.professional_number }}</span>
                             </div>
                             <div class="info-item">
-                                <label>Fonction</label>
+                                <label>Job Function</label>
                                 <span>{{ profile.job_function }}</span>
                             </div>
                             <div class="info-item">
-                                <label>Date de recrutement</label>
+                                <label>Recruitment Date</label>
                                 <span>{{ profile.recruitment_date.strftime('%d/%m/%Y') }}</span>
                             </div>
                             <div class="info-item">
-                                <label>Expérience</label>
-                                <span class="highlight">{{ profile.calculate_years_of_work() }} ans</span>
+                                <label>Experience</label>
+                                <span class="highlight">{{ profile.calculate_years_of_work() }} years</span>
                             </div>
                         </div>
                     </div>
@@ -130,13 +137,13 @@
                         <div class="documents-list">
                             <div class="document-item">
                                 <i class="fas fa-file-pdf"></i>
-                                <span>Contrat de travail</span>
-                                <a href="#" class="download-link">Télécharger</a>
+                                <span>Employment Contract</span>
+                                <a href="#" class="fluent-link">Download</a>
                             </div>
                             <div class="document-item">
                                 <i class="fas fa-file-alt"></i>
-                                <span>Fiche de poste</span>
-                                <a href="#" class="download-link">Télécharger</a>
+                                <span>Job Description</span>
+                                <a href="#" class="fluent-link">Download</a>
                             </div>
                         </div>
                     </div>
@@ -145,51 +152,67 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
 
+{% block page_style %}
 <style>
 :root {
-    --outlook-background: #f3f2f1;
-    --outlook-sidebar-bg: #f3f2f1;
-    --outlook-text-primary: #323130;
-    --outlook-text-secondary: #605e5c;
-    --outlook-accent: #0078d4;
-    --outlook-white: #ffffff;
-    --outlook-border: #e1dfdd;
+    /* Fluent Design 2 Color Palette */
+    --fluent-primary: #0078d4;
+    --fluent-secondary: #605e5c;
+    --fluent-background: #f3f2f1;
+    --fluent-text-primary: #323130;
+    --fluent-text-secondary: #605e5c;
+    --fluent-border-light: #e1dfdd;
+    --fluent-white: #ffffff;
+    
+    /* Spacing */
+    --fluent-spacing-xs: 4px;
+    --fluent-spacing-s: 8px;
+    --fluent-spacing-m: 16px;
+    --fluent-spacing-l: 24px;
+    
+    /* Elevation */
+    --fluent-shadow-1: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --fluent-shadow-2: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --fluent-shadow-3: 0 8px 16px rgba(0, 0, 0, 0.14);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--outlook-background);
-    color: var(--outlook-text-primary);
+    background-color: var(--fluent-background);
+    color: var(--fluent-text-primary);
+    line-height: 1.5;
 }
 
-.outlook-profile-container {
+.fluent-profile-container {
     display: flex;
     height: 100vh;
-    background-color: var(--outlook-white);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--fluent-white);
+    box-shadow: var(--fluent-shadow-1);
 }
 
-.outlook-sidebar {
+.fluent-sidebar {
     width: 280px;
     height: 100vh;
-    background-color: var(--outlook-sidebar-bg);
-    border-right: 1px solid var(--outlook-border);
-    padding: 20px 0;
+    background-color: var(--fluent-background);
+    border-right: 1px solid var(--fluent-border-light);
+    padding: var(--fluent-spacing-l) 0;
     position: sticky;
     top: 0;
     left: 0;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease, transform 0.3s ease;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--fluent-shadow-1);
     z-index: 100;
+    border-radius: 0 var(--fluent-spacing-m) var(--fluent-spacing-m) 0;
 }
 
 .sidebar-header {
@@ -197,9 +220,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 60px; /* Adjust height as needed */
-    padding: 0 20px 20px;
-    border-bottom: 1px solid var(--outlook-border);
+    height: 60px;
+    padding: 0 var(--fluent-spacing-l) var(--fluent-spacing-l);
+    border-bottom: 1px solid var(--fluent-border-light);
 }
 
 .sidebar-logo {
@@ -211,32 +234,31 @@ body {
 .sidebar-toggle {
     background: none;
     border: none;
-    color: var(--outlook-text-secondary);
+    color: var(--fluent-text-secondary);
     cursor: pointer;
     font-size: 1.2rem;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, transform 0.3s ease;
     opacity: 0.7;
     position: absolute;
     z-index: 1000;
     display: block;
-    right: 10px;
-    top: 10px;
-}
-
-.outlook-sidebar.collapsed .sidebar-toggle {
-    left: 50%;
-    transform: translateX(-50%);
+    right: var(--fluent-spacing-s);
+    top: var(--fluent-spacing-s);
+    border-radius: 4px;
+    padding: var(--fluent-spacing-s);
 }
 
 .sidebar-toggle:hover {
-    color: var(--outlook-accent);
+    background-color: rgba(0, 120, 212, 0.1);
+    color: var(--fluent-primary);
     opacity: 1;
+    transform: scale(1.1);
 }
 
 .sidebar-nav {
     flex-grow: 1;
     overflow-y: auto;
-    margin-top: 20px;
+    margin-top: var(--fluent-spacing-l);
 }
 
 .sidebar-nav ul {
@@ -247,26 +269,12 @@ body {
 .sidebar-nav li {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: var(--fluent-spacing-m) var(--fluent-spacing-l);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-}
-
-.sidebar-nav li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 4px;
-    height: 100%;
-    background-color: transparent;
-    transition: background-color 0.3s ease;
-}
-
-.sidebar-nav li:hover::before {
-    background-color: var(--outlook-accent);
+    border-radius: 0 var(--fluent-spacing-m) var(--fluent-spacing-m) 0;
 }
 
 .sidebar-nav li:hover {
@@ -275,15 +283,12 @@ body {
 
 .sidebar-nav li.active {
     background-color: rgba(0, 120, 212, 0.2);
-}
-
-.sidebar-nav li.active::before {
-    background-color: var(--outlook-accent);
+    color: var(--fluent-primary);
 }
 
 .sidebar-nav li i {
-    margin-right: 15px;
-    color: var(--outlook-text-secondary);
+    margin-right: var(--fluent-spacing-m);
+    color: var(--fluent-text-secondary);
     font-size: 1.1rem;
     transition: transform 0.3s ease;
 }
@@ -292,58 +297,18 @@ body {
     transform: scale(1.1);
 }
 
-.sidebar-nav li span {
-    transition: opacity 0.3s ease;
-}
-
-/* Collapsed Sidebar State */
-.outlook-sidebar.collapsed {
-    width: 80px;
-}
-
-.outlook-sidebar.collapsed .sidebar-logo {
-    opacity: 0;
-}
-
-.outlook-sidebar.collapsed .sidebar-nav li span {
-    display: none;
-}
-
-.outlook-sidebar.collapsed .sidebar-nav li {
-    justify-content: center;
-}
-
-.outlook-sidebar.collapsed .sidebar-nav li i {
-    margin-right: 0;
-}
-
-@media (max-width: 768px) {
-    .outlook-sidebar {
-        position: fixed;
-        transform: translateX(-100%);
-        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .outlook-sidebar.mobile-open {
-        transform: translateX(0);
-    }
-
-    .sidebar-toggle {
-        display: block;  
-    }
-}
-
-.outlook-main-content {
+.fluent-main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-.outlook-header {
-    background-color: var(--outlook-white);
-    border-bottom: 1px solid var(--outlook-border);
-    padding: 20px;
+.fluent-header {
+    background-color: var(--fluent-white);
+    border-bottom: 1px solid var(--fluent-border-light);
+    padding: var(--fluent-spacing-l);
+    box-shadow: var(--fluent-shadow-1);
 }
 
 .profile-header {
@@ -355,19 +320,20 @@ body {
 
 .avatar-wrapper {
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: var(--fluent-spacing-m);
 }
 
 .avatar {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: var(--outlook-accent);
+    background-color: var(--fluent-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--outlook-white);
+    color: var(--fluent-white);
     font-size: 48px;
+    box-shadow: var(--fluent-shadow-2);
 }
 
 .status-badge {
@@ -378,76 +344,90 @@ body {
     height: 20px;
     background-color: #10b981;
     border-radius: 50%;
-    border: 3px solid var(--outlook-white);
+    border: 3px solid var(--fluent-white);
 }
 
 .profile-header h1 {
     font-size: 1.5rem;
-    margin-bottom: 5px;
+    margin-bottom: var(--fluent-spacing-s);
 }
 
 .job-title {
-    color: var(--outlook-text-secondary);
-    margin-bottom: 15px;
+    color: var(--fluent-text-secondary);
+    margin-bottom: var(--fluent-spacing-m);
 }
 
 .profile-actions {
     display: flex;
-    gap: 10px;
+    gap: var(--fluent-spacing-s);
 }
 
-.btn-edit, .btn-settings {
+.fluent-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: var(--fluent-spacing-s);
+    padding: var(--fluent-spacing-s) var(--fluent-spacing-m);
     border: none;
     border-radius: 4px;
-    background-color: var(--outlook-accent);
-    color: var(--outlook-white);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: var(--fluent-shadow-1);
 }
 
-.btn-edit i, .btn-settings i {
-    margin-right: 5px;
+.fluent-btn-primary {
+    background-color: var(--fluent-primary);
+    color: var(--fluent-white);
 }
 
-.btn-edit:hover, .btn-settings:hover {
-    background-color: #005a9e;
+.fluent-btn-secondary {
+    background-color: rgba(0, 120, 212, 0.1);
+    color: var(--fluent-primary);
 }
 
-.outlook-tabs {
-    background-color: var(--outlook-white);
-    border-bottom: 1px solid var(--outlook-border);
-    padding: 0 20px;
+.fluent-btn-tertiary {
+    background-color: transparent;
+    color: var(--fluent-text-secondary);
+    border: 1px solid var(--fluent-border-light);
+}
+
+.fluent-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--fluent-shadow-2);
+}
+
+.fluent-tabs {
+    background-color: var(--fluent-white);
+    border-bottom: 1px solid var(--fluent-border-light);
+    padding: 0 var(--fluent-spacing-l);
 }
 
 .tabs {
     display: flex;
-    gap: 20px;
+    gap: var(--fluent-spacing-l);
 }
 
 .tab {
-    padding: 15px 10px;
+    padding: var(--fluent-spacing-m) var(--fluent-spacing-s);
     border: none;
     background: none;
     border-bottom: 2px solid transparent;
-    color: var(--outlook-text-secondary);
+    color: var(--fluent-text-secondary);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .tab.active {
-    color: var(--outlook-accent);
-    border-bottom-color: var(--outlook-accent);
+    color: var(--fluent-primary);
+    border-bottom-color: var(--fluent-primary);
 }
 
-.outlook-content {
+.fluent-content {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 20px;
-    background-color: var(--outlook-background);
+    padding: var(--fluent-spacing-l);
+    background-color: var(--fluent-background);
 }
 
 .tab-content {
@@ -459,25 +439,32 @@ body {
 }
 
 .content-section {
-    background-color: var(--outlook-white);
-    border-radius: 4px;
-    border: 1px solid var(--outlook-border);
-    padding: 20px;
-    margin-bottom: 20px;
+    background-color: var(--fluent-white);
+    border-radius: 8px;
+    border: 1px solid var(--fluent-border-light);
+    padding: var(--fluent-spacing-l);
+    margin-bottom: var(--fluent-spacing-l);
+    box-shadow: var(--fluent-shadow-1);
+    transition: box-shadow 0.3s ease;
+}
+
+.content-section:hover {
+    box-shadow: var(--fluent-shadow-2);
 }
 
 .content-section h2 {
     font-size: 1.2rem;
-    margin-bottom: 20px;
-    color: var(--outlook-text-primary);
-    border-bottom: 1px solid var(--outlook-border);
-    padding-bottom: 10px;
+    margin-bottom: var(--fluent-spacing-l);
+    color: var(--fluent-text-primary);
+    border-bottom: 1px solid var(--fluent-border-light);
+    padding-bottom: var(--fluent-spacing-s);
+    font-weight: 600;
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: var(--fluent-spacing-l);
 }
 
 .info-item {
@@ -487,220 +474,78 @@ body {
 
 .info-item label {
     font-size: 0.9rem;
-    color: var(--outlook-text-secondary);
-    margin-bottom: 5px;
+    color: var(--fluent-text-secondary);
+    margin-bottom: var(--fluent-spacing-s);
+    font-weight: 500;
 }
 
 .info-item span {
     font-size: 1rem;
-    color: var(--outlook-text-primary);
+    color: var(--fluent-text-primary);
 }
 
 .info-item .highlight {
-    color: var(--outlook-accent);
+    color: var(--fluent-primary);
     font-weight: bold;
 }
 
 .documents-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--fluent-spacing-s);
 }
 
 .document-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: var(--outlook-background);
+    gap: var(--fluent-spacing-s);
+    padding: var(--fluent-spacing-s);
+    background-color: var(--fluent-background);
     border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.document-item:hover {
+    background-color: rgba(0, 120, 212, 0.05);
 }
 
 .document-item i {
-    color: var(--outlook-accent);
+    color: var(--fluent-primary);
     font-size: 1.5rem;
 }
 
-.download-link {
+.fluent-link {
     margin-left: auto;
-    color: var(--outlook-accent);
+    color: var(--fluent-primary);
     text-decoration: none;
+    transition: opacity 0.3s ease;
 }
 
-.download-link:hover {
+.fluent-link:hover {
+    opacity: 0.8;
     text-decoration: underline;
 }
 
-/* Editable Field Styles */
-.editable-field {
-    width: 100%;
-    margin-top: 4px;
-}
-
-.editable-field input.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    background-color: #fff;
-}
-
-.editable-field input.form-control:focus {
-    border-color: #0078d4;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 120, 212, 0.25);
-}
-
-.tab-content.editing .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.tab-content.editing .info-item label {
-    font-weight: 500;
-    color: #605e5c;
-}
-
-/* Button state styles */
-.btn-edit {
-    transition: all 0.3s ease;
-}
-
-.btn-edit:hover {
-    background-color: #0078d4;
-    color: white;
-}
-
-.editing .btn-edit {
-    background-color: #28a745;
-    color: white;
-}
-
-.editing .btn-edit:hover {
-    background-color: #218838;
-}
-
-/* Loading Animation Styles */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.btn-edit.loading {
-    position: relative;
-    pointer-events: none;
-    opacity: 0.8;
-    padding-right: 40px !important;
-}
-
-.btn-edit.loading:after {
-    content: '';
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-right-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-/* Disabled input styles */
-.editable-field input.form-control:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-}
-
-/* Toast Notification Styles */
-.save-toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 24px;
-    border-radius: 4px;
-    color: white;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.save-toast.success {
-    background-color: #28a745;
-}
-
-.save-toast.error {
-    background-color: #dc3545;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fluent-profile-container {
+        flex-direction: column;
     }
-    to {
-        transform: translateX(0);
-        opacity: 1;
+
+    .fluent-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
     }
-}
 
-/* Loading Overlay Styles */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.loading-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.loading-text {
-    color: #0078d4;
-    font-weight: 500;
-    font-size: 1.1rem;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.loading-progress {
-    width: 300px;
-    height: 6px;
-    background: #e0e0e0;
-    border-radius: 3px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.loading-progress-bar {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #0078d4, #00a2ff);
-    transition: width 2s linear;
-    border-radius: 3px;
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
+{% endblock %}
 
+{% block page_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Tab switching functionality
@@ -711,11 +556,9 @@ document.addEventListener('DOMContentLoaded', function() {
         tab.addEventListener('click', () => {
             const tabId = tab.getAttribute('data-tab');
 
-            // Remove active class from all tabs and tab contents
             tabs.forEach(t => t.classList.remove('active'));
             tabContents.forEach(tc => tc.classList.remove('active'));
 
-            // Add active class to clicked tab and corresponding content
             tab.classList.add('active');
             document.getElementById(tabId).classList.add('active');
         });
@@ -728,239 +571,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sidebar && sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
-            sidebarToggle.classList.toggle('active');  // Add active state to toggle button
         });
-
-        // Mobile responsiveness
-        function handleMobileSidebar() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('mobile-sidebar');
-                sidebarToggle.style.display = 'block';  // Ensure toggle is visible on mobile
-                
-                // Close sidebar when clicking outside
-                document.addEventListener('click', function(event) {
-                    const isClickInsideSidebar = sidebar.contains(event.target);
-                    const isToggleButton = sidebarToggle.contains(event.target);
-                    
-                    if (!isClickInsideSidebar && !isToggleButton) {
-                        sidebar.classList.remove('mobile-open');
-                    }
-                });
-            } else {
-                sidebar.classList.remove('mobile-sidebar');
-                sidebar.classList.remove('mobile-open');
-                sidebarToggle.style.display = 'block';  // Ensure toggle is visible on desktop
-            }
-        }
-
-        // Initial check and add resize listener
-        handleMobileSidebar();
-        window.addEventListener('resize', handleMobileSidebar);
     }
 });
 </script>
-
-{% block page_scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const editButton = document.querySelector('.btn-edit');
-        const personalTab = document.getElementById('personal');
-        const professionalTab = document.getElementById('professional');
-        let isEditing = false;
-        let isSaving = false;
-        
-        // Create loading overlay
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = `
-            <div class="loading-content">
-                <div class="loading-text">Enregistrement en cours...</div>
-                <div class="loading-progress">
-                    <div class="loading-progress-bar"></div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(loadingOverlay);
-        
-        // Create the form and add it to the DOM immediately
-        const editForm = document.createElement('form');
-        editForm.id = 'profile-edit-form';
-        editForm.method = 'POST';
-        editForm.action = "{{ url_for('profiles.edit_profile', profile_id=profile.id) }}";
-        editForm.classList.add('profile-edit-form');
-        document.querySelector('.outlook-content').appendChild(editForm);
-
-        editButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (!isSaving) {
-                toggleEditMode();
-            }
-        });
-
-        function showLoadingOverlay() {
-            loadingOverlay.classList.add('active');
-            const progressBar = loadingOverlay.querySelector('.loading-progress-bar');
-            progressBar.style.width = '0';
-            // Force reflow
-            progressBar.offsetHeight;
-            // Start progress animation
-            progressBar.style.width = '100%';
-        }
-
-        function hideLoadingOverlay() {
-            loadingOverlay.classList.remove('active');
-            const progressBar = loadingOverlay.querySelector('.loading-progress-bar');
-            progressBar.style.width = '0';
-        }
-
-        function startSaving() {
-            isSaving = true;
-            editButton.classList.add('loading');
-            showLoadingOverlay();
-            // Disable all input fields
-            document.querySelectorAll('.editable-field input').forEach(input => {
-                input.disabled = true;
-            });
-        }
-
-        function stopSaving(success = false) {
-            setTimeout(() => {
-                isSaving = false;
-                editButton.classList.remove('loading');
-                hideLoadingOverlay();
-                if (!success) {
-                    // Re-enable all input fields if save failed
-                    document.querySelectorAll('.editable-field input').forEach(input => {
-                        input.disabled = false;
-                    });
-                }
-            }, 2000); // Mandatory 2-second delay
-        }
-
-        function toggleEditMode() {
-            if (isSaving) return;
-            
-            isEditing = !isEditing;
-            
-            if (isEditing) {
-                // Enter edit mode
-                personalTab.classList.add('editing');
-                professionalTab.classList.add('editing');
-                editButton.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
-                convertToEditableFields(personalTab);
-                convertToEditableFields(professionalTab);
-            } else {
-                // Start saving animation
-                startSaving();
-
-                // Collect all form data
-                const formData = new FormData();
-                const inputs = document.querySelectorAll('.info-item input');
-                
-                inputs.forEach(input => {
-                    let value = input.value;
-                    if (input.type === 'date') {
-                        value = value.split('/').reverse().join('-');
-                    }
-                    formData.append(input.name, value);
-                });
-
-                // Submit form data via AJAX
-                fetch(editForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        stopSaving(true);
-                        const toast = document.createElement('div');
-                        toast.className = 'save-toast success';
-                        toast.innerHTML = '<i class="fas fa-check-circle"></i> Modifications enregistrées';
-                        document.body.appendChild(toast);
-                        
-                        // Wait for loading animation to complete
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2500); // Add extra time after the loading animation
-                    } else {
-                        stopSaving(false);
-                        const toast = document.createElement('div');
-                        toast.className = 'save-toast error';
-                        toast.innerHTML = '<i class="fas fa-exclamation-circle"></i> Erreur lors de la sauvegarde';
-                        document.body.appendChild(toast);
-                        setTimeout(() => {
-                            toast.remove();
-                        }, 3000);
-                        isEditing = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    stopSaving(false);
-                    const toast = document.createElement('div');
-                    toast.className = 'save-toast error';
-                    toast.innerHTML = '<i class="fas fa-exclamation-circle"></i> Erreur lors de la sauvegarde';
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 3000);
-                    isEditing = true;
-                });
-            }
-        }
-
-        function convertToEditableFields(container) {
-            const infoItems = container.querySelectorAll('.info-item');
-            infoItems.forEach(item => {
-                const label = item.querySelector('label').textContent;
-                const span = item.querySelector('span');
-                const value = span.textContent.trim();
-                
-                // Convert field names to match Python model
-                let fieldName = label.toLowerCase()
-                    .replace('prénom', 'first_name')
-                    .replace('nom', 'last_name')
-                    .replace('date de naissance', 'date_of_birth')
-                    .replace('numéro professionnel', 'professional_number')
-                    .replace('fonction', 'job_function')
-                    .replace('date de recrutement', 'recruitment_date')
-                    .replace(/\s+/g, '_');
-
-                const inputType = label.toLowerCase().includes('date') ? 'date' : 
-                                label.toLowerCase().includes('email') ? 'email' : 'text';
-                
-                const input = document.createElement('input');
-                input.type = inputType;
-                input.name = fieldName;
-                
-                // Format date values for input
-                if (inputType === 'date' && value) {
-                    const parts = value.split('/');
-                    if (parts.length === 3) {
-                        input.value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    }
-                } else {
-                    input.value = value;
-                }
-                
-                input.classList.add('form-control');
-                input.required = true;
-
-                // Create a wrapper div to maintain layout
-                const inputWrapper = document.createElement('div');
-                inputWrapper.classList.add('editable-field');
-                inputWrapper.appendChild(input);
-
-                // Replace span with input wrapper
-                span.replaceWith(inputWrapper);
-            });
-        }
-    });
-</script>
-{% endblock %}
-
 {% endblock %}
