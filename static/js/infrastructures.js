@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (Object.values(deps).every(Boolean)) {
         // Initialiser DataTable
         if (document.getElementById('infrastructuresTable')) {
-            $('#infrastructuresTable').DataTable({
+            const infrastructuresTable = $('#infrastructuresTable').DataTable({
                 responsive: true,
                 language: {
                     paginate: {
@@ -48,8 +48,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     infoEmpty: 'Aucune donnée disponible',
                     infoFiltered: '(filtré de _MAX_ entrées totales)',
                     zeroRecords: 'Aucun résultat trouvé'
-                }
+                },
+                // Disable default search
+                searching: false,
+                // Enable length menu
+                lengthChange: true,
+                // Default page length
+                pageLength: 10,
+                // Possible page lengths
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tout"]]
             });
+
+            // Length menu event handler
+            const lengthSelect = document.querySelector('select[name="infrastructuresTable_length"]');
+            if (lengthSelect) {
+                lengthSelect.addEventListener('change', function() {
+                    infrastructuresTable.page.len(parseInt(this.value)).draw();
+                });
+            }
+
+            // Custom search input functionality
+            const customSearchInput = document.getElementById('customSearchInput');
+            if (customSearchInput) {
+                customSearchInput.addEventListener('keyup', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    
+                    // Custom search across multiple columns
+                    infrastructuresTable.rows().every(function() {
+                        const rowData = this.data();
+                        const match = Object.values(rowData).some(value => 
+                            String(value).toLowerCase().includes(searchTerm)
+                        );
+                        
+                        this.nodes().to$().toggle(match);
+                    });
+                    
+                    // Update table info and pagination
+                    infrastructuresTable.draw(false);
+                });
+            }
         }
 
         // Gestionnaire d'enregistrement d'infrastructure
@@ -169,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mandatory 2-second delay before deletion
                 setTimeout(() => {
                     // Envoyer la requête de suppression
-                    fetch(`/departements/infrastructures/delete/${currentInfrastructureId}`, {
+                    fetch(`/departements/infrastructure/delete/${currentInfrastructureId}`, {
                         method: 'DELETE',
                         headers: {
                             'Accept': 'application/json'
