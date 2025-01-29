@@ -259,11 +259,68 @@
                 cursor: pointer;
             }
         }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 0;
+            background: var(--ona-accent);
+            z-index: 1100;
+            transition: width 0.2s ease;
+        }
+
+        /* Feature Card Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
+            animation-delay: calc(var(--delay) * 100ms);
+        }
+
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 576px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-section {
+                padding: 1.5rem;
+            }
+
+            .sidebar-nav a {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+
+        /* Accessibility and Focus States */
+        a:focus, button:focus {
+            outline: 3px solid var(--ona-accent);
+            outline-offset: 2px;
+        }
+
+        /* Subtle Hover Effects */
+        .sidebar-nav a:hover, .feature-card:hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <aside class="sidebar">
+    <div class="app-container" role="main">
+        <aside class="sidebar" role="navigation" aria-label="Menu de navigation">
             <div class="sidebar-logo">
                 <h1>OnaSpark</h1>
                 <p>Documentation</p>
@@ -295,171 +352,187 @@
             </nav>
         </aside>
 
-        <main class="main-content">
-            <section id="accueil" class="content-section">
+        <main class="main-content" role="document">
+            <section id="accueil" class="content-section" aria-labelledby="accueil-title">
                 <div class="breadcrumb">Accueil</div>
-                <h2>Bienvenue sur OnaSpark</h2>
+                <h2 id="accueil-title">Bienvenue sur OnaSpark</h2>
                 <p>OnaSpark est une plateforme complète de gestion des incidents et de surveillance de la qualité de l'eau, conçue pour les professionnels du secteur de l'eau.</p>
                 <div class="feature-grid">
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Gestion des Incidents</h3>
-                        <p>Système complet de suivi et de résolution des incidents</p>
-                        <div class="tags">
-                            <span class="tag">Rapports</span>
-                            <span class="tag">Suivi</span>
-                            <span class="tag">Analytics</span>
-                        </div>
+                        <ul>
+                            <li>Création et suivi des incidents en temps réel</li>
+                            <li>Classification automatique des incidents</li>
+                            <li>Exportation de rapports PDF détaillés</li>
+                            <li>Analyse IA des causes d'incidents</li>
+                            <li>Workflow de résolution complet</li>
+                        </ul>
                     </div>
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Qualité de l'Eau</h3>
-                        <p>Surveillance en temps réel et analyses détaillées</p>
-                        <div class="tags">
-                            <span class="tag">Monitoring</span>
-                            <span class="tag">Analyses</span>
-                            <span class="tag">Rapports</span>
-                        </div>
+                        <ul>
+                            <li>Surveillance multiparamètres</li>
+                            <li>Évaluation microbiologique et physico-chimique</li>
+                            <li>Classification dynamique de la qualité de l'eau</li>
+                            <li>Génération de rapports détaillés</li>
+                            <li>Alertes en temps réel</li>
+                        </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="gestion-incidents" class="content-section">
+            <section id="gestion-incidents" class="content-section" aria-labelledby="gestion-incidents-title">
                 <div class="breadcrumb">Gestion des Incidents</div>
-                <h2>Système de Gestion des Incidents</h2>
+                <h2 id="gestion-incidents-title">Système de Gestion des Incidents</h2>
                 <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>Création d'Incidents</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Création et Suivi</h3>
                         <ul>
-                            <li>Interface intuitive de création</li>
+                            <li>Interface de création d'incidents intuitive</li>
                             <li>Catégorisation automatique</li>
+                            <li>Géolocalisation précise</li>
                             <li>Support multimédia (photos, documents)</li>
-                            <li>Géolocalisation des incidents</li>
-                            <li>IA pour l'analyse des causes</li>
+                            <li>Traçabilité complète des actions</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
-                        <h3>Suivi des Incidents</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Intelligence Artificielle</h3>
                         <ul>
-                            <li>Tableau de bord en temps réel</li>
-                            <li>Historique complet</li>
-                            <li>Notifications automatiques</li>
-                            <li>Rapports d'intervention</li>
+                            <li>Analyse causale des incidents</li>
+                            <li>Recommandations de résolution</li>
+                            <li>Prédiction des risques potentiels</li>
+                            <li>Explication détaillée des incidents</li>
+                            <li>Apprentissage continu</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
-                        <h3>Résolution et Analytics</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Rapports et Analytics</h3>
                         <ul>
-                            <li>Workflow de résolution</li>
-                            <li>Analyses statistiques</li>
-                            <li>Rapports PDF exportables</li>
-                            <li>Indicateurs de performance</li>
+                            <li>Exportation PDF personnalisée</li>
+                            <li>Statistiques détaillées</li>
+                            <li>Tableaux de bord interactifs</li>
+                            <li>Analyse de performance</li>
+                            <li>Historique complet des incidents</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="qualite-eau" class="content-section">
+            <section id="qualite-eau" class="content-section" aria-labelledby="qualite-eau-title">
                 <div class="breadcrumb">Qualité de l'Eau</div>
-                <h2>Surveillance de la Qualité de l'Eau</h2>
+                <h2 id="qualite-eau-title">Surveillance de la Qualité de l'Eau</h2>
                 <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>Paramètres Surveillés</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Paramètres de Surveillance</h3>
                         <ul>
                             <li>pH et température</li>
                             <li>Conductivité électrique</li>
                             <li>Oxygène dissous</li>
                             <li>Turbidité</li>
+                            <li>Paramètres microbiologiques</li>
                             <li>Chlore résiduel</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
-                        <h3>Analyses et Rapports</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Classification et Analyse</h3>
                         <ul>
-                            <li>Graphiques interactifs</li>
-                            <li>Tendances historiques</li>
-                            <li>Alertes automatiques</li>
-                            <li>Rapports personnalisables</li>
+                            <li>Évaluation multi-critères</li>
+                            <li>Classification dynamique</li>
+                            <li>Notation de la qualité de l'eau</li>
+                            <li>Comparaison historique</li>
+                            <li>Alertes et notifications</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="utilisateurs" class="content-section">
+            <section id="utilisateurs" class="content-section" aria-labelledby="utilisateurs-title">
                 <div class="breadcrumb">Gestion des Utilisateurs</div>
-                <h2>Administration des Utilisateurs</h2>
+                <h2 id="utilisateurs-title">Administration des Utilisateurs</h2>
                 <div class="feature-grid">
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Gestion des Profils</h3>
                         <ul>
-                            <li>Création de comptes</li>
-                            <li>Gestion des rôles</li>
-                            <li>Permissions personnalisées</li>
+                            <li>Authentification sécurisée</li>
+                            <li>Gestion des rôles et permissions</li>
+                            <li>Profils personnalisés</li>
                             <li>Historique des actions</li>
+                            <li>Connexion multi-unités</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Zones et Unités</h3>
                         <ul>
-                            <li>Attribution des zones</li>
-                            <li>Gestion des unités</li>
-                            <li>Hiérarchie organisationnelle</li>
+                            <li>Gestion hiérarchique des zones</li>
+                            <li>Attribution des unités</li>
+                            <li>Sélection dynamique</li>
+                            <li>Rapports par unité</li>
+                            <li>Visualisation géographique</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="rapports" class="content-section">
+            <section id="rapports" class="content-section" aria-labelledby="rapports-title">
                 <div class="breadcrumb">Rapports et Analytics</div>
-                <h2>Système de Reporting</h2>
+                <h2 id="rapports-title">Système de Reporting</h2>
                 <div class="feature-grid">
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Types de Rapports</h3>
                         <ul>
-                            <li>Rapports d'incidents</li>
+                            <li>Rapports d'incidents détaillés</li>
                             <li>Analyses de qualité d'eau</li>
                             <li>Performance des équipes</li>
-                            <li>Statistiques globales</li>
+                            <li>Statistiques opérationnelles</li>
+                            <li>Tableaux de bord personnalisés</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
-                        <h3>Formats d'Export</h3>
+                    <div class="feature-card" tabindex="0">
+                        <h3>Formats et Exportation</h3>
                         <ul>
-                            <li>PDF interactif</li>
-                            <li>Excel pour analyses</li>
+                            <li>PDF interactifs</li>
+                            <li>Exports Excel</li>
                             <li>Graphiques vectoriels</li>
+                            <li>Génération automatique</li>
+                            <li>Personnalisation avancée</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="internationalisation" class="content-section">
+            <section id="internationalisation" class="content-section" aria-labelledby="internationalisation-title">
                 <div class="breadcrumb">Internationalisation</div>
-                <h2>Support Multilingue</h2>
+                <h2 id="internationalisation-title">Support Multilingue</h2>
                 <div class="feature-grid">
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Langues Supportées</h3>
                         <ul>
                             <li>Français (par défaut)</li>
                             <li>Arabe</li>
-                            <li>Interface RTL pour l'arabe</li>
+                            <li>Support RTL complet</li>
+                            <li>Changement dynamique</li>
+                            <li>Traductions contextuelles</li>
                         </ul>
                     </div>
-                    <div class="feature-card">
+                    <div class="feature-card" tabindex="0">
                         <h3>Système de Traduction</h3>
                         <ul>
-                            <li>Fichiers de traduction</li>
+                            <li>Fichiers de traduction modulaires</li>
                             <li>Détection automatique</li>
-                            <li>Changement dynamique</li>
+                            <li>Personnalisation des libellés</li>
+                            <li>Mise à jour en temps réel</li>
+                            <li>Compatibilité multi-plateforme</li>
                         </ul>
                     </div>
                 </div>
             </section>
         </main>
     </div>
-    <button class="theme-toggle">
+    <button class="theme-toggle" aria-label="Changer de thème">
         <i class="fas fa-moon"></i>
         <span>Thème</span>
     </button>
-    <a href="{{ url_for('main_dashboard.dashboard') }}" class="go-back-button">
+    <a href="{{ url_for('main_dashboard.dashboard') }}" class="go-back-button" aria-label="Retour à l'accueil">
         <i class="fas fa-arrow-left"></i>
         <span>Retour à l'Accueil</span>
     </a>
@@ -504,12 +577,63 @@
             document.querySelector('.sidebar').classList.toggle('active');
         });
 
+        // Scroll Progress Indicator
+        function createScrollProgressIndicator() {
+            const progressBar = document.createElement('div');
+            progressBar.classList.add('scroll-progress');
+            document.body.appendChild(progressBar);
+
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+        }
+
+        // Animate Feature Cards
+        function animateFeatureCards() {
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach((card, index) => {
+                card.style.setProperty('--delay', index);
+            });
+        }
+
+        // Accessibility Enhancements
+        function enhanceAccessibility() {
+            // Add aria labels and roles
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.setAttribute('aria-label', section.querySelector('h2').textContent);
+                section.setAttribute('role', 'region');
+            });
+
+            // Keyboard navigation for sidebar
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        link.click();
+                    }
+                });
+            });
+        }
+
+        // Initialize All Enhancements
+        document.addEventListener('DOMContentLoaded', () => {
+            createScrollProgressIndicator();
+            animateFeatureCards();
+            enhanceAccessibility();
+        });
+
         // Smooth scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+                const targetElement = document.querySelector(this.getAttribute('href'));
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
             });
         });

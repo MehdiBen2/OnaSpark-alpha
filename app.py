@@ -29,6 +29,7 @@ from routes.spark_agent_routes import get_mistral_api_key, spark_agent
 from routes.main_dashboard import main_dashboard
 from routes.departement import departement  # Add this import
 from routes.centers import centers
+from routes.bilans_routes import bilans_bp  # Add this import for bilans routes
 
 # Load environment variables
 load_dotenv()
@@ -38,6 +39,10 @@ app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///OnaDB.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Configure upload folder for bilans
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize cache with app after creating the app
 cache.init_app(app)
@@ -66,6 +71,7 @@ app.register_blueprint(units)
 app.register_blueprint(documentation)
 app.register_blueprint(database_admin)
 app.register_blueprint(centers)
+app.register_blueprint(bilans_bp)  # Add this line to register bilans blueprint
 
 # Remove the old route definition for statistiques
 # This is now handled by the departement Blueprint
