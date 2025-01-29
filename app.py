@@ -451,6 +451,22 @@ def get_mistral_api_key_route():
     """
     return get_mistral_api_key()
 
+# Utility function to convert enum-style strings to human-readable labels
+def format_epuration_type(epuration_type):
+    if not epuration_type:
+        return None
+    
+    epuration_type_mapping = {
+        'BOUES_ACTIVEES': 'Boues activées',
+        'LAGUNAGE_NATUREL': 'Lagunage naturel',
+        'FILTRES_PLANTES': 'Filtres plantés',
+        'DISQUES_BIOLOGIQUES': 'Disques biologiques',
+        'MEMBRANES': 'Traitement membranaire',
+        'AUTRE': 'Autre type de traitement'
+    }
+    
+    return epuration_type_mapping.get(epuration_type, epuration_type)
+
 @app.route('/departements/infrastructure/<int:infrastructure_id>', methods=['GET'])
 def get_infrastructure_details(infrastructure_id):
     try:
@@ -466,7 +482,7 @@ def get_infrastructure_details(infrastructure_id):
                 'localisation': infrastructure.localisation,
                 'capacite': infrastructure.capacite,
                 'etat': infrastructure.etat,
-                'epuration_type': infrastructure.epuration_type
+                'epuration_type': format_epuration_type(infrastructure.epuration_type)
             }
         })
     except Exception as e:
