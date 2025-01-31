@@ -339,7 +339,9 @@
                 <h5 class="mb-2">{{ current_user.assigned_zone.name }}</h5>
             {% endif %}
             {% if current_user.role != 'Admin' %}
-                <h6 class="mb-2">{{ current_user.assigned_unit.name if current_user.assigned_unit else 'Aucune unité assignée' }}</h6>
+                {% if current_user.role != 'Employeur DG' %}
+                    <h6 class="mb-2">{{ current_user.assigned_unit.name if current_user.assigned_unit else 'Aucune unité assignée' }}</h6>
+                {% endif %}
             {% else %}
                 <h6 class="mb-2">Tous les incidents</h6>
             {% endif %}
