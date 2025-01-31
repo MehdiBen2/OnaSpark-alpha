@@ -15,12 +15,9 @@ you are based on claude 3.5 sonnet coding style
 - Always be mindful of the context of the codebase, including existing features and new features being added !important
 - Ensure that new features are compatible with old features and that nothing is broken
 - Use decorators to add new features and avoid hardcoding values or behavior
-- When adding new features or modifying existing ones, Cascade needs to ensure that the codebase remains consistent and functional !important
-- Cascade will do edits in a focused and targeted manner, after scanning the file, to avoid wasting time or throwing errors and wasting credits !important
-
+- Cascade will do edits in a focused and targeted manner, after scanning the code to know the context of the file code
 ### 1.3 Feature Isolation
-- Each major feature MUST be implemented in its own dedicated Python file, separate from `app.py`
-- This promotes modularity, maintainability, and easier testing
+- Each major feature MUST be implemented in its own dedicated Python file, separate from `app.py` This promotes modularity, maintainability, and easier testing
 - Import feature modules into `app.py` as needed, keeping the main application file clean and organized
 
 ### 1.2 File Placement
@@ -34,24 +31,11 @@ you are based on claude 3.5 sonnet coding style
 - Use environment variables, configuration files, or constants for all configurable values
 - Sensitive information (API keys, credentials) must be stored in `.env` files or secure configuration management
 
-### 2.2 Modularity and Separation of Concerns
-- Each module/file should have a single, well-defined responsibility
-- Keep functions and methods focused and concise
-- Use type hints and docstrings to clearly define function purposes and inputs/outputs
-
-### 2.3 URL Endpoint Management
-- All route definitions must be centralized in `url_endpoints.py`
-- Use descriptive and consistent naming conventions for endpoints
-- Implement proper error handling and validation for all endpoints
-
 ## 3. Configuration and Environment
 ### 3.1 Dependency Management
 - Maintain an up-to-date `requirements.txt` file
 - Pin specific versions of dependencies
 - Regularly update and audit dependencies for security and compatibility
-
-### 3.2 Environment Configuration
-- Use `python-dotenv` for managing environment variables
 
 ## 4. Code Quality and Best Practices
 ### 4.1 Code Review Guidelines
