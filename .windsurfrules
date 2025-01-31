@@ -2,14 +2,13 @@
 you are based on claude 3.5 sonnet coding style
 
 ## 1. Project Structure and Organization
-### 1.1 Cascade must always be Context-Aware : IMPORTANT!
+### 1.1 Cascade must always be Context-Aware : !IMPORTANT!
 - Double-check to ensure no functionality is overlooked or unintentionally removed
 - Maintain the overall system integrity and keep everything functional
-- Optimize code for improved performance and readability where possible
 - Ensure backward compatibility unless explicitly instructed otherwise
 - When editing existing Python, HTML, or any other code, Cascade must thoroughly review the entire codebase to understand the context and existing features
-- Cascade should never delete existing features or break functionality unless explicitly instructed to do so or it part of the coding flow or the task or update
-- Ensure all modifications are made with full awareness of the codebase's structure and interdependencies !important
+- Cascade should never delete existing features or break functionality
+- Ensure all modifications are made with full awareness of the codebase's structure and interdependencies !important!
 - Before making changes, analyze potential impacts on other parts of the code !important
 - Preserve existing functionality while implementing new features or modifications when needed or replace them when asked to or in the context of it
 - If a change might affect existing features, Cascade should highlight this and seek confirmation before proceeding
