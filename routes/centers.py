@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from models import db, Center, Unit, Zone
 from utils.decorators import admin_required
+from utils.permissions import PermissionManager, Permission
 import traceback
 import uuid
 from sqlalchemy.orm import joinedload
@@ -11,6 +12,11 @@ centers = Blueprint('centers', __name__)
 @centers.route('/admin/centres/listes_par_zone')
 @login_required
 def centres_listes_par_zone():
+    # Check if user has permission to view centers
+    if not PermissionManager.has_permission(current_user.role, Permission.VIEW_ALL_CENTERS):
+        flash("Vous n'avez pas la permission de voir les centres.", "warning")
+        return redirect(url_for('main.dashboard'))
+
     # Debug print
     print("Entering centres_listes_par_zone route")
     
@@ -22,10 +28,17 @@ def centres_listes_par_zone():
         page_title = "Liste des Centres de toutes les zones de l'ONA"
     else:
         # For non-admin users, only show centres from their assigned zone
+        if current_user.zone_id is None:
+            flash("Vous n'êtes pas assigné à une zone.", "warning")
+            return redirect(url_for('main.dashboard'))
+        
         zones = Zone.query.filter_by(id=current_user.zone_id).options(
             joinedload(Zone.units).joinedload(Unit.centers)
         ).all()
-        page_title = f"Liste des Centres de la zone {current_user.zone.name}"
+        
+        # Safely get zone name
+        zone_name = Zone.query.get(current_user.zone_id).name if current_user.zone_id else "Zone non assignée"
+        page_title = f"Liste des Centres de la zone {zone_name}"
     
     # Add logging
     current_app.logger.info(f"Retrieved zones: {len(zones)}")
