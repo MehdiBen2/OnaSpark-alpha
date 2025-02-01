@@ -12,23 +12,46 @@ class UserRole:
     EMPLOYEUR_UNITE = 'Employeur Unité'
     UTILISATEUR = 'Utilisateur'
 
-    # Role display names
-    ROLE_NAMES = {
-        ADMIN: 'Admin',
-        EMPLOYEUR_DG: 'Employeur DG',
-        EMPLOYEUR_ZONE: 'Employeur Zone',
-        EMPLOYEUR_UNITE: 'Employeur Unité',
-        UTILISATEUR: 'Utilisateur'
-    }
-
     # Role descriptions
     ROLE_DESCRIPTIONS = {
         ADMIN: 'Accès complet au système',
-        EMPLOYEUR_DG: 'Gestion globale de l\'organisation',
-        EMPLOYEUR_ZONE: 'Supervision et consultation des unités de la zone',
-        EMPLOYEUR_UNITE: 'Gestion d\'une unité spécifique',
+        EMPLOYEUR_DG: 'Accès global à toutes les zones et unités',
+        EMPLOYEUR_ZONE: 'Accès aux unités de sa zone',
+        EMPLOYEUR_UNITE: 'Accès aux incidents de son unité',
         UTILISATEUR: 'Accès limité aux fonctionnalités de base'
     }
+
+    # Role display names
+    ROLE_NAMES = {
+        ADMIN: 'Administrateur',
+        EMPLOYEUR_DG: 'Directeur Général',
+        EMPLOYEUR_ZONE: 'Directeur de Zone',
+        EMPLOYEUR_UNITE: 'Directeur d\'Unité',
+        UTILISATEUR: 'Utilisateur'
+    }
+
+    @staticmethod
+    def is_admin(role):
+        """
+        Check if the given role is an admin role
+        
+        :param role: Role to check
+        :return: Boolean indicating if the role is admin
+        """
+        return role == UserRole.ADMIN
+
+    @staticmethod
+    def get_role_display_name(role):
+        """
+        Get the display name for a given role
+        
+        :param role: Role to get display name for
+        :return: Display name of the role
+        """
+        return UserRole.ROLE_NAMES.get(role, role)
+
+    # Alias method to ensure compatibility
+    is_admin_role = is_admin
 
 class Permission:
     """Defines granular permissions for specific features and actions."""
@@ -194,6 +217,85 @@ class PermissionManager:
             available_roles.insert(0, UserRole.ADMIN)
         
         return available_roles
+
+    @staticmethod
+    def is_admin(role):
+        """Check if role has admin privileges"""
+        return UserRole.is_admin(role)
+
+    @staticmethod
+    def is_dg(role):
+        """Check if role has global access"""
+        return role == UserRole.EMPLOYEUR_DG
+
+    @staticmethod
+    def requires_zone(role):
+        """Check if role requires zone assignment"""
+        return role in {UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_UNITE, UserRole.UTILISATEUR}
+
+    @staticmethod
+    def requires_unit(role):
+        """Check if role requires unit assignment"""
+        return role in {UserRole.EMPLOYEUR_UNITE, UserRole.UTILISATEUR}
+
+    @staticmethod
+    def get_all_roles():
+        """Get list of all available roles"""
+        return [
+            UserRole.ADMIN,
+            UserRole.EMPLOYEUR_DG,
+            UserRole.EMPLOYEUR_ZONE,
+            UserRole.EMPLOYEUR_UNITE,
+            UserRole.UTILISATEUR
+        ]
+
+    @staticmethod
+    def get_role_description(role):
+        """Get the description for a role"""
+        return UserRole.ROLE_DESCRIPTIONS.get(role, '')
+
+    @classmethod
+    def get_role_display_names(cls):
+        """Get a dictionary of role display names"""
+        return UserRole.ROLE_NAMES
+
+    @staticmethod
+    def requires_unit_selection(role):
+        """Return True if the role requires unit selection."""
+        return role not in {UserRole.ADMIN, UserRole.EMPLOYEUR_DG, UserRole.EMPLOYEUR_ZONE}
+
+    @staticmethod
+    def has_higher_or_equal_role(user_role, target_role):
+        """
+        Check if the user's role has equal or higher privileges
+        Hierarchy: ADMIN > EMPLOYEUR_DG > EMPLOYEUR_ZONE > EMPLOYEUR_UNITE > UTILISATEUR
+        """
+        role_hierarchy = [
+            UserRole.UTILISATEUR, 
+            UserRole.EMPLOYEUR_UNITE, 
+            UserRole.EMPLOYEUR_ZONE, 
+            UserRole.EMPLOYEUR_DG, 
+            UserRole.ADMIN
+        ]
+        
+        try:
+            user_role_index = role_hierarchy.index(user_role)
+            target_role_index = role_hierarchy.index(target_role)
+            return user_role_index >= target_role_index
+        except ValueError:
+            # If either role is not in the hierarchy, return False
+            return False
+
+    @staticmethod
+    def get_role_hierarchy():
+        """Return the role hierarchy from lowest to highest privilege"""
+        return [
+            UserRole.UTILISATEUR, 
+            UserRole.EMPLOYEUR_UNITE, 
+            UserRole.EMPLOYEUR_ZONE, 
+            UserRole.EMPLOYEUR_DG, 
+            UserRole.ADMIN
+        ]
 
 def permission_required(permission):
     """

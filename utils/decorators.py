@@ -1,7 +1,12 @@
 from functools import wraps
 from flask import redirect, url_for, flash
 from flask_login import current_user
-from utils.permissions import UserRole
+from utils.permissions import UserRole  # Ensure this import is correct
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def admin_required(f):
     @wraps(f)
