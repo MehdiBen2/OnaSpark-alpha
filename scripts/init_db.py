@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import app, db
 from models import Unit, User, Zone, Center
-from utils.roles import UserRole
+from utils.permissions import UserRole
 
 def init_database():
     with app.app_context():

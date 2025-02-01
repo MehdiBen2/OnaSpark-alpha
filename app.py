@@ -21,7 +21,7 @@ from routes.documentation import documentation
 from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
-from utils.roles import UserRole
+from utils.permissions import UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module

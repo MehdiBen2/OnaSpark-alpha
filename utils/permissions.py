@@ -1,103 +1,206 @@
 from enum import Enum, auto
+from typing import Dict, Set, Any
 from functools import wraps
 from flask import abort, flash, redirect
 from flask_login import current_user, login_required
 
-class Permission(Enum):
-    """
-    Centralized Enum for all system permissions.
-    Each permission is a unique, descriptive identifier.
-    """
-    # Incident Permissions
-    VIEW_INCIDENT = auto()
-    CREATE_INCIDENT = auto()
-    EDIT_INCIDENT = auto()
-    DELETE_INCIDENT = auto()
-    RESOLVE_INCIDENT = auto()
+class UserRole:
+    """Defines all available user roles in the system."""
+    ADMIN = 'Admin'
+    EMPLOYEUR_DG = 'Employeur DG'
+    EMPLOYEUR_ZONE = 'Employeur Zone'
+    EMPLOYEUR_UNITE = 'Employeur Unité'
+    UTILISATEUR = 'Utilisateur'
 
-    # Export and Analysis Permissions
-    EXPORT_INCIDENT_PDF = auto()
-    EXPORT_ALL_INCIDENTS_PDF = auto()
-    GET_AI_EXPLANATION = auto()
-    DEEP_ANALYSIS = auto()
+    # Role display names
+    ROLE_NAMES = {
+        ADMIN: 'Admin',
+        EMPLOYEUR_DG: 'Employeur DG',
+        EMPLOYEUR_ZONE: 'Employeur Zone',
+        EMPLOYEUR_UNITE: 'Employeur Unité',
+        UTILISATEUR: 'Utilisateur'
+    }
 
-    # User Management Permissions
-    VIEW_USERS = auto()
-    CREATE_USERS = auto()
-    EDIT_USERS = auto()
-    DELETE_USERS = auto()
+    # Role descriptions
+    ROLE_DESCRIPTIONS = {
+        ADMIN: 'Accès complet au système',
+        EMPLOYEUR_DG: 'Gestion globale de l\'organisation',
+        EMPLOYEUR_ZONE: 'Supervision et consultation des unités de la zone',
+        EMPLOYEUR_UNITE: 'Gestion d\'une unité spécifique',
+        UTILISATEUR: 'Accès limité aux fonctionnalités de base'
+    }
 
-    # Zone and Unit Permissions
-    VIEW_ZONES = auto()
-    MANAGE_ZONES = auto()
-    VIEW_UNITS = auto()
-    MANAGE_UNITS = auto()
+class Permission:
+    """Defines granular permissions for specific features and actions."""
+    # Incident-related permissions
+    VIEW_INCIDENT = 'view_incident'
+    CREATE_INCIDENT = 'create_incident'
+    EDIT_INCIDENT = 'edit_incident'
+    DELETE_INCIDENT = 'delete_incident'
+    RESOLVE_INCIDENT = 'resolve_incident'
+    GET_AI_EXPLANATION = 'get_ai_explanation'
+    DEEP_ANALYSIS = 'deep_analysis'
+
+    # Export permissions
+    EXPORT_INCIDENT_PDF = 'export_incident_pdf'
+    EXPORT_ALL_INCIDENTS_PDF = 'export_all_incidents_pdf'
+
+    # User management permissions
+    CREATE_USERS = 'create_users'
+    EDIT_USERS = 'edit_users'
+    DELETE_USERS = 'delete_users'
+
+    # Zone and unit management permissions
+    CREATE_ZONES = 'create_zones'
+    EDIT_ZONES = 'edit_zones'
+    DELETE_ZONES = 'delete_zones'
+    CREATE_UNITS = 'create_units'
+    EDIT_UNITS = 'edit_units'
+    DELETE_UNITS = 'delete_units'
+
+    # Viewing permissions
+    VIEW_ALL_ZONES = 'view_all_zones'
+    VIEW_ALL_UNITS = 'view_all_units'
+    VIEW_ALL_CENTERS = 'view_all_centers'
+    VIEW_ALL_INCIDENTS = 'view_all_incidents'
 
 class PermissionManager:
-    """
-    Centralized permission management with role-based access control.
-    Provides a flexible and extensible way to define and check permissions.
-    """
-    _ROLE_PERMISSIONS = {
-        'Admin': {
+    """Manages role-based access control for the entire system."""
+    
+    # Comprehensive role permissions mapping
+    _ROLE_PERMISSIONS: Dict[str, Set[str]] = {
+        UserRole.ADMIN: {
+            # Full system access
             Permission.VIEW_INCIDENT,
             Permission.CREATE_INCIDENT,
             Permission.EDIT_INCIDENT,
             Permission.DELETE_INCIDENT,
             Permission.RESOLVE_INCIDENT,
-            Permission.VIEW_ZONES,
-            Permission.MANAGE_ZONES,
-            Permission.VIEW_UNITS,
-            Permission.MANAGE_UNITS,
-            Permission.EXPORT_INCIDENT_PDF,
-            Permission.EXPORT_ALL_INCIDENTS_PDF,
             Permission.GET_AI_EXPLANATION,
             Permission.DEEP_ANALYSIS,
-        },
-        'Employeur DG': {
-            # Strictly limited to viewing incidents
-            Permission.VIEW_INCIDENT,
-        },
-        'Employeur Zone': {
-            Permission.VIEW_INCIDENT,
-            Permission.VIEW_UNITS,
             Permission.EXPORT_INCIDENT_PDF,
+            Permission.EXPORT_ALL_INCIDENTS_PDF,
+            
+            Permission.CREATE_USERS,
+            Permission.EDIT_USERS,
+            Permission.DELETE_USERS,
+            
+            Permission.CREATE_ZONES,
+            Permission.EDIT_ZONES,
+            Permission.DELETE_ZONES,
+            Permission.CREATE_UNITS,
+            Permission.EDIT_UNITS,
+            Permission.DELETE_UNITS,
+            
+            Permission.VIEW_ALL_ZONES,
+            Permission.VIEW_ALL_UNITS,
+            Permission.VIEW_ALL_CENTERS,
+            Permission.VIEW_ALL_INCIDENTS
         },
-        'Employeur Unité': {
+        UserRole.EMPLOYEUR_DG: {
+            # Global management with limited destructive actions
+            Permission.VIEW_INCIDENT,
+            Permission.RESOLVE_INCIDENT,
+            Permission.GET_AI_EXPLANATION,
+            Permission.DEEP_ANALYSIS,
+            Permission.EXPORT_INCIDENT_PDF,
+            Permission.EXPORT_ALL_INCIDENTS_PDF,
+            
+            Permission.CREATE_USERS,
+            Permission.EDIT_USERS,
+            
+            Permission.CREATE_ZONES,
+            Permission.EDIT_ZONES,
+            Permission.CREATE_UNITS,
+            Permission.EDIT_UNITS,
+            
+            Permission.VIEW_ALL_ZONES,
+            Permission.VIEW_ALL_UNITS,
+            Permission.VIEW_ALL_CENTERS,
+            Permission.VIEW_ALL_INCIDENTS
+        },
+        UserRole.EMPLOYEUR_ZONE: {
+            # Zone-level access
+            Permission.VIEW_INCIDENT,
+            Permission.RESOLVE_INCIDENT,
+            Permission.EXPORT_INCIDENT_PDF,
+            Permission.GET_AI_EXPLANATION,
+            Permission.DEEP_ANALYSIS,
+            Permission.VIEW_ALL_ZONES,
+            Permission.VIEW_ALL_UNITS,
+            Permission.VIEW_ALL_CENTERS,
+            Permission.VIEW_ALL_INCIDENTS
+        },
+        UserRole.EMPLOYEUR_UNITE: {
+            # Unit-level access
             Permission.VIEW_INCIDENT,
             Permission.CREATE_INCIDENT,
             Permission.EDIT_INCIDENT,
             Permission.RESOLVE_INCIDENT,
-            Permission.EXPORT_INCIDENT_PDF,
+            Permission.EXPORT_INCIDENT_PDF
         },
-        'Utilisateur': {
-            Permission.VIEW_INCIDENT,
+        UserRole.UTILISATEUR: {
+            # Basic access
+            Permission.VIEW_INCIDENT
         }
     }
 
     @classmethod
-    def has_permission(cls, user, permission):
+    def get_role_permissions(cls, role: str) -> Set[str]:
         """
-        Check if a user has a specific permission based on their role.
+        Retrieve all permissions for a given role.
         
         Args:
-            user: The current user
-            permission (Permission): The permission to check
+            role (str): The role to get permissions for.
         
         Returns:
-            bool: Whether the user has the permission
+            Set[str]: A set of permissions for the specified role.
         """
-        if not user or not user.is_authenticated:
-            return False
+        return cls._ROLE_PERMISSIONS.get(role, set())
+
+    @classmethod
+    def has_permission(cls, role: str, permission: str) -> bool:
+        """
+        Check if a role has a specific permission.
         
-        return permission in cls._ROLE_PERMISSIONS.get(user.role, set())
+        Args:
+            role (str): The role to check.
+            permission (str): The permission to verify.
+        
+        Returns:
+            bool: True if the role has the permission, False otherwise.
+        """
+        return permission in cls.get_role_permissions(role)
+
+    @classmethod
+    def get_available_roles_for_user(cls, current_user_role: str) -> list:
+        """
+        Determine available roles that can be assigned based on current user's role.
+        
+        Args:
+            current_user_role (str): Role of the current user.
+        
+        Returns:
+            list: List of roles that can be assigned.
+        """
+        available_roles = [
+            UserRole.EMPLOYEUR_DG,
+            UserRole.EMPLOYEUR_ZONE,
+            UserRole.EMPLOYEUR_UNITE,
+            UserRole.UTILISATEUR
+        ]
+        
+        if current_user_role == UserRole.ADMIN:
+            available_roles.insert(0, UserRole.ADMIN)
+        
+        return available_roles
 
 def permission_required(permission):
     """
     Decorator to enforce permission checks on route functions.
     
     Args:
-        permission (Permission): The required permission
+        permission (str): The required permission
     
     Returns:
         function: Decorated function with permission check
@@ -106,7 +209,7 @@ def permission_required(permission):
         @wraps(f)
         @login_required
         def decorated_function(*args, **kwargs):
-            if not PermissionManager.has_permission(current_user, permission):
+            if not PermissionManager.has_permission(current_user.role, permission):
                 flash('Vous n\'avez pas la permission d\'effectuer cette action.', 'danger')
                 return redirect('main_dashboard.dashboard')  # Redirect to dashboard
             return f(*args, **kwargs)
@@ -118,9 +221,9 @@ def context_permission_check(permission):
     Context manager for template-level permission checks.
     
     Args:
-        permission (Permission): The permission to check
+        permission (str): The permission to check
     
     Returns:
         bool: Whether the current user has the permission
     """
-    return PermissionManager.has_permission(current_user, permission)
+    return PermissionManager.has_permission(current_user.role, permission)

@@ -16,8 +16,7 @@ import requests
 from flask_caching import Cache
 from extensions import cache
 from utils.incident_utils import get_user_incident_counts, get_incident_cache_key
-from utils.roles import UserRole
-from utils.permissions import permission_required, Permission, context_permission_check
+from utils.permissions import UserRole, Permission, context_permission_check, permission_required
 
 incidents = Blueprint('incidents', __name__)
 

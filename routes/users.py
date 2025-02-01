@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from models import db, User, Unit, Zone, Incident
 from utils.decorators import admin_required
-from utils.roles import UserRole
+from utils.permissions import UserRole
 from datetime import datetime
 
 users = Blueprint('users', __name__)

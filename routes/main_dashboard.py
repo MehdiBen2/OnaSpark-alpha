@@ -5,7 +5,7 @@ import traceback
 import logging
 
 from models import db, User, Unit, Incident, Zone, Center
-from utils.roles import UserRole
+from utils.permissions import UserRole
 from utils.url_endpoints import *
 from utils.incident_utils import get_user_incident_counts
 from utils.decorators import unit_required

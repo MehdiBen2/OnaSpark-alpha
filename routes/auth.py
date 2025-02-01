@@ -19,7 +19,7 @@ import logging
 
 from models import db, User
 from utils.url_endpoints import MAIN_DASHBOARD, LANDING_INDEX
-from utils.roles import UserRole
+from utils.permissions import UserRole
 
 # Configure logging
 logger = logging.getLogger(__name__)
