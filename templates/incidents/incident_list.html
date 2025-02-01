@@ -494,17 +494,36 @@
                         {{ incident.gravite }}
                     </span>
                     <div class="btn-group ms-2">
-                        {% if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_UNITE, UserRole.EMPLOYEUR_DG] %}
+                        {% if can_view_incident %}
                             <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary btn-sm text-white" title="Voir les détails">
                                 <i class="fas fa-eye"></i>
                             </a>
                         {% endif %}
-                        <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning btn-sm text-white" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button type="button" class="btn btn-danger btn-sm text-white" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
-                            <i class="fas fa-trash"></i>
-                        </button> 
+                        {% if current_user.role != 'Employeur DG' %}
+                            {% if can_edit_incident %}
+                                <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning btn-sm text-white" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+
+                            {% if incident.status != 'Résolu' %}
+                            <button type="button" 
+                                    class="btn btn-success btn-sm text-white" 
+                                    title="Marquer comme résolu"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#closeIncidentModal{{ incident.id }}">
+                                <i class="fas fa-check me-1"></i>Résolu
+                            </button>
+                            {% endif %}
+
+                            {% if can_export_pdf %}
+                                <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
+                                   class="btn btn-secondary btn-sm text-white" 
+                                   title="Exporter en PDF">
+                                    <i class="fas fa-file-pdf me-1"></i>PDF
+                                </a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -547,7 +566,8 @@
                         </span>
                     </div>
                     <div class="action-btn-group">
-                        {% if incident.status != 'Résolu' %}
+                        {% if current_user.role != 'Employeur DG' %}
+                            {% if incident.status != 'Résolu' %}
                             <button type="button" 
                                     class="btn btn-success btn-sm" 
                                     title="Marquer comme résolu"
@@ -555,13 +575,15 @@
                                     data-bs-target="#closeIncidentModal{{ incident.id }}">
                                 <i class="fas fa-check me-1"></i>Résolu
                             </button>
-                        {% endif %}
-                        {% if current_user.role != 'Employeur DG' %}
-                            <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
-                               class="btn btn-secondary btn-sm" 
-                               title="Exporter en PDF">
-                                <i class="fas fa-file-pdf me-1"></i>PDF
-                            </a>
+                            {% endif %}
+
+                            {% if can_export_pdf %}
+                                <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
+                                   class="btn btn-secondary btn-sm text-white" 
+                                   title="Exporter en PDF">
+                                    <i class="fas fa-file-pdf me-1"></i>PDF
+                                </a>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -628,34 +650,36 @@
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="actions-menu">
-                                        {% if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_UNITE, UserRole.EMPLOYEUR_DG] %}
+                                        {% if can_view_incident %}
                                             <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary action-btn" title="Voir">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         {% endif %}
-                                        <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning text-white action-btn" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        {% if incident.status != 'Résolu' %}
-                                        <button type="button" 
-                                                class="btn btn-success text-white action-btn" 
-                                                title="Marquer comme résolu"
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#closeIncidentModal{{ incident.id }}">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        {% endif %}
                                         {% if current_user.role != 'Employeur DG' %}
-                                            <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
-                                               class="btn btn-secondary text-white action-btn" 
-                                               title="Exporter en PDF">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
+                                            {% if can_edit_incident %}
+                                                <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning text-white action-btn" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            {% endif %}
+
+                                            {% if incident.status != 'Résolu' %}
+                                            <button type="button" 
+                                                    class="btn btn-success text-white action-btn" 
+                                                    title="Marquer comme résolu"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#closeIncidentModal{{ incident.id }}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% endif %}
+
+                                            {% if can_export_pdf %}
+                                                <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
+                                                   class="btn btn-secondary text-white action-btn" 
+                                                   title="Exporter en PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
-                                        <button type="button" class="btn btn-danger text-white action-btn" title="Supprimer" 
-                                                data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -779,7 +803,7 @@
             <i class="fas fa-clipboard-list fa-4x mb-4 text-muted"></i>
             <h4 class="mb-3">Aucun incident pour le moment</h4>
             <p class="text-muted mb-4">Il n'y a actuellement aucun incident signalé dans le système.</p>
-            {% if current_user.role != 'Employeur DG' %}
+            {% if current_user.role != 'Employeur DG' and can_create_incident %}
                 <a href="{{ url_for('incidents.new_incident') }}" class="btn btn-primary">
                     Créer un incident
                 </a>
@@ -790,7 +814,7 @@
 </div>
 
 <!-- Floating Action Button for mobile -->
-{% if current_user.role != 'Employeur DG' %}
+{% if current_user.role != 'Employeur DG' and can_create_incident %}
     <a href="{{ url_for('incidents.new_incident') }}" class="fab-new-incident">
         <i class="fas fa-plus"></i>
     </a>

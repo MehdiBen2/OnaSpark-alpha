@@ -16,7 +16,8 @@ import requests
 from flask_caching import Cache
 from extensions import cache
 from utils.incident_utils import get_user_incident_counts, get_incident_cache_key
-from utils.roles import UserRole  # Add this import at the top of the file
+from utils.roles import UserRole
+from utils.permissions import permission_required, Permission, context_permission_check
 
 incidents = Blueprint('incidents', __name__)
 
@@ -64,6 +65,7 @@ def parse_drawn_shapes(drawn_shapes_json: Optional[str]) -> Optional[Dict[str, A
 
 @incidents.route('/list', methods=['GET'], endpoint='incident_list')
 @login_required
+@permission_required(Permission.VIEW_INCIDENT)
 def list_incidents():
     """
     Display a paginated list of incidents with optional filtering, searching, and sorting.
@@ -151,14 +153,26 @@ def list_incidents():
         'status_filter': status_filter,
         'total_incidents': pagination.total,
         'current_time': datetime.now(),
-        'UserRole': UserRole  # Add UserRole to the context
+        'UserRole': UserRole,
+        'can_view_incident': context_permission_check(Permission.VIEW_INCIDENT),
+        'can_create_incident': context_permission_check(Permission.CREATE_INCIDENT),
+        'can_edit_incident': context_permission_check(Permission.EDIT_INCIDENT),
+        'can_delete_incident': context_permission_check(Permission.DELETE_INCIDENT),
+        'can_export_pdf': context_permission_check(Permission.EXPORT_INCIDENT_PDF),
+        'can_ai_analysis': context_permission_check(Permission.GET_AI_EXPLANATION),
     }
     
     return render_template('incidents/incident_list.html', **context)
 
 @incidents.route('/incident/new', methods=['GET', 'POST'])
 @login_required
+@permission_required(Permission.CREATE_INCIDENT)
 def new_incident():
+    # Prevent Employeur DG from accessing this route
+    if current_user.role == UserRole.EMPLOYEUR_DG:
+        flash('Vous n\'avez pas la permission de créer des incidents.', 'danger')
+        return redirect(url_for('incidents.list_incidents'))
+    
     # Get all available units for admin, or just the user's unit for others
     if current_user.role == UserRole.ADMIN:
         units = Unit.query.all()
@@ -295,6 +309,7 @@ def new_incident():
 
 @incidents.route('/incident/<int:incident_id>')
 @login_required
+@permission_required(Permission.VIEW_INCIDENT)
 def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not (current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG] or current_user.unit_id == incident.unit_id):
@@ -304,7 +319,13 @@ def view_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/edit', methods=['GET', 'POST'])
 @login_required
+@permission_required(Permission.EDIT_INCIDENT)
 def edit_incident(incident_id):
+    # Prevent Employeur DG from accessing this route
+    if current_user.role == UserRole.EMPLOYEUR_DG:
+        flash('Vous n\'avez pas la permission de modifier des incidents.', 'danger')
+        return redirect(url_for('incidents.list_incidents'))
+    
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
@@ -340,7 +361,13 @@ def edit_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/delete', methods=['POST'])
 @login_required
+@permission_required(Permission.DELETE_INCIDENT)
 def delete_incident(incident_id):
+    # Prevent Employeur DG from accessing this route
+    if current_user.role == UserRole.EMPLOYEUR_DG:
+        flash('Vous n\'avez pas la permission de supprimer des incidents.', 'danger')
+        return redirect(url_for('incidents.list_incidents'))
+    
     incident = Incident.query.get_or_404(incident_id)
     
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
@@ -365,6 +392,7 @@ def delete_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/resolve', methods=['POST'])
 @login_required
+@permission_required(Permission.RESOLVE_INCIDENT)
 def resolve_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
     if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
@@ -405,6 +433,7 @@ def resolve_incident(incident_id):
 
 @incidents.route('/incident/<int:incident_id>/export_pdf')
 @login_required
+@permission_required(Permission.EXPORT_INCIDENT_PDF)
 def export_incident_pdf(incident_id):
     try:
         incident = Incident.query.get_or_404(incident_id)
@@ -438,6 +467,7 @@ def export_incident_pdf(incident_id):
 
 @incidents.route('/incidents/export_all_pdf')
 @login_required
+@permission_required(Permission.EXPORT_ALL_INCIDENTS_PDF)
 def export_all_incidents_pdf():
     try:
         # Get all incidents based on user role
@@ -479,6 +509,7 @@ def export_all_incidents_pdf():
 
 @incidents.route('/get_ai_explanation', methods=['GET', 'POST'])
 @login_required
+@permission_required(Permission.GET_AI_EXPLANATION)
 def get_ai_explanation():
     """
     Generate AI explanation for incident nature and cause using Mistral API.
@@ -622,6 +653,7 @@ INSTRUCTIONS:
 
 @incidents.route('/incidents/deep_analysis', methods=['POST'])
 @login_required
+@permission_required(Permission.DEEP_ANALYSIS)
 def deep_incident_analysis():
     """
     Perform a deep analysis of an incident using AI.
