@@ -168,7 +168,7 @@
                             </a>
                             {% endif %}
 
-                            {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
+                            {% if current_user.role in ['Admin', 'Employeur DG'] %}
                             <a href="{{ url_for('units.units_list') }}" class="action-btn primary">
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
@@ -176,6 +176,15 @@
                                     <span class="action-description">Consultez la liste des unités de l'ONA</span>
                                 </div>
                             </a>
+                            {% elif current_user.role == 'Employeur Zone' %}
+                            <a href="{{ url_for('units.units_list') }}" class="action-btn primary">
+                                <i class="fas fa-building"></i>
+                                <div class="action-content">
+                                    <span class="action-title">Gestion des Unités</span>
+                                    <span class="action-description">Gérez les unités de votre zone</span>
+                                </div>
+                            </a>
+                            {% endif %}
                             <a href="{{ url_for('centers.centres_listes_par_zone') }}" class="action-btn success">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <div class="action-content">
@@ -183,7 +192,6 @@
                                     <span class="action-description">Explorez les centres détaillés par zone et unité</span>
                                 </div>
                             </a>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
