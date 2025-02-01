@@ -483,6 +483,7 @@ def resolve_incident(incident_id):
         flash('Veuillez décrire les mesures prises pour résoudre l\'incident.', 'danger')
         return redirect(url_for(INCIDENT_LIST))
     
+    incident.is_valid = True
     incident.status = 'Résolu'
     incident.mesures_prises = mesures_prises
     incident.resolution_datetime = resolution_datetime
@@ -930,7 +931,9 @@ def validate_incident(incident_id):
         return redirect(url_for('incidents.list_incidents'))
     
     try:
-        # Update incident status to validated
+        # Update incident validation status
+        incident.is_valid = True
+        # Keep the status as before for tracking purposes
         incident.status = 'Validé'
         db.session.commit()
         

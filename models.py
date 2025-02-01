@@ -178,6 +178,9 @@ class Incident(db.Model):
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
     
+    # New column for validation status
+    is_valid = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
