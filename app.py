@@ -21,7 +21,7 @@ from routes.documentation import documentation
 from flask.cli import with_appcontext
 import click
 from utils.url_endpoints import *  # Import all URL endpoints
-from utils.permissions import UserRole
+from utils.permissions import PermissionManager, Permission, UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
@@ -176,6 +176,11 @@ def rapports():
 @app.route('/units')
 @login_required
 def list_units():
+    # Check permission to view units
+    if not PermissionManager.has_permission(current_user.role, Permission.VIEW_ALL_UNITS):
+        flash('Vous n\'avez pas la permission de voir la liste des unités.', 'danger')
+        return redirect(url_for('main_dashboard.dashboard'))
+
     # Admin and DG see all units
     if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         units = Unit.query.all()
@@ -410,15 +415,50 @@ def select_unit():
 @app.route('/api/units/<int:zone_id>')
 @login_required
 def get_zone_units(zone_id):
-    permissions = UserRole.get_permissions(current_user.role)
+    """
+    API endpoint to retrieve units for a specific zone.
     
-    # Check if user has access to this zone
-    if not permissions.get('can_view_all_units', False):
+    Permissions:
+    - Admin and DG can view all units
+    - Zone employers can view units in their assigned zone
+    - Other roles are restricted
+    """
+    # Check if user has permission to view units
+    if not PermissionManager.has_permission(current_user.role, Permission.VIEW_ALL_UNITS):
+        # For non-admin/DG roles, only allow access to their own zone
         if current_user.zone_id != zone_id:
-            return jsonify([])
-            
-    units = Unit.query.filter_by(zone_id=zone_id).all()
-    return jsonify([{'id': unit.id, 'name': unit.name} for unit in units])
+            return jsonify({
+                'error': 'Accès non autorisé',
+                'status': 'forbidden'
+            }), 403
+    
+    # Retrieve units for the specified zone
+    try:
+        units = Unit.query.filter_by(zone_id=zone_id).all()
+        
+        # Convert units to a list of dictionaries
+        units_list = [
+            {
+                'id': unit.id, 
+                'name': unit.name, 
+                'code': unit.code
+            } for unit in units
+        ]
+        
+        return jsonify({
+            'units': units_list,
+            'total_units': len(units_list),
+            'status': 'success'
+        })
+    
+    except Exception as e:
+        # Log the error for debugging
+        current_app.logger.error(f"Error retrieving units for zone {zone_id}: {str(e)}")
+        
+        return jsonify({
+            'error': 'Erreur lors de la récupération des unités',
+            'status': 'error'
+        }), 500
 
 @app.route('/login')
 def login():
