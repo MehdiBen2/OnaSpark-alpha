@@ -1,49 +1,49 @@
 {% extends "base/base.html" %}
 
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container mt-4 animate__animated animate__fadeIn">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>{{ table_name }}</h2>
-        <a href="{{ url_for('database_admin.database_overview') }}" class="btn btn-secondary">Back to Overview</a>
+        <h2 class="fw-bold">Table : {{ table_name }}</h2>
+        <a href="{{ url_for('database_admin.database_overview') }}" class="btn btn-outline-secondary shadow">Retour à la Vue d'Ensemble</a>
     </div>
 
     <!-- Add Column Modal -->
     <div class="modal fade" id="addColumnModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Column</h5>
+            <div class="modal-content shadow">
+                <div class="modal-header" style="background: linear-gradient(to right, #17528a, #2575fc); color: #fff;">
+                    <h5 class="modal-title">Ajouter une Nouvelle Colonne</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="{{ url_for('database_admin.add_column', table_name=table_name) }}" method="POST">
                     <div class="modal-body">
                         <input type="hidden" name="table_name" value="{{ table_name }}">
                         <div class="mb-3">
-                            <label class="form-label">Column Name</label>
+                            <label class="form-label">Nom de la Colonne</label>
                             <input type="text" class="form-control" name="column_name" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Column Type</label>
+                            <label class="form-label">Type de Colonne</label>
                             <select class="form-select" name="column_type" required>
-                                <option value="String">String</option>
-                                <option value="Integer">Integer</option>
-                                <option value="Float">Float</option>
-                                <option value="Boolean">Boolean</option>
-                                <option value="DateTime">DateTime</option>
-                                <option value="Text">Text</option>
+                                <option value="String">Chaîne de Caractères</option>
+                                <option value="Integer">Entier</option>
+                                <option value="Float">Décimal</option>
+                                <option value="Boolean">Booléen</option>
+                                <option value="DateTime">Date et Heure</option>
+                                <option value="Text">Texte</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Nullable</label>
+                            <label class="form-label">Nullable (Peut être Vide)</label>
                             <select class="form-select" name="nullable">
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
+                                <option value="true">Oui</option>
+                                <option value="false">Non</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Column</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter Colonne</button>
                     </div>
                 </form>
             </div>
@@ -53,9 +53,9 @@
     <!-- Add Row Modal -->
     <div class="modal fade" id="addRowModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Row</h5>
+            <div class="modal-content shadow">
+                <div class="modal-header" style="background: linear-gradient(to right, #6a11cb, #2575fc); color: #fff;">
+                    <h5 class="modal-title">Ajouter une Nouvelle Ligne</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form action="{{ url_for('database_admin.add_row', table_name=table_name) }}" method="POST">
@@ -66,7 +66,7 @@
                             <label class="form-label">{{ column.name }}</label>
                             {% if column.foreign_key %}
                                 <select class="form-select" name="{{ column.name }}" {% if not column.nullable %}required{% endif %}>
-                                    <option value="">Select {{ column.foreign_table }}</option>
+                                    <option value="">Sélectionner {{ column.foreign_table }}</option>
                                     {% for option in related_data[column.foreign_table] %}
                                     <option value="{{ option.id }}">{{ option.display_name }}</option>
                                     {% endfor %}
@@ -75,8 +75,8 @@
                                 {% set type_str = column.type | string %}
                                 {% if 'Boolean' in type_str %}
                                 <select class="form-select" name="{{ column.name }}" {% if not column.nullable %}required{% endif %}>
-                                    <option value="true">True</option>
-                                    <option value="false">False</option>
+                                    <option value="true">Vrai</option>
+                                    <option value="false">Faux</option>
                                 </select>
                                 {% elif 'DateTime' in type_str %}
                                 <input type="datetime-local" class="form-control" name="{{ column.name }}"
@@ -103,8 +103,8 @@
                         {% endfor %}
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Row</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter Ligne</button>
                     </div>
                 </form>
             </div>
@@ -114,9 +114,9 @@
     <!-- Edit Row Modal -->
     <div class="modal fade" id="editRowModal" tabindex="-1">
         <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Row</h5>
+            <div class="modal-content shadow">
+                <div class="modal-header" style="background: linear-gradient(to right, #2049b9, #2575fc); color: #fff;">
+                    <h5 class="modal-title">Modifier la Ligne</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="editRowForm" action="{{ url_for('database_admin.edit_row', table_name=table_name) }}" method="POST">
@@ -129,7 +129,7 @@
                             {% if column.foreign_key %}
                                 <select class="form-select" name="{{ column.name }}" id="edit-{{ column.name }}" 
                                         {% if not column.nullable %}required{% endif %}>
-                                    <option value="">Select {{ column.foreign_table }}</option>
+                                    <option value="">Sélectionner {{ column.foreign_table }}</option>
                                     {% for option in related_data[column.foreign_table] %}
                                     <option value="{{ option.id }}">{{ option.display_name }}</option>
                                     {% endfor %}
@@ -139,8 +139,8 @@
                                 {% if 'Boolean' in type_str %}
                                 <select class="form-select" name="{{ column.name }}" id="edit-{{ column.name }}"
                                         {% if not column.nullable %}required{% endif %}>
-                                    <option value="true">True</option>
-                                    <option value="false">False</option>
+                                    <option value="true">Vrai</option>
+                                    <option value="false">Faux</option>
                                 </select>
                                 {% elif 'DateTime' in type_str %}
                                 <input type="datetime-local" class="form-control" name="{{ column.name }}"
@@ -167,26 +167,24 @@
                         {% endfor %}
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer les Modifications</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Table Data</h5>
-                <div>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addColumnModal">
-                        Add Column
-                    </button>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRowModal">
-                        Add Row
-                    </button>
-                </div>
+    <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(to right, #345ac0, #2575fc); color: #fff;">
+            <h5 class="mb-0">Données de la Table</h5>
+            <div>
+                <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addColumnModal">
+                    Ajouter Colonne
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRowModal">
+                    Ajouter Ligne
+                </button>
             </div>
         </div>
         <div class="card-body">
@@ -211,7 +209,7 @@
                                 {% else %}
                                     {% set type_str = column.type | string %}
                                     {% if 'Boolean' in type_str %}
-                                        {{ 'Yes' if row[column.name] else 'No' }}
+                                        {{ 'Oui' if row[column.name] else 'Non' }}
                                     {% elif 'DateTime' in type_str %}
                                         {{ row[column.name].strftime('%Y-%m-%d %H:%M:%S') if row[column.name] }}
                                     {% elif 'Date' in type_str %}
@@ -223,11 +221,11 @@
                             </td>
                             {% endfor %}
                             <td>
-                                <button class="btn btn-sm btn-warning" onclick="editRow({{ row.id }})">Edit</button>
-                                <form action="{{ url_for('database_admin.delete_row', table_name=table_name, row_id=row.id) }}" 
+                                <button class="btn btn-sm btn-warning" onclick="editRow({{ row.get('id', 0) }})">Modifier</button>
+                                <form action="{{ url_for('database_admin.delete_row', table_name=table_name, row_id=row.get('id', 0)) }}" 
                                       method="POST" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-danger" 
-                                            onclick="return confirm('Are you sure you want to delete this row?')">Delete</button>
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette ligne ?')">Supprimer</button>
                                 </form>
                             </td>
                         </tr>
@@ -245,13 +243,20 @@ function editRow(rowId) {
     fetch(`/admin/database/table/{{ table_name }}/row/${rowId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('edit-row-id').value = rowId;
-            {% for column in columns %}
-            {% if column.name != 'id' %}
-            document.getElementById('edit-{{ column.name }}').value = data['{{ column.name }}'] || '';
-            {% endif %}
-            {% endfor %}
-            new bootstrap.Modal(document.getElementById('editRowModal')).show();
+            if (typeof data === 'object' && data !== null) {
+                document.getElementById('edit-row-id').value = rowId;
+                {% for column in columns %}
+                {% if column.name != 'id' %}
+                document.getElementById('edit-{{ column.name }}').value = data['{{ column.name }}'] || '';
+                {% endif %}
+                {% endfor %}
+                new bootstrap.Modal(document.getElementById('editRowModal')).show();
+            } else {
+                console.error('Invalid data received:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching row data:', error);
         });
 }
 
@@ -264,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(`/admin/database/related-data/{{ column.foreign_table }}`)
             .then(response => response.json())
             .then(data => {
-                {{ column.name }}_select.innerHTML = '<option value="">Select {{ column.foreign_table }}</option>';
+                {{ column.name }}_select.innerHTML = '<option value="">Sélectionner {{ column.foreign_table }}</option>';
                 data.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.id;
@@ -280,4 +285,3 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 
 {% endblock %}
-

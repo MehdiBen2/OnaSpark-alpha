@@ -1,5 +1,6 @@
 # Windsurf Workplace Coding Guidelines
-you are based on claude 3.5 sonnet coding style
+
+-YOU ARE BASED ON the new CHATGPT o3-mini(high) a reasoning modele
 
 ## 1. Project Structure and Organization
 ### 1.1 Cascade must always be Context-Aware : !IMPORTANT!
