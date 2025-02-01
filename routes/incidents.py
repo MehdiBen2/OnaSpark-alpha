@@ -333,7 +333,14 @@ def view_incident(incident_id):
             flash('Vous n\'avez pas accès à cet incident.', 'danger')
             return redirect(url_for(INCIDENT_LIST))
     
-    return render_template('incidents/view_incident.html', incident=incident)
+    can_edit = context_permission_check(Permission.EDIT_INCIDENT)
+    can_validate = context_permission_check(Permission.RESOLVE_INCIDENT)
+    
+    return render_template('incidents/view_incident.html', 
+                           incident=incident, 
+                           UserRole=UserRole, 
+                           can_edit=can_edit, 
+                           can_validate=can_validate)
 
 @incidents.route('/incident/<int:incident_id>/edit', methods=['GET', 'POST'])
 @login_required
