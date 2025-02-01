@@ -433,11 +433,6 @@ def new_incident():
 def serve_docs():
     return send_file('docs/index.html')
 
-@app.route('/test_error')
-def test_error():
-    # This will deliberately cause a 500 error
-    return 1 / 0
-
 @app.route('/spark-agent')
 @login_required
 def spark_agent():
