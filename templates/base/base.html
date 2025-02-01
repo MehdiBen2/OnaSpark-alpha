@@ -251,31 +251,53 @@
         }
 
         /* Notification Styles */
-        .notification-container {
+        #notification-container {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            z-index: 1000;
-            max-width: 400px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 300px;
+            width: 100%;
+            pointer-events: none;
         }
 
-        .notification {
-            background: white;
+        #notification-container > div {
+            background-color: var(--ona-primary);
+            color: white;
+            padding: 12px 20px;
+            margin: 5px 0;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            max-width: 100%;
+            word-wrap: break-word;
+            opacity: 0;
+            transform: translateX(-100%);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            transform: translateX(-100%);
-            opacity: 0;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            gap: 10px;
         }
 
-        .map-container {
-            height: 400px;
-            margin-bottom: 20px;
+        #notification-container > div.success {
+            background-color: #28a745;
+        }
+
+        #notification-container > div.error {
+            background-color: #dc3545;
+        }
+
+        #notification-container > div.warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        #notification-container > div.info {
+            background-color: #17a2b8;
         }
     </style>
 </head>
@@ -358,23 +380,7 @@
         </div>
     </nav>
 
-    <div class="notification-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="notification {{ category }}" role="alert">
-                        <div class="notification-content">
-                            <i class="fas fa-info-circle notification-icon"></i>
-                            <span class="notification-message">{{ message|safe }}</span>
-                        </div>
-                        <button type="button" class="notification-close" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    <div id="notification-container"></div>
 
     {% block content %}{% endblock %}
 
@@ -384,6 +390,7 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 
     {% block extra_js %}{% endblock %}
     {% block page_scripts %}{% endblock %}

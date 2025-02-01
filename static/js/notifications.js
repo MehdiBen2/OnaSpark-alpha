@@ -16,6 +16,8 @@ class NotificationManager {
      * @param {Object} [options] - Additional configuration options
      */
     show(type, message, options = {}) {
+        console.log(`Showing notification: ${type} - ${message}`);
+        
         // Validate input
         if (!['success', 'error', 'warning', 'info'].includes(type)) {
             console.error('Invalid notification type');
@@ -58,39 +60,20 @@ class NotificationManager {
         if (!notificationContainer) {
             notificationContainer = document.createElement('div');
             notificationContainer.id = 'notification-container';
-            notificationContainer.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 20px;
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                max-width: 300px;
-                width: 100%;
-            `;
             document.body.appendChild(notificationContainer);
         }
 
-        // Clear any existing notifications
-        notificationContainer.innerHTML = '';
-
         // Create notification element
         const notificationElement = document.createElement('div');
-        notificationElement.style.cssText = `
-            background-color: ${this.getBackgroundColor(notification.type)};
-            color: white;
-            padding: 10px 15px;
-            margin: 5px 0;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            max-width: 100%;
-            word-wrap: break-word;
-            opacity: 0;
-            transform: translateX(-100%);
-            transition: all 0.3s ease;
+        notificationElement.className = notification.type;
+        
+        // Add icon based on type
+        const icon = this.getIcon(notification.type);
+        const message = this.decodeHtmlEntities(notification.message);
+        notificationElement.innerHTML = `
+            <i class="${icon}"></i>
+            <span>${message}</span>
         `;
-        notificationElement.innerHTML = this.decodeHtmlEntities(notification.message);
 
         // Add to container
         notificationContainer.appendChild(notificationElement);
@@ -138,6 +121,21 @@ class NotificationManager {
     }
 
     /**
+     * Get icon class based on notification type
+     * @param {string} type - Notification type
+     * @returns {string} Icon class
+     */
+    getIcon(type) {
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+        return icons[type] || icons.info;
+    }
+
+    /**
      * Decode HTML entities to their corresponding characters
      * @param {string} html - String with HTML entities
      * @returns {string} Decoded string
@@ -146,21 +144,6 @@ class NotificationManager {
         const txt = document.createElement('textarea');
         txt.innerHTML = html;
         return txt.value;
-    }
-
-    /**
-     * Get background color based on notification type
-     * @param {string} type - Notification type
-     * @returns {string} Background color
-     */
-    getBackgroundColor(type) {
-        const colors = {
-            success: '#28a745',
-            error: '#dc3545',
-            warning: '#ffc107',
-            info: '#17a2b8'
-        };
-        return colors[type] || '#17a2b8';
     }
 
     /**

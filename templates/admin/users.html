@@ -694,34 +694,48 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Form submission handler
     document.getElementById('createUserForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         console.log('Form submission started');
+
+        // Initialize Notifications if not already initialized
+        if (!window.Notifications) {
+            console.error('Notifications not initialized');
+            return;
+        }
 
         // Validate form before submission
         if (!this.checkValidity()) {
             e.stopPropagation();
             this.classList.add('was-validated');
+            window.Notifications.error('Veuillez remplir tous les champs obligatoires');
             return;
         }
 
+        // Declare variables outside try block to ensure scope
+        let submitButton, spinnerElement, buttonTextElement, originalButtonText;
+
         try {
-            // Disable form submission while processing
-            const submitButton = this.querySelector('button[type="submit"]');
-            const spinnerElement = submitButton.querySelector('.spinner-border');
-            const buttonTextElement = submitButton.querySelector('.button-text');
-            const originalButtonText = buttonTextElement.textContent;
+            // Capture button elements safely
+            submitButton = this.querySelector('button[type="submit"]');
+            spinnerElement = submitButton ? submitButton.querySelector('.spinner-border') : null;
+            buttonTextElement = submitButton ? submitButton.querySelector('.button-text') : null;
+            
+            // Safely store original button text
+            originalButtonText = buttonTextElement ? buttonTextElement.textContent : 'Soumettre';
 
             // Show loading state with clear visibility
-            submitButton.disabled = true;
-            spinnerElement.classList.remove('d-none');
-            buttonTextElement.textContent = isEditing ? 'Modification en cours...' : 'Création en cours...';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.classList.add('btn-loading');
+                submitButton.style.color = '#ffffff';
+                submitButton.style.backgroundColor = '#007bff';
+            }
 
-            // Ensure clear, high-contrast text
-            submitButton.classList.add('btn-loading');
-            submitButton.style.color = '#ffffff'; // Ensure white text
-            submitButton.style.backgroundColor = '#007bff'; // Visible blue background
+            if (spinnerElement) spinnerElement.classList.remove('d-none');
+            if (buttonTextElement) {
+                buttonTextElement.textContent = isEditing ? 'Modification en cours...' : 'Création en cours...';
+            }
 
             // Get form data
             const formData = new FormData(this);
@@ -776,44 +790,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             });
 
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                const data = await response.json();
+            // Try to parse response as JSON
+            let data;
+            try {
+                data = await response.json();
                 console.log('Response data:', data);
-
-                if (data.success) {
-                    window.Notifications.success(data.message || (isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès'));
-                    panel.classList.remove('open');
-                    location.reload();
-                } else {
-                    window.Notifications.error(data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur'));
-                    throw new Error(data.message);
-                }
-            } else {
-                if (response.ok) {
-                    window.Notifications.success(isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès');
-                    panel.classList.remove('open');
-                    location.reload();
-                } else {
-                    window.Notifications.error(isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur');
-                    throw new Error('Erreur de serveur');
-                }
+            } catch (parseError) {
+                console.error('JSON parsing error:', parseError);
+                window.Notifications.error('Erreur de traitement de la réponse du serveur');
+                return;
             }
+            
+            // Handle the response
+            if (response.ok && data.success) {
+                const successMessage = data.message || (isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès');
+                console.log('Success:', successMessage);
+                window.Notifications.success(successMessage);
+                
+                // Wait for notification to show before reloading
+                setTimeout(() => {
+                    panel.classList.remove('open');
+                    location.reload();
+                }, 1000);
+            } else {
+                const errorMessage = data.message || (isEditing ? 'Erreur lors de la modification de l\'utilisateur' : 'Erreur lors de la création de l\'utilisateur');
+                console.log('Error:', errorMessage);
+                window.Notifications.error(errorMessage);
+                throw new Error(errorMessage);
+            }
+
         } catch (error) {
             console.error('Error during form submission:', error);
             window.Notifications.error(error.message || 'Une erreur est survenue lors de la communication avec le serveur');
         } finally {
-            // Re-enable the submit button
-            const submitButton = this.querySelector('button[type="submit"]');
-            const spinnerElement = submitButton.querySelector('.spinner-border');
-            const buttonTextElement = submitButton.querySelector('.button-text');
-            
-            submitButton.disabled = false;
-            spinnerElement.classList.add('d-none');
-            buttonTextElement.textContent = originalButtonText;
-            submitButton.classList.remove('btn-loading');
-            submitButton.style.color = ''; // Reset color
-            submitButton.style.backgroundColor = ''; // Reset background
+            // Reset button state
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.classList.remove('btn-loading');
+                submitButton.style.color = '';
+                submitButton.style.backgroundColor = '';
+            }
+
+            if (spinnerElement) spinnerElement.classList.add('d-none');
+
+            if (buttonTextElement && originalButtonText) {
+                buttonTextElement.textContent = originalButtonText;
+            }
         }
     });
 
