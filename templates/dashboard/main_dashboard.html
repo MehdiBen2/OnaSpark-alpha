@@ -137,7 +137,7 @@
                                     <span class="action-description">Gérez les profils et accès des utilisateurs de l'ONA</span>
                                 </div>
                             </a>
-                            <a href="{{ url_for('units.manage_units') }}" class="action-btn warning">
+                            <a href="{{ url_for('units.units_list') }}" class="action-btn warning">
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
                                     <span class="action-title">Gestion des Unités</span>
@@ -169,11 +169,11 @@
                             {% endif %}
 
                             {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
-                            <a href="{{ url_for('list_units') }}" class="action-btn primary">
+                            <a href="{{ url_for('units.units_list') }}" class="action-btn primary">
                                 <i class="fas fa-building"></i>
                                 <div class="action-content">
                                     <span class="action-title">Liste des Unités</span>
-                                    <span class="action-description">Visualisez les listes des unités de chaque zone</span>
+                                    <span class="action-description">Consultez la liste des unités de l'ONA</span>
                                 </div>
                             </a>
                             <a href="{{ url_for('centers.centres_listes_par_zone') }}" class="action-btn success">

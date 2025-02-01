@@ -8,7 +8,7 @@ MAIN_DASHBOARD = 'main_dashboard.dashboard'
 DASHBOARD = 'main_dashboard.dashboard'  # Keeping both for backward compatibility
 LISTES_DASHBOARD = 'main_dashboard.listes_dashboard'
 SERVICES = 'services'
-SELECT_UNIT = 'select_unit'
+SELECT_UNIT = 'unit.select'
 
 # Department routes
 EXPLOITATION = 'exploitation'
@@ -77,7 +77,10 @@ PROFILE_ADMIN = 'profiles.admin_profiles'
 PROFILE_USER_VIEW = 'profiles.view_user_profile'
 
 # Unit routes
-SELECT_UNIT = 'unit.select'
+UNITS_LIST = 'units.units_list'
+UNITS_CREATE = '/units/create'
+UNITS_EDIT = '/units/<int:unit_id>/edit'
+UNITS_DELETE = '/units/<int:unit_id>/delete'
 UPDATE_UNIT = 'unit.update'
 GET_UNIT_INCIDENTS = 'unit.get_incidents'
 

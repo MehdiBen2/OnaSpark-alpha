@@ -10,6 +10,7 @@ from utils.url_endpoints import *
 from utils.incident_utils import get_user_incident_counts
 from utils.decorators import unit_required
 from extensions import cache
+from routes.units import units
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -147,6 +148,9 @@ def dashboard():
         Rendered dashboard template with detailed context
     """
     try:
+        # Debug print
+        print(f"DEBUG: Dashboard route called. User: {current_user.username}, Role: {current_user.role}")
+        
         # Get incident counts for the current user
         incident_counts = get_user_incident_counts(current_user)
         
@@ -164,8 +168,13 @@ def dashboard():
             'user_zone': user_zone,
         }
         
-        # Render dashboard with context
-        return render_template('dashboard/main_dashboard.html', **context)
+        # Explicitly render the main dashboard template
+        print(f"DEBUG: Rendering dashboard with total incidents: {context['total_incidents']}")
+        return render_template('dashboard/main_dashboard.html', 
+                             total_incidents=context['total_incidents'],
+                             resolved_incidents=context['resolved_incidents'],
+                             pending_incidents=context['pending_incidents'],
+                             datetime=datetime)
     
     except Exception as e:
         # Comprehensive error logging

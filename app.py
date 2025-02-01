@@ -34,6 +34,15 @@ from routes.bilan_routes import bilan_bp
 # Load environment variables
 load_dotenv()
 
+# Logging configuration
+import logging
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler('ona_debug.log'),
+                        logging.StreamHandler()
+                    ])
+
 # Initialize Flask app
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24))
@@ -172,33 +181,6 @@ def rapports():
     incidents_count = incident_counts['total_incidents']
     return render_template('departement/rapports.html', incidents_count=incidents_count)
 
-
-@app.route('/units')
-@login_required
-def list_units():
-    # Check permission to view units
-    if not PermissionManager.has_permission(current_user.role, Permission.VIEW_ALL_UNITS):
-        flash('Vous n\'avez pas la permission de voir la liste des unités.', 'danger')
-        return redirect(url_for('main_dashboard.dashboard'))
-
-    # Admin and DG see all units
-    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
-        units = Unit.query.all()
-        zones = Zone.query.all()
-    # Zone employers see units in their zone
-    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
-        units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-        zones = [Zone.query.get(current_user.zone_id)]
-    # Others only see their unit
-    else:
-        if current_user.unit_id:
-            units = [Unit.query.get(current_user.unit_id)]
-            zones = [Zone.query.get(current_user.zone_id)] if current_user.zone_id else []
-        else:
-            units = []
-            zones = []
-    
-    return render_template('dashboard/list_units.html', units=units, zones=zones)
 
 @app.route('/zones')
 @login_required

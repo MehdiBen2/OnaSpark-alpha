@@ -1,0 +1,258 @@
+{% extends "base/base.html" %}
+
+{% block title %}Gestion et Liste des Unités{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col d-flex justify-content-between align-items-center">
+            <h2 class="display-6 mb-0">
+                <i class="fas fa-building text-primary me-2"></i>
+                Unités
+            </h2>
+            {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newUnitModal">
+                <i class="fas fa-plus me-2"></i>Nouvelle Unité
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if zones %}
+    <div class="row">
+        {% for zone in zones %}
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {{ zone.name }}
+                    </h5>
+                    <span class="badge bg-light text-primary">
+                        {{ units|selectattr('zone_id', 'equalto', zone.id)|list|length }} unités
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nom de l'Unité</th>
+                                    <th>Localisation</th>
+                                    <th>Description</th>
+                                    <th>Centres</th>
+                                    {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
+                                    <th>Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in units if unit.zone_id == zone.id %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-building text-primary me-2"></i>
+                                        {{ unit.name }}
+                                    </td>
+                                    <td>{{ unit.location or 'Non spécifié' }}</td>
+                                    <td>{{ unit.description or 'Aucune description' }}</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ unit.centers|length }} centres
+                                        </span>
+                                    </td>
+                                    {% if current_user.role in ['Admin', 'Employeur DG', 'Employeur Zone'] %}
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button class="btn btn-outline-primary" 
+                                                onclick="editUnit({{ unit.id }}, '{{ unit.name }}', '{{ unit.location or '' }}', '{{ unit.description or '' }}')"
+                                                title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" 
+                                                onclick="deleteUnit({{ unit.id }})"
+                                                title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        Aucune zone n'est disponible pour le moment.
+    </div>
+    {% endif %}
+</div>
+
+<!-- New Unit Modal -->
+<div class="modal fade" id="newUnitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Nouvelle Unité</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('units.new_unit') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nom *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="zone_id" class="form-label">Zone *</label>
+                        <select class="form-select" id="zone_id" name="zone_id" required>
+                            <option value="">Sélectionner une zone</option>
+                            {% for zone in zones %}
+                            <option value="{{ zone.id }}">{{ zone.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Localisation</label>
+                        <input type="text" class="form-control" id="location" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Unit Modal -->
+<div class="modal fade" id="editUnitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Modifier l'Unité</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUnitForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">Nom *</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_location" class="form-label">Localisation</label>
+                        <input type="text" class="form-control" id="edit_location" name="location">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Unit Modal -->
+<div class="modal fade" id="deleteUnitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette unité ?</p>
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Cette action est irréversible.</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="deleteUnitForm" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editUnit(id, name, location, description) {
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_location').value = location || '';
+    document.getElementById('edit_description').value = description || '';
+    document.getElementById('editUnitForm').action = `/admin/units/${id}/edit`;
+    new bootstrap.Modal(document.getElementById('editUnitModal')).show();
+}
+
+function deleteUnit(id) {
+    document.getElementById('deleteUnitForm').action = `/admin/units/${id}/delete`;
+    new bootstrap.Modal(document.getElementById('deleteUnitModal')).show();
+}
+</script>
+{% endblock %}
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--ona-primary), var(--ona-secondary));
+    padding: 1rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.display-6 {
+    font-weight: 600;
+    color: var(--ona-primary);
+}
+</style>
