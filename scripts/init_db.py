@@ -21,28 +21,28 @@ def init_database():
                 "username": "D_zone_alger",
                 "password": "alger123",
                 "email": "directeur.alger@ona.dz",
-                "role": UserRole.DIRECTEUR_ZONE,
+                "role": UserRole.EMPLOYEUR_ZONE,
                 "unit_id": None  # Zone director doesn't belong to a unit
             },
             {
                 "username": "D_unite_medea",
                 "password": "medea123",
                 "email": "directeur.medea@ona.dz",
-                "role": UserRole.DIRECTEUR_UNITE,
+                "role": UserRole.EMPLOYEUR_UNITE,
                 "unit_id": None  # Will be set after unit creation
             },
             {
                 "username": "D_unite_blida",
                 "password": "blida123",
                 "email": "directeur.blida@ona.dz",
-                "role": UserRole.DIRECTEUR_UNITE,
+                "role": UserRole.EMPLOYEUR_UNITE,
                 "unit_id": None
             },
             {
                 "username": "D_unite_boumerdes",
                 "password": "boumerdes123",
                 "email": "directeur.boumerdes@ona.dz",
-                "role": UserRole.DIRECTEUR_UNITE,
+                "role": UserRole.EMPLOYEUR_UNITE,
                 "unit_id": None
             }
         ]
@@ -142,21 +142,21 @@ def init_database():
                 "username": "U_blida",
                 "password": "blida",
                 "email": "u_blida@ona.dz",
-                "role": UserRole.EMPLOYER,
+                "role": UserRole.UTILISATEUR,
                 "unit_id": Unit.query.filter_by(code="BLD").first().id
             },
             {
                 "username": "U_medea",
                 "password": "medea",
                 "email": "u_medea@ona.dz",
-                "role": UserRole.EMPLOYER,
+                "role": UserRole.UTILISATEUR,
                 "unit_id": Unit.query.filter_by(code="MED").first().id
             },
             {
                 "username": "U_boumerdes",
                 "password": "boumerdes",
                 "email": "u_boumerdes@ona.dz",
-                "role": UserRole.EMPLOYER,
+                "role": UserRole.UTILISATEUR,
                 "unit_id": Unit.query.filter_by(code="BUM").first().id
             }
         ]
@@ -183,6 +183,40 @@ def init_database():
             except Exception as e:
                 db.session.rollback()
                 print(f"Error creating user: {str(e)}")
+
+        # Add admin user
+        admin_users_data = [
+            {
+                "username": "admin",
+                "password": "admin",
+                "email": "admin@ona.dz",
+                "role": UserRole.ADMIN,
+                "unit_id": None
+            }
+        ]
+
+        # Create or update admin users
+        for user_info in admin_users_data:
+            try:
+                user = User.query.filter_by(username=user_info["username"]).first()
+                if not user:
+                    # Hash the password before creating the user
+                    password = user_info.pop("password")
+                    user = User(
+                        username=user_info["username"],
+                        email=user_info["email"],
+                        role=user_info["role"],
+                        unit_id=user_info["unit_id"]
+                    )
+                    user.set_password(password)
+                    db.session.add(user)
+                    db.session.commit()
+                    print(f"Created admin user: {user.username}")
+                else:
+                    print(f"Admin user already exists: {user.username}")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error creating admin user: {str(e)}")
 
 if __name__ == "__main__":
     init_database()
