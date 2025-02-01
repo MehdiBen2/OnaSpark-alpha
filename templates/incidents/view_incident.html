@@ -21,7 +21,12 @@
                     <span class="badge bg-{{ 'danger' if incident.gravite == 'Critique' else 'warning' if incident.gravite == 'Élevée' else 'info' if incident.gravite == 'Moyenne' else 'success' }}">
                         {{ incident.gravite }}
                     </span>
-                    <span class="badge bg-{{ 'success' if incident.status == 'Résolu' else 'warning' }}">
+                    <span class="badge 
+                        {% if incident.status == 'En Cours' %}bg-warning
+                        {% elif incident.status == 'Validé' %}bg-success
+                        {% elif incident.status == 'Résolu' %}bg-info
+                        {% else %}bg-secondary{% endif %} 
+                        text-white">
                         {{ incident.status }}
                     </span>
                     <span class="text-light opacity-75">
@@ -43,11 +48,9 @@
                     <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning action-btn me-2">
                         <i class="fas fa-edit me-1"></i>Modifier
                     </a>
-                    {% if incident.status != 'Résolu' %}
                     <button type="button" class="btn btn-success action-btn me-2" data-bs-toggle="modal" data-bs-target="#validateIncidentModal">
                         <i class="fas fa-check me-1"></i>Valider
                     </button>
-                    {% endif %}
                 {% endif %}
                 
                 <a href="{{ url_for('incidents.incident_list') }}" class="btn btn-light action-btn me-2">
@@ -180,34 +183,27 @@
 </div>
 
 <!-- Validate Incident Modal -->
-{% if can_validate and incident.status != 'Résolu' %}
 <div class="modal fade" id="validateIncidentModal" tabindex="-1" aria-labelledby="validateIncidentModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="validateIncidentModalLabel">
-                    <i class="fas fa-check-circle me-2"></i>Valider l'incident
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="validateIncidentModalLabel">Valider l'Incident</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('incidents.validate_incident', incident_id=incident.id) }}" method="POST">
-                <div class="modal-body">
-                    <div class="alert alert-info" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Voulez-vous valider cet incident ? Cette action ne peut pas être annulée.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir valider cet incident ? Cette action ne peut pas être annulée.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ url_for('incidents.validate_incident', incident_id=incident.id) }}" method="POST" class="d-inline">
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i>Confirmer
+                        <i class="fas fa-check me-1"></i>Confirmer la Validation
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-{% endif %}
 
 <!-- Map Modal -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
@@ -256,7 +252,7 @@
             </a>
             {% endif %}
             
-            {% if can_validate and incident.status != 'Résolu' %}
+            {% if can_validate %}
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#validateIncidentModal">
                 <i class="fas fa-check me-1"></i>Valider
             </button>

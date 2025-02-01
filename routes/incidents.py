@@ -469,10 +469,6 @@ def resolve_incident(incident_id):
         flash('Vous n\'êtes pas autorisé à résoudre cet incident.', 'danger')
         return redirect(url_for(INCIDENT_LIST))
     
-    if incident.status == 'Résolu':
-        flash('Cet incident est déjà résolu.', 'warning')
-        return redirect(url_for(INCIDENT_LIST))
-    
     mesures_prises = request.form.get('mesures_prises')
     resolution_date = request.form.get('resolution_date')
     resolution_time = request.form.get('resolution_time')
@@ -915,3 +911,37 @@ def deep_incident_analysis():
             'error': 'Une erreur inattendue est survenue lors de l\'analyse approfondie',
             'details': str(e)
         }), 500
+
+@incidents.route('/incident/<int:incident_id>/validate', methods=['POST'])
+@login_required
+def validate_incident(incident_id):
+    # Only Employeur Zone can validate incidents
+    if current_user.role != UserRole.EMPLOYEUR_ZONE:
+        flash('Vous n\'êtes pas autorisé à valider cet incident.', 'danger')
+        return redirect(url_for('incidents.view_incident', incident_id=incident_id))
+    
+    # Fetch the incident
+    incident = Incident.query.get_or_404(incident_id)
+    
+    # Check if the incident is in the user's zone
+    incident_unit = Unit.query.get(incident.unit_id)
+    if not incident_unit or incident_unit.zone_id != current_user.zone_id:
+        flash('Vous n\'avez pas accès à cet incident.', 'danger')
+        return redirect(url_for('incidents.list_incidents'))
+    
+    try:
+        # Update incident status to validated
+        incident.status = 'Validé'
+        db.session.commit()
+        
+        # Log the validation
+        current_app.logger.info(f"Incident {incident_id} validated by {current_user.username}")
+        
+        flash('Incident validé avec succès.', 'success')
+        return redirect(url_for('incidents.view_incident', incident_id=incident_id))
+    
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error validating incident {incident_id}: {str(e)}")
+        flash('Une erreur est survenue lors de la validation de l\'incident.', 'danger')
+        return redirect(url_for('incidents.view_incident', incident_id=incident_id))
