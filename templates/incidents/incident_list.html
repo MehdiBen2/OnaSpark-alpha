@@ -377,11 +377,12 @@
                     <button class="btn btn-light me-2" id="emailButton">
                         <i class="fas fa-envelope me-2"></i>Envoyer par Email
                     </button>
-                    <a href="{{ url_for('incidents.new_incident') }}" class="btn btn-light desktop-new-incident">
-                        <i class="fas fa-plus me-2"></i>Nouvel Incident
-                    </a>
+                    {% if current_user.role not in [UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_DG] %}
+                        <a href="{{ url_for('incidents.new_incident') }}" class="btn btn-light desktop-new-incident">
+                            <i class="fas fa-plus me-2"></i>Nouvel Incident
+                        </a>
+                    {% endif %}
                 {% endif %}
-                
             </div>
         </div>
     </div>

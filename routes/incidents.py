@@ -167,20 +167,19 @@ def list_incidents():
 @login_required
 @permission_required(Permission.CREATE_INCIDENT)
 def new_incident():
+    # Prevent Employeur Zone from accessing this route
+    if current_user.role == UserRole.EMPLOYEUR_ZONE:
+        flash('Vous n\'avez pas la permission de créer des incidents.', 'danger')
+        return redirect(url_for('incidents.list_incidents'))
+    
     # Prevent Employeur DG from accessing this route
     if current_user.role == UserRole.EMPLOYEUR_DG:
         flash('Vous n\'avez pas la permission de créer des incidents.', 'danger')
         return redirect(url_for('incidents.list_incidents'))
-    
+
     # Get available units based on user role
     if current_user.role == UserRole.ADMIN:
         units = Unit.query.all()
-    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
-        # Get all units in the user's zone
-        units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
-        if not units:
-            flash('Aucune unité n\'est disponible dans votre zone.', 'warning')
-            return redirect(url_for('incidents.list_incidents'))
     else:
         # For regular users, only show their assigned unit
         if not current_user.unit_id:
@@ -222,7 +221,7 @@ def new_incident():
 
                 flash(error_msg, 'danger')
                 return redirect(url_for('incidents.new_incident'))
-
+            
             # Validate other required fields
             title = request.form.get('title')
             if not title:
@@ -365,24 +364,61 @@ def edit_incident(incident_id):
     
     if request.method == 'POST':
         try:
+            # Validate required fields
+            required_fields = ['wilaya', 'commune', 'localite', 'structure_type', 
+                               'nature_cause', 'date_incident', 'mesures_prises', 
+                               'impact', 'gravite']
+            
+            for field in required_fields:
+                if not request.form.get(field):
+                    raise ValueError(f"Le champ {field} est requis.")
+
+            # Parse date
+            try:
+                date_incident = datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M')
+            except ValueError:
+                raise ValueError("Format de date invalide.")
+
+            # Update incident fields
             incident.wilaya = request.form.get('wilaya')
             incident.commune = request.form.get('commune')
             incident.localite = request.form.get('localite')
             incident.structure_type = request.form.get('structure_type')
             incident.nature_cause = request.form.get('nature_cause')
-            incident.date_incident = datetime.strptime(request.form.get('date_incident'), '%Y-%m-%dT%H:%M')
+            incident.date_incident = date_incident
             incident.mesures_prises = request.form.get('mesures_prises')
             incident.impact = request.form.get('impact')
             incident.gravite = request.form.get('gravite')
 
+            # Optional: Validate latitude and longitude if present
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+            if latitude and longitude:
+                try:
+                    incident.latitude = float(latitude)
+                    incident.longitude = float(longitude)
+                except ValueError:
+                    current_app.logger.warning(f"Invalid coordinates: {latitude}, {longitude}")
+
+            # Commit changes
             db.session.commit()
             flash('Incident modifié avec succès.', 'success')
-            return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
-        except Exception as e:
+            return redirect(url_for('incidents.view_incident', incident_id=incident.id))
+
+        except ValueError as ve:
+            # Handle validation errors
             db.session.rollback()
-            flash('Une erreur est survenue lors de la modification de l\'incident.', 'danger')
-            current_app.logger.error(f"Error editing incident: {str(e)}")
-            return redirect(url_for(INCIDENT_LIST))
+            current_app.logger.error(f"Validation Error in edit_incident: {str(ve)}")
+            flash(str(ve), 'danger')
+            return render_template('incidents/edit_incident.html', incident=incident)
+
+        except Exception as e:
+            # Catch-all for unexpected errors
+            db.session.rollback()
+            error_msg = f'Une erreur est survenue lors de la modification de l\'incident: {str(e)}'
+            current_app.logger.error(error_msg, exc_info=True)
+            flash(error_msg, 'danger')
+            return render_template('incidents/edit_incident.html', incident=incident)
 
     return render_template('incidents/edit_incident.html', incident=incident)
 
@@ -492,26 +528,42 @@ def export_incident_pdf(incident_id):
         flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
         return redirect(url_for(INCIDENT_LIST))
 
-@incidents.route('/incidents/export_all_pdf')
+@incidents.route('/incidents/export/all/pdf')
 @login_required
 @permission_required(Permission.EXPORT_ALL_INCIDENTS_PDF)
 def export_all_incidents_pdf():
+    # Determine query based on user role
+    if current_user.role == UserRole.ADMIN:
+        # Admin can see all incidents
+        incidents = Incident.query.order_by(Incident.date_incident.desc()).all()
+    elif current_user.role == UserRole.EMPLOYEUR_DG:
+        # DG can see all incidents
+        incidents = Incident.query.order_by(Incident.date_incident.desc()).all()
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        # Employeur Zone sees incidents from their zone
+        incidents = Incident.query.join(Unit).filter(
+            Unit.zone_id == current_user.zone_id
+        ).order_by(Incident.date_incident.desc()).all()
+    else:
+        # Other roles see only incidents from their unit
+        if not current_user.unit_id:
+            flash('Vous n\'êtes pas assigné à une unité.', 'warning')
+            return redirect(url_for('main.dashboard'))
+        
+        incidents = Incident.query.filter_by(unit_id=current_user.unit_id).order_by(Incident.date_incident.desc()).all()
+
+    # Check if there are any incidents
+    if not incidents:
+        flash('Aucun incident à exporter.', 'warning')
+        return redirect(url_for('main.dashboard'))
+
+    # Generate PDF
     try:
-        # Get all incidents based on user role
-        if current_user.role == UserRole.ADMIN:
-            incidents = Incident.query.all()
-        else:
-            incidents = Incident.query.filter_by(unit_id=current_user.unit_id).all()
-        
-        if not incidents:
-            flash('Aucun incident à exporter.', 'warning')
-            return redirect(url_for(INCIDENT_LIST))
-        
         # Create temporary directory if it doesn't exist
         temp_dir = os.path.join(current_app.root_path, 'temp')
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
-            
+        
         # Generate PDF filename
         filename = f'all_incidents_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
         pdf_path = os.path.join(temp_dir, filename)
@@ -531,8 +583,9 @@ def export_all_incidents_pdf():
         )
         
     except Exception as e:
-        flash(f'Erreur lors de la génération du PDF: {str(e)}', 'danger')
-        return redirect(url_for(INCIDENT_LIST))
+        current_app.logger.error(f"Error generating PDF: {str(e)}")
+        flash('Erreur lors de la génération du PDF.', 'danger')
+        return redirect(url_for('main.dashboard'))
 
 @incidents.route('/get_ai_explanation', methods=['GET', 'POST'])
 @login_required
@@ -737,8 +790,14 @@ def deep_incident_analysis():
         
         # Use Mistral API for deep analysis
         api_key = os.getenv('MISTRAL_API_KEY') or current_app.config.get('MISTRAL_API_KEY')
-        if not api_key:
-            current_app.logger.error('Deep Analysis: Mistral API key not configured')
+        
+        # Log key retrieval details (without exposing full key)
+        current_app.logger.info(f'Mistral API key retrieved: {bool(api_key)}')
+        current_app.logger.info(f'Key length: {len(api_key) if api_key else 0}')
+        
+        # Validate API key format
+        if not api_key or len(api_key) < 10:
+            current_app.logger.error('Mistral API key is invalid or missing')
             return jsonify({
                 'error': 'Erreur de configuration du service IA',
                 'details': 'La clé API Mistral n\'est pas configurée'
