@@ -481,10 +481,11 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <div class="d-flex align-items-center">
-                        <h5 class="mb-1 me-2">{{ incident.wilaya }} - {{ incident.commune }}</h5>
+                        <h5 class="mb-1 me-2">{{ incident.title }}</h5>
                     </div>
                     <small class="text-muted">
                         <i class="fas fa-calendar me-2"></i>{{ incident.date_incident.strftime('%d/%m/%Y %H:%M') }} |
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ incident.wilaya }} - {{ incident.commune }} |
                         <i class="fas fa-user me-2"></i>{{ incident.author.username }} |
                         <span class="badge 
                             {% if incident.status == 'Validé' %}bg-success
