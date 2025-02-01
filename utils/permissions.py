@@ -23,10 +23,10 @@ class UserRole:
 
     # Role display names
     ROLE_NAMES = {
-        ADMIN: 'Administrateur',
-        EMPLOYEUR_DG: 'Directeur Général',
-        EMPLOYEUR_ZONE: 'Directeur de Zone',
-        EMPLOYEUR_UNITE: 'Directeur d\'Unité',
+        ADMIN: 'Admin',
+        EMPLOYEUR_DG: 'Employeur DG',
+        EMPLOYEUR_ZONE: 'Employeur Zone',
+        EMPLOYEUR_UNITE: 'Employeur Unité',
         UTILISATEUR: 'Utilisateur'
     }
 
