@@ -1,6 +1,6 @@
 {% extends "base/base.html" %}
-
-{% block title %}Tableau de Bord{% endblock %}
+{% set UserRole = UserRole %}  {# Explicitly set UserRole from the context #}
+{% block title %}Liste des Incidents{% endblock %}
 
 {% block extra_css %}
 <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
@@ -494,15 +494,17 @@
                         {{ incident.gravite }}
                     </span>
                     <div class="btn-group ms-2">
-                        <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary btn-sm text-white" title="Voir les détails">
-                            <i class="fas fa-eye"></i>
-                        </a>
+                        {% if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_UNITE, UserRole.EMPLOYEUR_DG] %}
+                            <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary btn-sm text-white" title="Voir les détails">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        {% endif %}
                         <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning btn-sm text-white" title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
                         <button type="button" class="btn btn-danger btn-sm text-white" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
                             <i class="fas fa-trash"></i>
-                        </button>
+                        </button> 
                     </div>
                 </div>
             </div>
@@ -626,16 +628,14 @@
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="actions-menu">
-                                        <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary action-btn" title="Voir">
-                                            <i class="fas fa-eye"></i>
-                                            <span class="btn-text">Voir</span>
-                                        </a>
-                                        {% if current_user.role == 'Admin' %}
+                                        {% if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_ZONE, UserRole.EMPLOYEUR_UNITE, UserRole.EMPLOYEUR_DG] %}
+                                            <a href="{{ url_for('incidents.view_incident', incident_id=incident.id) }}" class="btn btn-primary action-btn" title="Voir">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        {% endif %}
                                         <a href="{{ url_for('incidents.edit_incident', incident_id=incident.id) }}" class="btn btn-warning text-white action-btn" title="Modifier">
                                             <i class="fas fa-edit"></i>
-                                            <span class="btn-text">Modifier</span>
                                         </a>
-                                        {% endif %}
                                         {% if incident.status != 'Résolu' %}
                                         <button type="button" 
                                                 class="btn btn-success text-white action-btn" 
@@ -643,7 +643,6 @@
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#closeIncidentModal{{ incident.id }}">
                                             <i class="fas fa-check"></i>
-                                            <span class="btn-text">Résoudre</span>
                                         </button>
                                         {% endif %}
                                         {% if current_user.role != 'Employeur DG' %}
@@ -651,13 +650,11 @@
                                                class="btn btn-secondary text-white action-btn" 
                                                title="Exporter en PDF">
                                                 <i class="fas fa-file-pdf"></i>
-                                                <span class="btn-text">PDF</span>
                                             </a>
                                         {% endif %}
                                         <button type="button" class="btn btn-danger text-white action-btn" title="Supprimer" 
                                                 data-bs-toggle="modal" data-bs-target="#deleteIncidentModal{{ incident.id }}">
                                             <i class="fas fa-trash"></i>
-                                            <span class="btn-text">Supprimer</span>
                                         </button>
                                     </div>
                                 </div>

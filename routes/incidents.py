@@ -16,6 +16,7 @@ import requests
 from flask_caching import Cache
 from extensions import cache
 from utils.incident_utils import get_user_incident_counts, get_incident_cache_key
+from utils.roles import UserRole  # Add this import at the top of the file
 
 incidents = Blueprint('incidents', __name__)
 
@@ -149,7 +150,8 @@ def list_incidents():
         'current_page': page,
         'status_filter': status_filter,
         'total_incidents': pagination.total,
-        'current_time': datetime.now()  # Add current time
+        'current_time': datetime.now(),
+        'UserRole': UserRole  # Add UserRole to the context
     }
     
     return render_template('incidents/incident_list.html', **context)
@@ -295,7 +297,7 @@ def new_incident():
 @login_required
 def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
-    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
+    if not (current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG] or current_user.unit_id == incident.unit_id):
         flash('Vous n\'avez pas accès à cet incident.', 'danger')
         return redirect(url_for(INCIDENT_LIST))
     return render_template('incidents/view_incident.html', incident=incident)
