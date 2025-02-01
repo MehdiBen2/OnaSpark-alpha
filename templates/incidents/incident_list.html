@@ -506,16 +506,6 @@
                                 </a>
                             {% endif %}
 
-                            {% if incident.status != 'Résolu' %}
-                            <button type="button" 
-                                    class="btn btn-success btn-sm text-white" 
-                                    title="Marquer comme résolu"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#closeIncidentModal{{ incident.id }}">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            {% endif %}
-
                             {% if can_export_pdf %}
                                 <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
                                    class="btn btn-secondary btn-sm text-white" 
@@ -569,11 +559,11 @@
                         {% if current_user.role != 'Employeur DG' %}
                             {% if incident.status != 'Résolu' %}
                             <button type="button" 
-                                    class="btn btn-success btn-sm" 
-                                    title="Marquer comme résolu"
+                                    class="btn btn-success btn-sm card-view-resolve" 
+                                    title="Clôturer l'incident"
                                     data-bs-toggle="modal" 
                                     data-bs-target="#closeIncidentModal{{ incident.id }}">
-                                <i class="fas fa-check"></i>
+                                <i class="fas fa-check me-1"></i>Clôturer
                             </button>
                             {% endif %}
 
@@ -583,6 +573,15 @@
                                    title="Exporter en PDF">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
+                            {% endif %}
+
+                            {% if current_user.role in ['Admin', 'Employeur Zone', 'Employeur Unité'] and not incident.is_valid %}
+                            <button type="button" 
+                                    class="btn btn-success btn-sm validate-incident" 
+                                    data-incident-id="{{ incident.id }}"
+                                    title="Valider l'incident">
+                                <i class="fas fa-shield-alt me-1"></i>Valider
+                            </button>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -662,22 +661,21 @@
                                                 </a>
                                             {% endif %}
 
-                                            {% if incident.status != 'Résolu' %}
-                                            <button type="button" 
-                                                    class="btn btn-success text-white action-btn" 
-                                                    title="Marquer comme résolu"
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#closeIncidentModal{{ incident.id }}">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            {% endif %}
-
                                             {% if can_export_pdf %}
                                                 <a href="{{ url_for('incidents.export_incident_pdf', incident_id=incident.id) }}" 
                                                    class="btn btn-secondary text-white action-btn" 
                                                    title="Exporter en PDF">
                                                     <i class="fas fa-file-pdf"></i>
                                                 </a>
+                                            {% endif %}
+                                            {% if incident.status != 'Résolu' %}
+                                            <button type="button" 
+                                                    class="btn btn-success action-btn" 
+                                                    title="Clôturer l'incident"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#closeIncidentModal{{ incident.id }}">
+                                                <i class="fas fa-check"></i>
+                                            </button>
                                             {% endif %}
                                         {% endif %}
                                     </div>
@@ -772,27 +770,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal for deleting incident -->
-    <div class="modal fade" id="deleteIncidentModal{{ incident.id }}" tabindex="-1" aria-labelledby="deleteIncidentModalLabel{{ incident.id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteIncidentModalLabel{{ incident.id }}">Confirmer la suppression</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Êtes-vous sûr de vouloir supprimer cet incident ? Cette action est irréversible.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <form action="{{ url_for('incidents.delete_incident', incident_id=incident.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
