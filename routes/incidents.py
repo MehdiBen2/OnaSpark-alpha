@@ -172,11 +172,17 @@ def new_incident():
         flash('Vous n\'avez pas la permission de créer des incidents.', 'danger')
         return redirect(url_for('incidents.list_incidents'))
     
-    # Get all available units for admin, or just the user's unit for others
+    # Get available units based on user role
     if current_user.role == UserRole.ADMIN:
         units = Unit.query.all()
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        # Get all units in the user's zone
+        units = Unit.query.filter_by(zone_id=current_user.zone_id).all()
+        if not units:
+            flash('Aucune unité n\'est disponible dans votre zone.', 'warning')
+            return redirect(url_for('incidents.list_incidents'))
     else:
-        # Robust check for unit assignment
+        # For regular users, only show their assigned unit
         if not current_user.unit_id:
             flash('Vous devez être assigné à une unité pour signaler un incident.', 'warning')
             return redirect(url_for(SELECT_UNIT))
@@ -311,9 +317,23 @@ def new_incident():
 @permission_required(Permission.VIEW_INCIDENT)
 def view_incident(incident_id):
     incident = Incident.query.get_or_404(incident_id)
-    if not (current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG] or current_user.unit_id == incident.unit_id):
-        flash('Vous n\'avez pas accès à cet incident.', 'danger')
-        return redirect(url_for(INCIDENT_LIST))
+    
+    # Check if user has access to this incident
+    if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
+        # Admin and DG can view all incidents
+        pass
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        # Employeur Zone can only view incidents from units in their zone
+        incident_unit = Unit.query.get(incident.unit_id)
+        if not incident_unit or incident_unit.zone_id != current_user.zone_id:
+            flash('Vous n\'avez pas accès à cet incident.', 'danger')
+            return redirect(url_for(INCIDENT_LIST))
+    else:
+        # Other users can only view incidents from their unit
+        if current_user.unit_id != incident.unit_id:
+            flash('Vous n\'avez pas accès à cet incident.', 'danger')
+            return redirect(url_for(INCIDENT_LIST))
+    
     return render_template('incidents/view_incident.html', incident=incident)
 
 @incidents.route('/incident/<int:incident_id>/edit', methods=['GET', 'POST'])
@@ -326,9 +346,22 @@ def edit_incident(incident_id):
         return redirect(url_for('incidents.list_incidents'))
     
     incident = Incident.query.get_or_404(incident_id)
-    if not current_user.role == UserRole.ADMIN and current_user.unit_id != incident.unit_id:
-        flash('Vous n\'avez pas accès à cet incident.', 'danger')
-        return redirect(url_for(INCIDENT_LIST))
+    
+    # Check if user has access to this incident
+    if current_user.role == UserRole.ADMIN:
+        # Admin can edit all incidents
+        pass
+    elif current_user.role == UserRole.EMPLOYEUR_ZONE:
+        # Employeur Zone can only edit incidents from units in their zone
+        incident_unit = Unit.query.get(incident.unit_id)
+        if not incident_unit or incident_unit.zone_id != current_user.zone_id:
+            flash('Vous n\'avez pas accès à cet incident.', 'danger')
+            return redirect(url_for(INCIDENT_LIST))
+    else:
+        # Other users can only edit incidents from their unit
+        if current_user.unit_id != incident.unit_id:
+            flash('Vous n\'avez pas accès à cet incident.', 'danger')
+            return redirect(url_for(INCIDENT_LIST))
     
     if request.method == 'POST':
         try:
@@ -341,21 +374,16 @@ def edit_incident(incident_id):
             incident.mesures_prises = request.form.get('mesures_prises')
             incident.impact = request.form.get('impact')
             incident.gravite = request.form.get('gravite')
+
             db.session.commit()
-            flash('Incident mis à jour avec succès.', 'success')
-            current_app.logger.info(f"Flash message set: Incident mis à jour avec succès")
-            current_app.logger.info(f"Session data: {dict(session)}")
-            
-            # Invalidate incident count cache
-            cache.delete(get_incident_cache_key(current_user))
-            
+            flash('Incident modifié avec succès.', 'success')
             return redirect(url_for(VIEW_INCIDENT, incident_id=incident.id))
-            
         except Exception as e:
             db.session.rollback()
-            flash(f'Erreur lors de la mise à jour de l\'incident: {str(e)}', 'danger')
-            return render_template('incidents/edit_incident.html', incident=incident)
-    
+            flash('Une erreur est survenue lors de la modification de l\'incident.', 'danger')
+            current_app.logger.error(f"Error editing incident: {str(e)}")
+            return redirect(url_for(INCIDENT_LIST))
+
     return render_template('incidents/edit_incident.html', incident=incident)
 
 @incidents.route('/incident/<int:incident_id>/delete', methods=['POST'])

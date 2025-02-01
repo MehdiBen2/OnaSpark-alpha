@@ -145,6 +145,8 @@ class PermissionManager:
         UserRole.EMPLOYEUR_ZONE: {
             # Zone-level access
             Permission.VIEW_INCIDENT,
+            Permission.CREATE_INCIDENT,
+            Permission.EDIT_INCIDENT,
             Permission.RESOLVE_INCIDENT,
             Permission.EXPORT_INCIDENT_PDF,
             Permission.GET_AI_EXPLANATION,
