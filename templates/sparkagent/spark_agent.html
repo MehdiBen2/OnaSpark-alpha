@@ -533,49 +533,24 @@
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Fetch default model from server configuration
-            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
+            let DEFAULT_MODEL = 'anthropic/claude-3-haiku:beta';  // Updated default model to Claude 3 Haiku
 
-            // Function to fetch Mistral API Key
-            function fetchMistralApiKey() {
-                return fetch("{{ url_for('spark_agent.get_mistral_api_key') }}")
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to fetch Mistral API Key');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.error) {
-                            console.error('API Key Error:', data.error);
-                            return null;
-                        }
-                        return data.api_key;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching Mistral API Key:', error);
-                        return null;
-                    });
+            // Function to fetch Open Router API Key
+            function fetchOpenRouterApiKey() {
+                return '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';
             }
 
             // Fetch default model configuration
             function fetchDefaultModel() {
-                fetch("{{ url_for('spark_agent.get_default_model_route') }}")
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.default_model) {
-                            DEFAULT_MODEL = data.default_model;
-                            console.log('Default model set:', DEFAULT_MODEL);
-                        }
-                    })
-                    .catch(error => {
-                        console.warn('Could not fetch default model, using fallback:', DEFAULT_MODEL);
-                    });
+                // Directly set the default model
+                DEFAULT_MODEL = 'anthropic/claude-3-haiku:beta';
+                console.log('Default model set:', DEFAULT_MODEL);
             }
 
             // Fetch system prompt
             const fetchSystemPrompt = async () => {
                 // If DEFAULT_MODEL is not defined, use a fallback
-                const modelToUse = DEFAULT_MODEL || 'mistral-small';
+                const modelToUse = DEFAULT_MODEL || 'anthropic/claude-3-haiku:beta';
                 
                 try {
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
@@ -588,11 +563,10 @@
 
             // Call functions when the page loads
             document.addEventListener('DOMContentLoaded', () => {
-                fetchMistralApiKey();
                 fetchDefaultModel();
             });
 
-            // Send message function implementation...
+            // Modify the send message function to use Open Router specifics
             const sendMessage = async () => {
                 const userMessage = chatInput.value.trim();
                 if (!userMessage) return;
@@ -608,50 +582,143 @@
 
                 try {
                     // Retrieve settings
-                    const apiKey = await fetchMistralApiKey();
-                    const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
-                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
+                    const apiKey = fetchOpenRouterApiKey();
+                    const model = localStorage.getItem('openRouterModel') || DEFAULT_MODEL;
+                    const temperature = parseFloat(localStorage.getItem('openRouterTemperature') || 0.7);
 
+                    // Validate API key
                     if (!apiKey) {
-                        throw new Error('Clé API Mistral non configurée');
+                        throw new Error('Clé API Open Router non configurée');
                     }
 
                     // Fetch system prompt
                     const systemPrompt = await fetchSystemPrompt();
 
-                    // Send request to Mistral API
-                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [
-                                {role: 'system', content: systemPrompt},
-                                {role: 'user', content: userMessage}
-                            ],
-                            temperature: temperature,
-                            max_tokens: 1000,
-                            top_p: 1,
-                            stream: false
-                        })
-                    });
+                    // Prepare request payload with more detailed logging
+                    const requestPayload = {
+                        model: model,
+                        messages: [
+                            {role: 'system', content: systemPrompt},
+                            {role: 'user', content: userMessage}
+                        ],
+                        temperature: temperature,
+                        max_tokens: 1000,
+                        top_p: 1,
+                        // Add additional Open Router-specific parameters
+                        stream: false,
+                        // Optional: add more parameters to help with response generation
+                        stop: ['\n', 'Human:', 'AI:']
+                    };
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Erreur de communication avec l\'API');
+                    console.group('Open Router API Request');
+                    console.log('Model:', model);
+                    console.log('API Key Length:', apiKey?.length || 'No API Key');
+                    console.log('System Prompt Length:', systemPrompt?.length || 0);
+                    console.log('User Message Length:', userMessage?.length || 0);
+                    console.log('Full Payload:', JSON.stringify(requestPayload, null, 2));
+                    console.groupEnd();
+
+                    // Send request to Flask proxy route
+                    let response;
+                    try {
+                        response = await fetch("{{ url_for('spark_agent.proxy_chat_completion') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(requestPayload)
+                        });
+                    } catch (networkError) {
+                        console.group('Network Error');
+                        console.error('Network Error Details:', {
+                            message: networkError.message,
+                            name: networkError.name,
+                            stack: networkError.stack
+                        });
+                        console.groupEnd();
+                        throw new Error(`Erreur réseau détaillée: ${networkError.message}`);
                     }
 
-                    const data = await response.json();
-                    const agentResponse = data.choices[0].message.content.trim();
+                    // Detailed error handling with comprehensive logging
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        const errorHeaders = Object.fromEntries(response.headers.entries());
+                        
+                        console.group('Flask Proxy Error');
+                        console.error('Error Details:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            headers: errorHeaders,
+                            errorBody: errorText
+                        });
+                        console.groupEnd();
+
+                        throw new Error(`Erreur du proxy Flask: ${response.status} - ${errorText}`);
+                    }
+
+                    // Parse response with extensive error handling
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        console.group('JSON Parsing Error');
+                        console.error('Parsing Error Details:', {
+                            message: parseError.message,
+                            name: parseError.name,
+                            stack: parseError.stack
+                        });
+                        console.groupEnd();
+                        throw new Error('Impossible de parser la réponse de l\'API');
+                    }
+
+                    // Extensive logging of API response
+                    console.group('Flask Proxy API Response');
+                    console.log('Response Structure:', Object.keys(data));
+                    console.log('Full Raw Response:', JSON.stringify(data, null, 2));
+                    console.groupEnd();
+
+                    // Multiple extraction methods with detailed logging
+                    const extractionMethods = [
+                        () => data?.choices?.[0]?.message?.content,
+                        () => data?.choices?.[0]?.text,
+                        () => data?.message?.content,
+                        () => data?.content,
+                        () => {
+                            console.warn('No standard response found. Attempting alternative extraction.');
+                            return JSON.stringify(data);
+                        }
+                    ];
+
+                    let agentResponse = null;
+                    for (const method of extractionMethods) {
+                        try {
+                            agentResponse = method();
+                            if (agentResponse) {
+                                console.log('Response extracted successfully');
+                                break;
+                            }
+                        } catch (extractionError) {
+                            console.warn('Extraction method failed:', extractionError);
+                        }
+                    }
+
+                    // Final validation with comprehensive logging
+                    if (!agentResponse) {
+                        console.group('Response Extraction Failure');
+                        console.error('No valid response could be extracted', {
+                            dataKeys: data ? Object.keys(data) : 'No data object',
+                            fullData: JSON.stringify(data, null, 2)
+                        });
+                        console.groupEnd();
+
+                        throw new Error('Aucune réponse valide reçue de l\'API. Veuillez réessayer.');
+                    }
 
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
 
                     // Add agent message to chat
-                    const agentMessageEl = createMessageElement('agent', agentResponse);
+                    const agentMessageEl = createMessageElement('agent', agentResponse.trim());
                     chatMessages.appendChild(agentMessageEl);
                     scrollToBottom();
 
@@ -660,7 +727,10 @@
                     typingIndicator.style.display = 'none';
 
                     // Add error message
-                    const errorMessageEl = createMessageElement('agent', `Erreur: ${error.message}`);
+                    const errorMessage = `Erreur: ${error.message || 'Une erreur inattendue s\'est produite'}`;
+                    console.error(errorMessage, error);
+
+                    const errorMessageEl = createMessageElement('agent', errorMessage);
                     chatMessages.appendChild(errorMessageEl);
                     scrollToBottom();
                 }
@@ -753,8 +823,27 @@
             };
 
             // Initial settings load
-            loadSettings();
-            
+            function loadSettings() {
+                // Load Open Router settings instead of Mistral
+                const savedTemperature = localStorage.getItem('openRouterTemperature') || 0.7;
+                const savedModel = localStorage.getItem('openRouterModel') || DEFAULT_MODEL;
+
+                // Update any UI elements for model and temperature selection if needed
+                // For example:
+                // document.getElementById('modelSelect').value = savedModel;
+                // document.getElementById('temperatureSlider').value = savedTemperature;
+            }
+
+            // Optional: Add function to save settings
+            function saveSettings() {
+                // Example implementation
+                const selectedModel = document.getElementById('modelSelect')?.value || DEFAULT_MODEL;
+                const selectedTemperature = document.getElementById('temperatureSlider')?.value || 0.7;
+
+                localStorage.setItem('openRouterModel', selectedModel);
+                localStorage.setItem('openRouterTemperature', selectedTemperature);
+            }
+
             // Ensure typing indicator is hidden on page load
             typingIndicator.style.display = 'none';
         });
