@@ -9,6 +9,6 @@ reportlab==4.0.7
 openpyxl==3.1.2
 Flask-Migrate==4.0.5
 waitress==2.1.2
-requests==2.32.3
+requests==2.31.0
 Flask-Caching==2.1.0
 openpyxl==3.1.2

@@ -25,7 +25,7 @@ from utils.permissions import PermissionManager, Permission, UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
-from routes.spark_agent_routes import get_mistral_api_key, spark_agent
+from routes.spark_agent_routes import get_openrouter_api_key, spark_agent
 from routes.main_dashboard import main_dashboard
 from routes.departement import departement  # Add this import
 from routes.centers import centers
