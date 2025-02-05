@@ -498,14 +498,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded and parsed');
 
-            // Debug function to display error information
-            function showDebugInfo(message) {
-                const debugInfoElement = document.getElementById('debug-info');
-                debugInfoElement.textContent = message;
-                debugInfoElement.style.display = 'block';
-                console.error(message);
-            }
-
             // Ensure Bootstrap is available
             if (typeof bootstrap === 'undefined') {
                 console.error('Bootstrap is not loaded correctly');
@@ -541,58 +533,49 @@
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Fetch default model from server configuration
-            let DEFAULT_MODEL = 'deepseek/deepseek-r1-distill-llama-70b:free';  // Fallback value
+            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
 
-            // Function to fetch OpenRouter API Key
-            async function fetchOpenRouterApiKey() {
-                try {
-                    const response = await fetch("{{ url_for('spark_agent.get_openrouter_api_key') }}");
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Failed to fetch OpenRouter API Key. Status: ${response.status}. Message: ${errorText}`);
-                    }
-                    const data = await response.json();
-                    
-                    // Validate API key
-                    if (!data.api_key) {
-                        throw new Error('No API key found in response');
-                    }
-                    
-                    // Log the first and last 4 characters of the key for debugging
-                    console.log(`API Key (partial): ${data.api_key.slice(0,4)}...${data.api_key.slice(-4)}`);
-                    
-                    return data.api_key;
-                } catch (error) {
-                    showDebugInfo(`API Key Fetch Error: ${error.message}`);
-                    console.error('Detailed Error:', error);
-                    return null;
-                }
+            // Function to fetch Mistral API Key
+            function fetchMistralApiKey() {
+                return fetch("{{ url_for('spark_agent.get_mistral_api_key') }}")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch Mistral API Key');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            console.error('API Key Error:', data.error);
+                            return null;
+                        }
+                        return data.api_key;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching Mistral API Key:', error);
+                        return null;
+                    });
             }
 
-            // Function to fetch default model configuration
-            async function fetchDefaultModel() {
-                try {
-                    const response = await fetch("{{ url_for('spark_agent.get_default_model_route') }}");
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Failed to fetch model configuration. Status: ${response.status}. Message: ${errorText}`);
-                    }
-                    return await response.json();
-                } catch (error) {
-                    showDebugInfo(`Model Config Fetch Error: ${error.message}`);
-                    console.error('Detailed Error:', error);
-                    return {
-                        default_model: DEFAULT_MODEL,
-                        site_url: 'https://onaspark.onrender.com',
-                        site_name: 'OnaSpark'
-                    };
-                }
+            // Fetch default model configuration
+            function fetchDefaultModel() {
+                fetch("{{ url_for('spark_agent.get_default_model_route') }}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.default_model) {
+                            DEFAULT_MODEL = data.default_model;
+                            console.log('Default model set:', DEFAULT_MODEL);
+                        }
+                    })
+                    .catch(error => {
+                        console.warn('Could not fetch default model, using fallback:', DEFAULT_MODEL);
+                    });
             }
 
             // Fetch system prompt
             const fetchSystemPrompt = async () => {
                 // If DEFAULT_MODEL is not defined, use a fallback
-                const modelToUse = DEFAULT_MODEL || 'deepseek/deepseek-r1-distill-llama-70b:free';
+                const modelToUse = DEFAULT_MODEL || 'mistral-small';
                 
                 try {
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
@@ -605,7 +588,7 @@
 
             // Call functions when the page loads
             document.addEventListener('DOMContentLoaded', () => {
-                fetchOpenRouterApiKey();
+                fetchMistralApiKey();
                 fetchDefaultModel();
             });
 
@@ -625,38 +608,34 @@
 
                 try {
                     // Retrieve settings
-                    const apiKey = await fetchOpenRouterApiKey();
+                    const apiKey = await fetchMistralApiKey();
                     const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
-                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || 0.7);
+                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
 
                     if (!apiKey) {
-                        throw new Error('Clé API OpenRouter non configurée');
+                        throw new Error('Clé API Mistral non configurée');
                     }
 
                     // Fetch system prompt
                     const systemPrompt = await fetchSystemPrompt();
 
-                    // Send request to OpenRouter API
-                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                        method: "POST",
+                    // Send request to Mistral API
+                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                        method: 'POST',
                         headers: {
-                            "Authorization": `Bearer ${apiKey}`,
-                            "HTTP-Referer": "{{ url_for('spark_agent.index') }}",
-                            "X-Title": "Spark ONA",
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
                         },
                         body: JSON.stringify({
-                            "model": model,
-                            "messages": [
-                                {
-                                    "role": "system",
-                                    "content": systemPrompt
-                                },
-                                {
-                                    "role": "user",
-                                    "content": userMessage
-                                }
-                            ]
+                            model: model,
+                            messages: [
+                                {role: 'system', content: systemPrompt},
+                                {role: 'user', content: userMessage}
+                            ],
+                            temperature: temperature,
+                            max_tokens: 1000,
+                            top_p: 1,
+                            stream: false
                         })
                     });
 
