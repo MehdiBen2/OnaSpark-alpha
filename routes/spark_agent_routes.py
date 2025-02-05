@@ -31,5 +31,9 @@ def get_default_model_route():
     Returns:
         JSON response with default model name
     """
+<<<<<<< HEAD
     default_model = os.getenv('DEFAULT_AI_MODEL', 'google/gemini-exp-1114:free')
+=======
+    default_model = os.getenv('DEFAULT_AI_MODEL', 'mistral-small')
+>>>>>>> parent of 091ba5e (edit)
     return jsonify({'default_model': default_model})
