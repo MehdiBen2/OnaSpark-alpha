@@ -400,6 +400,9 @@
                     <i class="fas fa-bolt me-2"></i>Spark ONA
                 </h4>
                 <div class="header-actions">
+                    <button class="btn btn-sm btn-outline-light me-2" id="settingsBtn" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                        <i class="fas fa-cog me-1"></i>Paramètres
+                    </button>
                     <button class="btn btn-sm btn-outline-light me-2" id="dashboardBtn" onclick="window.location.href='{{ url_for('main_dashboard.dashboard') }}'">
                         <i class="fas fa-home me-1"></i>Accueil
                     </button>
@@ -483,7 +486,7 @@
                         <strong>Conseil :</strong> Pensez à copier les informations importantes pour référence future.
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0">
+                <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" style="background-color: var(--ona-primary); border-color: var(--ona-primary); border-radius: 50px; padding: 10px 20px;">
                         <i class="fas fa-check-circle me-2"></i>Compris
                     </button>
@@ -491,10 +494,89 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: var(--ona-dark-secondary); color: var(--ona-light); border-radius: 15px; border: 2px solid var(--ona-primary);">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title">Paramètres Spark Agent</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modelSelect" class="form-label">Modèle</label>
+                        <select class="form-select" id="modelSelect">
+                            <option value="google/gemini-pro">Google Gemini Pro</option>
+                            <option value="google/gemini-pro">Google Gemini Pro</option>
+                            <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                            <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="temperatureRange" class="form-label">Température (Créativité): <span id="temperatureValue">0.7</span></label>
+                        <input type="range" class="form-range" id="temperatureRange" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Default configuration constants
+        const DEFAULT_TEMPERATURE = 0.7;
+        const DEFAULT_MODEL = 'google/gemini-pro';
+        
+        // Function to fetch OpenRouter API Key
+        async function fetchOpenRouterApiKey() {
+            try {
+                const response = await fetch('/get-openrouter-api-key');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                return data.api_key;
+            } catch (error) {
+                console.error('Error fetching API key:', error);
+                throw error;
+            }
+        }
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedModel = localStorage.getItem('aiModel') || DEFAULT_MODEL;
+            const savedTemperature = localStorage.getItem('temperature') || DEFAULT_TEMPERATURE;
+            
+            document.getElementById('modelSelect').value = savedModel;
+            document.getElementById('temperatureRange').value = savedTemperature;
+            document.getElementById('temperatureValue').textContent = savedTemperature;
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            const model = document.getElementById('modelSelect').value;
+            const temperature = document.getElementById('temperatureRange').value;
+            
+            localStorage.setItem('aiModel', model);
+            localStorage.setItem('temperature', temperature);
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('settingsModal'));
+            modal.hide();
+        }
+        
+        // Update temperature value display
+        document.getElementById('temperatureRange').addEventListener('input', function(e) {
+            document.getElementById('temperatureValue').textContent = e.target.value;
+        });
+        
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded and parsed');
 
@@ -533,14 +615,14 @@
             const typingIndicator = document.getElementById('typingIndicator');
 
             // Fetch default model from server configuration
-            let DEFAULT_MODEL = 'mistral-small';  // Fallback value
+            let DEFAULT_MODEL = 'google/gemini-pro';  // Fallback value
 
-            // Function to fetch Mistral API Key
-            function fetchMistralApiKey() {
-                return fetch("{{ url_for('spark_agent.get_mistral_api_key') }}")
+            // Function to fetch OpenRouter API Key
+            function fetchOpenRouterApiKey() {
+                return fetch("{{ url_for('spark_agent.get_openrouter_api_key') }}")
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Failed to fetch Mistral API Key');
+                            throw new Error('Failed to fetch OpenRouter API Key');
                         }
                         return response.json();
                     })
@@ -552,7 +634,7 @@
                         return data.api_key;
                     })
                     .catch(error => {
-                        console.error('Error fetching Mistral API Key:', error);
+                        console.error('Error fetching OpenRouter API Key:', error);
                         return null;
                     });
             }
@@ -575,7 +657,7 @@
             // Fetch system prompt
             const fetchSystemPrompt = async () => {
                 // If DEFAULT_MODEL is not defined, use a fallback
-                const modelToUse = DEFAULT_MODEL || 'mistral-small';
+                const modelToUse = DEFAULT_MODEL || 'google/gemini-pro';
                 
                 try {
                     const response = await fetch("{{ url_for('static', filename='spark_agent_system_prompt.txt') }}");
@@ -588,7 +670,7 @@
 
             // Call functions when the page loads
             document.addEventListener('DOMContentLoaded', () => {
-                fetchMistralApiKey();
+                fetchOpenRouterApiKey();
                 fetchDefaultModel();
             });
 
@@ -597,7 +679,6 @@
                 const userMessage = chatInput.value.trim();
                 if (!userMessage) return;
 
-                // Add user message to chat
                 const userMessageEl = createMessageElement('user', userMessage);
                 chatMessages.appendChild(userMessageEl);
                 chatInput.value = '';
@@ -608,53 +689,122 @@
 
                 try {
                     // Retrieve settings
-                    const apiKey = await fetchMistralApiKey();
-                    const model = localStorage.getItem('mistralModel') || DEFAULT_MODEL;
-                    const temperature = parseFloat(localStorage.getItem('mistralTemperature') || DEFAULT_TEMPERATURE);
+                    const apiKey = await fetchOpenRouterApiKey();
+                    const model = localStorage.getItem('aiModel') || DEFAULT_MODEL;
+                    const temperature = parseFloat(localStorage.getItem('temperature') || DEFAULT_TEMPERATURE);
 
                     if (!apiKey) {
-                        throw new Error('Clé API Mistral non configurée');
+                        throw new Error('Clé API OpenRouter non configurée');
                     }
 
                     // Fetch system prompt
                     const systemPrompt = await fetchSystemPrompt();
 
-                    // Send request to Mistral API
-                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                    // Send request to OpenRouter API
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
+                            'Authorization': `Bearer ${apiKey}`,
+                            'HTTP-Referer': window.location.origin,
                         },
                         body: JSON.stringify({
+                            stream: true,  // Explicitly set streaming
                             model: model,
                             messages: [
-                                {role: 'system', content: systemPrompt},
-                                {role: 'user', content: userMessage}
+                                {
+                                    role: 'system',
+                                    content: systemPrompt
+                                },
+                                {
+                                    role: 'user',
+                                    content: userMessage
+                                }
                             ],
                             temperature: temperature,
-                            max_tokens: 1000,
-                            top_p: 1,
-                            stream: false
+                            max_tokens: 4096  // Add max tokens to ensure full response
                         })
                     });
 
+                    console.log('API Response Status:', response.status);
+                    console.log('API Response Headers:', Object.fromEntries(response.headers));
+
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Erreur de communication avec l\'API');
+                        const errorText = await response.text();
+                        console.error('API Error Response:', errorText);
+                        
+                        // Create an error message element
+                        const errorMessageEl = createMessageElement('agent', `❌ Erreur API: ${errorText}`);
+                        errorMessageEl.querySelector('.message-content').style.color = 'red';
+                        chatMessages.appendChild(errorMessageEl);
+                        scrollToBottom();
+                        
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                     }
 
-                    const data = await response.json();
-                    const agentResponse = data.choices[0].message.content.trim();
+                    // Create a new message element for the assistant's response
+                    const assistantMessageEl = createMessageElement('agent', '');
+                    chatMessages.appendChild(assistantMessageEl);
+                    const assistantMessageContent = assistantMessageEl.querySelector('.message-content');
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                            if (line.trim() === '') continue;
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                console.log('Raw SSE data:', data);
+                                
+                                if (data === '[DONE]') {
+                                    console.log('Streaming completed');
+                                    break;
+                                }
+                                
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    console.log('Parsed SSE data:', parsed);
+
+                                    // Check for error in the parsed data
+                                    if (parsed.error) {
+                                        const errorMessage = parsed.error.message || 'Erreur inconnue';
+                                        const errorMessageEl = createMessageElement('agent', `❌ Erreur: ${errorMessage}`);
+                                        errorMessageEl.querySelector('.message-content').style.color = 'red';
+                                        chatMessages.appendChild(errorMessageEl);
+                                        scrollToBottom();
+                                        break;
+                                    }
+
+                                    // Updated parsing logic for OpenRouter API
+                                    const content = parsed.choices && parsed.choices[0] && parsed.choices[0].delta 
+                                        ? parsed.choices[0].delta.content || '' 
+                                        : parsed.choices && parsed.choices[0] 
+                                        ? parsed.choices[0].message.content || ''
+                                        : '';
+                                    
+                                    console.log('Extracted content:', content);
+                                    if (content) {
+                                        assistantMessageContent.innerHTML += parseMarkdown(content);
+                                        scrollToBottom();
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing SSE message:', e, 'Raw data:', data);
+                                }
+                            }
+                        }
+                    }
 
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
-
-                    // Add agent message to chat
-                    const agentMessageEl = createMessageElement('agent', agentResponse);
-                    chatMessages.appendChild(agentMessageEl);
-                    scrollToBottom();
-
                 } catch (error) {
                     // Hide typing indicator
                     typingIndicator.style.display = 'none';
