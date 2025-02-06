@@ -25,7 +25,7 @@ from utils.permissions import PermissionManager, Permission, UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
-from routes.spark_agent_routes import get_openrouter_api_key, spark_agent
+from routes.spark_agent_routes import spark_agent
 from routes.main_dashboard import main_dashboard
 from routes.departement import departement  # Add this import
 from routes.centers import centers
@@ -459,14 +459,6 @@ def serve_docs():
 @login_required
 def spark_agent():
     return render_template('sparkagent/spark_agent.html')
-
-@app.route('/get-openrouter-api-key')
-@login_required
-def get_openrouter_api_key_route():
-    """
-    Wrapper route for the OpenRouter API key retrieval function.
-    """
-    return get_openrouter_api_key()
 
 # Utility function to convert enum-style strings to human-readable labels
 def format_epuration_type(epuration_type):
