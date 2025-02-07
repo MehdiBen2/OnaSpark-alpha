@@ -1,0 +1,156 @@
+{% extends "base/base.html" %}
+
+{% block title %}Modèle HSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .template-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+        background-color: #2c3e50;
+        color: white;
+        padding: 1rem;
+        border-radius: 5px 5px 0 0;
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        border-color: #2980b9;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Modèle de Gestion HSE</h1>
+
+            <form>
+                <div class="template-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">Informations Générales</h4>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="unite">Unité</label>
+                            <input type="text" class="form-control" id="unite" name="unite" placeholder="Nom de l'unité">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="date">Date</label>
+                            <input type="date" class="form-control" id="date" name="date">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">Évaluation des Risques</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="risques">Identification des Risques</label>
+                        <textarea class="form-control" id="risques" name="risques" rows="4" placeholder="Décrivez les risques potentiels"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label for="niveau_risque">Niveau de Risque</label>
+                            <select class="form-control" id="niveau_risque" name="niveau_risque">
+                                <option>Faible</option>
+                                <option>Moyen</option>
+                                <option>Élevé</option>
+                                <option>Critique</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="probabilite">Probabilité</label>
+                            <select class="form-control" id="probabilite" name="probabilite">
+                                <option>Improbable</option>
+                                <option>Peu Probable</option>
+                                <option>Probable</option>
+                                <option>Très Probable</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="impact">Impact</label>
+                            <select class="form-control" id="impact" name="impact">
+                                <option>Négligeable</option>
+                                <option>Mineur</option>
+                                <option>Modéré</option>
+                                <option>Majeur</option>
+                                <option>Catastrophique</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="template-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">Mesures de Prévention et de Contrôle</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="mesures_prevention">Mesures de Prévention</label>
+                        <textarea class="form-control" id="mesures_prevention" name="mesures_prevention" rows="4" placeholder="Décrivez les mesures de prévention"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="equipements_protection">Équipements de Protection</label>
+                        <textarea class="form-control" id="equipements_protection" name="equipements_protection" rows="4" placeholder="Listez les équipements de protection requis"></textarea>
+                    </div>
+                </div>
+
+                <div class="template-section">
+                    <div class="section-header">
+                        <h4 class="mb-0">Suivi et Rapport</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="actions_correctives">Actions Correctives</label>
+                        <textarea class="form-control" id="actions_correctives" name="actions_correctives" rows="4" placeholder="Décrivez les actions correctives à entreprendre"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="responsable">Responsable</label>
+                            <input type="text" class="form-control" id="responsable" name="responsable" placeholder="Nom du responsable">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="date_suivi">Date de Suivi</label>
+                            <input type="date" class="form-control" id="date_suivi" name="date_suivi">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Soumettre le Modèle HSE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Optional: Add client-side form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add validation logic here
+            alert('Modèle HSE soumis avec succès!');
+        });
+    });
+</script>
+{% endblock %}

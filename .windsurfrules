@@ -1,89 +1,112 @@
-# Windsurf Workplace Coding Guidelines
-
--YOU ARE BASED ON the new CHATGPT o3-mini(high) a reasoning modele
+# Project Guidelines and Best Practices
 
 ## 1. Project Structure and Organization
-### 1.1 Cascade must always be Context-Aware : !IMPORTANT!
-- Double-check to ensure no functionality is overlooked or unintentionally removed
-- Maintain the overall system integrity and keep everything functional
-- Ensure backward compatibility unless explicitly instructed otherwise
-- When editing existing Python, HTML, or any other code, Cascade must thoroughly review the entire codebase to understand the context and existing features
-- Cascade should never delete existing features or break functionality
-- Ensure all modifications are made with full awareness of the codebase's structure and interdependencies !important!
-- Before making changes, analyze potential impacts on other parts of the code !important
-- Preserve existing functionality while implementing new features or modifications when needed or replace them when asked to or in the context of it
-- If a change might affect existing features, Cascade should highlight this and seek confirmation before proceeding
-- Always be mindful of the context of the codebase, including existing features and new features being added !important
-- Ensure that new features are compatible with old features and that nothing is broken
-- Use decorators to add new features and avoid hardcoding values or behavior
-- Cascade will do edits in a focused and targeted manner, after scanning the code to know the context of the file code
-### 1.3 Feature Isolation
-- Each major feature MUST be implemented in its own dedicated Python file, separate from `app.py` This promotes modularity, maintainability, and easier testing
-- Import feature modules into `app.py` as needed, keeping the main application file clean and organized
 
-### 1.2 File Placement
-- All URL endpoints MUST be defined in `url_endpoints.py`
-- Each feature should have its dedicated feature-specific file (e.g., `water_quality.py` for water quality-related functionality)
-- Maintain a clear and logical directory structure
+### 1.1 Context-Awareness (CRITICAL)
+- Always maintain system integrity and functionality
+- Ensure backward compatibility unless explicitly instructed otherwise
+- Review entire codebase before modifications
+- Preserve existing features; implement new ones without breaking old
+- Analyze potential impacts before changes
+- Use HOCs and React Hooks for new features
+- Edit code in a focused, context-aware manner
+
+### 1.2 Feature Isolation
+- Implement major features in dedicated `src/features/` directories
+- Use modular component structure
+- Import feature modules into main application as needed
+
+### 1.3 File Placement
+- Route definitions in `src/app/` (Next.js App Router conventions)
+- Feature-specific directories (e.g., `src/features/water-quality/`)
+- Maintain clear, logical directory structure
 
 ## 2. Coding Practices
+
 ### 2.1 Hard Coding Prohibition
-- NEVER hard-code values, configurations, or sensitive information
-- Use environment variables, configuration files, or constants for all configurable values
-- Sensitive information (API keys, credentials) must be stored in `.env` files or secure configuration management
+- Never hard-code values, configurations, or sensitive information
+- Use environment variables (`process.env`) for configurable values
+- Store sensitive information in `.env.local` files
+- Utilize Next.js built-in environment variable protection
 
 ## 3. Configuration and Environment
+
 ### 3.1 Dependency Management
-- Maintain an up-to-date `requirements.txt` file
-- Pin specific versions of dependencies
-- Regularly update and audit dependencies for security and compatibility
+- Maintain up-to-date `package.json`
+- Use exact versions of dependencies
+- Regularly run `npm audit` and `npm outdated`
+- Implement Dependabot for automated updates
 
 ## 4. Code Quality and Best Practices
+
 ### 4.1 Code Review Guidelines
-- All code changes must go through a peer review process
-- Follow PEP 8 style guidelines for Python code
-- Use type annotations and maintain high code readability
-- Write comprehensive docstrings for all functions and classes
+- Peer review all code changes
+- Follow ESLint and Prettier configurations
+- Use TypeScript with strict mode
+- Write clear, descriptive names
+- Provide comprehensive JSDoc comments
+- Implement unit and integration tests (Jest, React Testing Library)
 
 ### 4.2 Error Handling
-- Implement robust error handling and logging
-- Use specific exception types
-- Log errors with sufficient context for debugging
+- Implement robust React error boundaries
+- Use TypeScript for compile-time type checking
+- Centralize error logging (e.g., Sentry)
+- Create custom error classes
+- Provide user-friendly error messages
 
 ## 5. Security Considerations
 
 ### 5.1 Input Validation
-- Implement proper authentication and authorization checks
+- Use Zod or TypeScript for runtime type validation
+- Implement server-side authentication checks
+- Use NextAuth.js for secure authentication
+- Implement role-based access control (RBAC)
 
 ### 5.2 Sensitive Data Protection
-- Never log or expose sensitive information
-- Use secure hashing for passwords
-- Implement proper access controls
+- Never expose sensitive information client-side
+- Use server-side rendering for sensitive data
+- Implement secure password hashing (bcrypt)
+- Use HTTPS and secure cookies
+- Implement CSRF protection (Next.js built-in)
 
 ## 6. Performance and Optimization
+
 ### 6.1 Database Interactions
-- Use database indexing and query optimization techniques
-- Implement caching where appropriate
+- Use Prisma ORM for type-safe queries
+- Implement database indexing
+- Use server-side caching strategies
 - Minimize database round trips
+- Implement pagination and lazy loading
 
 ### 6.2 Code Efficiency
-- Avoid unnecessary computations
-- Use list comprehensions and generator expressions
-- Profile and optimize performance-critical code paths
+- Utilize React Server Components
+- Implement code splitting and lazy loading
+- Use memoization (React.memo, useMemo)
+- Profile and optimize critical paths
+- Minimize re-renders with efficient state management
 
+## 7. State Management
+- Prefer React Context and Hooks for simple state
+- Use Zustand or Redux for complex global state
+- Implement efficient state update strategies
+- Use immutable state updates
 
 ## 8. Documentation
+
 ### 8.1 Code Documentation
-- Maintain a comprehensive README.md
-- Document dependencies, and running instructions
+- Maintain comprehensive README.md
+- Document project setup and instructions
 - Keep inline comments clear and concise
+- Generate API documentation (TypeDoc)
 - Update documentation with each significant change
 
-### 9. UX/UI Design Principles
-9.1 Consistent Layout and Design , use same design as other templates in our app
-Use a consistent layout across all pages.
-Ensure responsive design for different screen sizes.
+## 9. UX/UI Design Principles
 
+### 9.1 Consistent Design
+- Use consistent design system (e.g., Tailwind CSS)
+- Create reusable component libraries
+- Ensure responsive design across devices
+- Implement accessibility best practices (WCAG)
+- Use design tokens for consistent styling
 
----
-**Note**: These guidelines are living documents. They should be regularly reviewed and updated to reflect the evolving needs of the project and best practices in software development.
+Note: These guidelines should be regularly reviewed and updated to reflect evolving project needs and industry best practices.

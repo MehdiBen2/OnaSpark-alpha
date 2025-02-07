@@ -108,3 +108,9 @@ def statistiques():
         datetime=datetime,
         incident_stats=incident_stats
     )
+
+@departement.route('/departement/hse/template', methods=['GET'])
+@login_required
+@unit_required
+def hse_template():
+    return render_template('departement/hse_template.html')
