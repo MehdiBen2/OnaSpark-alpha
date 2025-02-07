@@ -25,7 +25,7 @@
 <div class="container mt-n5">
     <div class="row g-4">
         <!-- Moyens Généraux -->
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4 department-card-wrapper inactive-department">
             <div class="department-card">
                 <div class="card-content">
                     <div class="icon-wrapper bg-primary">
@@ -77,41 +77,33 @@
         </div>
 
         <!-- REUSE -->
-<div class="col-md-6 col-lg-4">
-    <div class="department-card">
-      <div class="card-content">
-        <!-- Icon wrapper with a 'recycle'-style icon and a new color (e.g., bg-success) -->
-        <div class="icon-wrapper bg-success">
-          <i class="fas fa-recycle"></i>
+        <div class="col-md-6 col-lg-4">
+            <div class="department-card">
+                <div class="card-content">
+                    <div class="icon-wrapper bg-success">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <div class="info-wrapper">
+                        <h3>REUSE</h3>
+                        <p>Réutilisation de l’eau après épuration</p>
+                        <div class="features">
+                            <span><i class="fas fa-file-contract"></i> Réglementations</span>
+                            <span><i class="fas fa-tint"></i> Qualité de l’eau</span>
+                            <span><i class="fas fa-info-circle"></i> Informations</span>
+                        </div>
+                    </div>
+                    <div class="action-wrapper">
+                        <a href="{{ url_for('reuse') }}" class="btn btn-success">
+                            <span>Accéder</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-  
-        <div class="info-wrapper">
-          <h3>REUSE</h3>
-          <!-- Updated subtitle to match water reuse context -->
-          <p>Réutilisation de l’eau après épuration</p>
-  
-          <!-- Features that highlight your main reuse concepts -->
-          <div class="features">
-            <span><i class="fas fa-file-contract"></i> Réglementations</span>
-            <span><i class="fas fa-tint"></i> Qualité de l’eau</span>
-            <span><i class="fas fa-info-circle"></i> Informations</span>
-          </div>
-        </div>
-  
-        <div class="action-wrapper">
-          <!-- Adjust button color to match your chosen theme -->
-          <a href="{{ url_for('reuse') }}" class="btn btn-success">
-            <span>Accéder</span>
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  
 
         <!-- Finance -->
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4 department-card-wrapper inactive-department">
             <div class="department-card">
                 <div class="card-content">
                     <div class="icon-wrapper bg-info">
@@ -137,7 +129,7 @@
         </div>
 
         <!-- DRH -->
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4 department-card-wrapper inactive-department">
             <div class="department-card">
                 <div class="card-content">
                     <div class="icon-wrapper bg-warning">
@@ -163,7 +155,7 @@
         </div>
 
         <!-- HSE -->
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4 department-card-wrapper inactive-department">
             <div class="department-card">
                 <div class="card-content">
                     <div class="icon-wrapper bg-danger">
@@ -322,6 +314,12 @@
     .bg-warning { background: linear-gradient(135deg, #ffc107 0%, #ffcd39 100%); }
     .bg-danger { background: linear-gradient(135deg, #dc3545 0%, #e4606d 100%); }
 
+    .department-card-wrapper.inactive-department {
+        opacity: 0.5;
+        pointer-events: none;
+        filter: grayscale(100%);
+    }
+
     @media (max-width: 768px) {
         .page-header {
             padding: 2rem 0 4rem;
@@ -342,4 +340,7 @@
         }
     }
 </style>
+{% endblock %}
+
+{% block styles %}
 {% endblock %}
