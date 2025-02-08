@@ -195,4 +195,63 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('incidentViewPreference', isListView ? 'list' : 'card');
         });
     });
+
+    // Sorting functionality
+    const sortSelect = document.getElementById('sortIncidents');
+    const sortInput = document.getElementById('sortInput');
+    const searchSortForm = document.getElementById('searchSortForm');
+
+    if (sortSelect && sortInput && searchSortForm) {
+        // Set initial selected option based on the current sort value
+        const currentSort = sortInput.value;
+        
+        // Find and set the correct option as selected
+        Array.from(sortSelect.options).forEach(option => {
+            if (option.value === currentSort) {
+                option.selected = true;
+            }
+        });
+
+        // Update hidden input and submit form when sort changes
+        sortSelect.addEventListener('change', function() {
+            // Update the hidden input with the selected sort value
+            sortInput.value = this.value;
+            
+            // Submit the form to reload with new sorting
+            searchSortForm.submit();
+        });
+    }
+
+    // Actions Dropdown Functionality
+    const toggleButtons = document.querySelectorAll('.actions-toggle');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const menu = this.nextElementSibling;
+            // Close all other menus
+            document.querySelectorAll('.actions-menu.show').forEach(m => {
+                if (m !== menu) m.classList.remove('show');
+            });
+            menu.classList.toggle('show');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.actions-dropdown')) {
+            document.querySelectorAll('.actions-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+
+    // Warning dismissal function
+    function dismissWarning() {
+        document.getElementById('mobileWarning').style.display = 'none';
+        document.querySelector('.container-fluid').style.paddingTop = '1rem';
+    }
+    
+    // Make dismissWarning available globally
+    window.dismissWarning = dismissWarning;
 });

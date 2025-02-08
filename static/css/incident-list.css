@@ -630,3 +630,317 @@
         opacity: 0;
     }
 }
+
+/* Extracted CSS from incident_list.html */
+.action-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+}
+
+.actions-cell {
+    min-width: 180px;
+    position: relative;
+}
+
+.actions-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.actions-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 180px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+.actions-menu.show {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.actions-menu .action-btn {
+    width: 100%;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    justify-content: flex-start;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.actions-menu .action-btn:hover {
+    opacity: 0.9;
+}
+
+.actions-menu .btn-primary {
+    background-color: #2196F3;
+}
+
+.actions-menu .btn-warning {
+    background-color: #FF9800;
+}
+
+.actions-menu .btn-success {
+    background-color: #4CAF50;
+}
+
+.actions-menu .btn-secondary {
+    background-color: #757575;
+}
+
+.actions-menu .btn-danger {
+    background-color: #F44336;
+}
+
+.actions-toggle {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+}
+
+.actions-toggle:hover {
+    opacity: 0.9;
+}
+
+@media (min-width: 769px) {
+    .actions-toggle {
+        display: none;
+    }
+    .actions-menu {
+        display: flex !important;
+        position: static;
+        box-shadow: none;
+        background: none;
+        min-width: auto;
+        padding: 0;
+        flex-direction: row;
+        gap: 0.25rem;
+        border: none;
+    }
+    .actions-menu .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    .btn-text {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .actions-wrapper {
+        display: flex;
+        justify-content: flex-end;
+    }
+    .btn-text {
+        margin-left: 0.5rem;
+        font-weight: 500;
+        color: white;
+    }
+    .actions-menu {
+        background-color: #F5F5F5;
+    }
+    .actions-menu::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        right: 10px;
+        width: 12px;
+        height: 12px;
+        background-color: #F5F5F5;
+        transform: rotate(45deg);
+        border-left: 1px solid rgba(0,0,0,0.08);
+        border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .actions-menu .action-btn {
+        margin-bottom: 2px;
+    }
+    .actions-menu .btn-primary {
+        background-color: #2196F3;
+    }
+    .actions-menu .btn-warning {
+        background-color: #FF9800;
+    }
+    .actions-menu .btn-success {
+        background-color: #4CAF50;
+    }
+    .actions-menu .btn-secondary {
+        background-color: #757575;
+    }
+    .actions-menu .btn-danger {
+        background-color: #F44336;
+    }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .actions-cell {
+        min-width: auto;
+    }
+
+    /* Stack the buttons vertically on very small screens */
+    @media (max-width: 576px) {
+        .actions-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.1rem;
+        }
+    }
+}
+
+/* Hide less important columns on mobile */
+@media (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+}
+
+.fab-new-incident {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #2196F3;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    border: none;
+    font-size: 24px;
+    z-index: 1000;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.fab-new-incident:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5);
+    background-color: #1976D2;
+    text-decoration: none;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .fab-new-incident {
+        display: flex;
+    }
+    .desktop-new-incident {
+        display: none;
+    }
+}
+
+.mobile-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background-color: #fff3cd;
+    border-bottom: 1px solid #ffeeba;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: #856404;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .mobile-warning {
+        display: block;
+    }
+    .container-fluid {
+        padding-top: 3.5rem !important;
+    }
+}
+
+.pagination .page-link {
+    color: #2196F3;
+    background-color: transparent;
+    border: 1px solid rgba(33, 150, 243, 0.2);
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #1976D2;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #2196F3;
+    color: white;
+    border-color: #2196F3;
+}
+
+/* New styles for the search bar */
+.search-sort-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.search-form {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+}
+
+.search-form .input-group {
+    width: 100%;
+}
+
+.sort-select {
+    width: auto;
+    min-width: 150px;
+}
+
+@media (max-width: 1200px) {
+    .search-sort-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-form {
+        max-width: 100%;
+    }
+
+    .sort-select {
+        width: 100%;
+    }
+}
