@@ -9,28 +9,33 @@
    - Peut assigner des rôles et des permissions aux utilisateurs
    - Peut choisir les zones et les unités pour les autres utilisateurs
    - Aucune restriction de zone ou d'unité
+   - Peut être assigné à un département
 
 2. **Employeur DG**
    - Accès global à toutes les données
    - Peut voir toutes les zones et unités
    - Aucune restriction de zone ou d'unité requise
+   - Peut être assigné à un département
 
 3. **Employeur Zone**
    - Accès limité à une zone spécifique
    - L'administrateur doit assigner l'utilisateur à une zone
    - Les données de zone sont récupérées depuis la base de données dbona.db
    - Ne peut pas accéder aux données d'autres zones
+   - Peut être assigné à un département
 
 4. **Employeur Unité**
    - Accès limité à une unité spécifique dans une zone
    - L'administrateur doit assigner l'utilisateur à une zone puis à une unité
    - Les données sont récupérées depuis la base de données onadb.db
    - Restreint aux données de son unité uniquement
+   - Peut être assigné à un département
 
 5. **Utilisateur**
    - Accès très restreint
    - Limité à une zone et une unité spécifiques
    - L'administrateur doit assigner à la fois la zone et l'unité
+   - Peut être assigné à un département
 
 ## Panneau de Création/Modification d'Utilisateur
 
@@ -159,3 +164,111 @@
    - [ ] Affichage correct des champs
    - [ ] Messages d'erreur appropriés
    - [ ] Réactivité de l'interface
+
+## Départements
+
+### Types de Départements
+
+1. **HSE (Hygiène, Sécurité et Environnement)**
+   - Gestion des incidents de sécurité
+   - Suivi des normes environnementales
+   - Rapports de conformité HSE
+
+2. **Exploitation**
+   - Gestion des opérations quotidiennes
+   - Maintenance des infrastructures
+   - Suivi des performances opérationnelles
+
+3. **Maintenance**
+   - Entretien préventif
+   - Réparations
+   - Gestion des équipements
+
+4. **Qualité**
+   - Contrôle de la qualité de l'eau
+   - Analyses et tests
+   - Rapports de conformité
+
+5. **Administration**
+   - Gestion des ressources
+   - Coordination interdépartementale
+   - Rapports administratifs
+
+### Structure des Zones et Unités
+
+#### Zones Géographiques
+
+1. **Zone Centre**
+   - Alger
+   - Blida
+   - Boumerdes
+   - Tipaza
+   - Médéa
+   - Bouira
+   - Tizi Ouzou
+   - Bejaia
+
+2. **Zone Est**
+   - Constantine
+   - Annaba
+   - Sétif
+   - Batna
+   - Jijel
+   - Skikda
+   - Mila
+   - Tébessa
+
+3. **Zone Ouest**
+   - Oran
+   - Tlemcen
+   - Sidi Bel Abbès
+   - Mostaganem
+   - Mascara
+   - Relizane
+   - Chlef
+   - Ain Témouchent
+
+4. **Zone Sud**
+   - Ouargla
+   - Biskra
+   - El Oued
+   - Ghardaïa
+   - Laghouat
+   - Béchar
+   - Adrar
+   - Tamanrasset
+
+#### Structure des Unités
+
+1. **Types d'Unités**
+   - Station d'épuration (STEP)
+   - Station de pompage
+   - Centre d'exploitation
+   - Centre de maintenance
+   - Laboratoire d'analyse
+   - Centre administratif
+
+2. **Hiérarchie des Unités**
+   - Chaque zone contient plusieurs unités
+   - Une unité appartient à une seule zone
+   - Les unités peuvent avoir des sous-unités
+   - Chaque unité a un code unique
+
+### Relations entre Entités
+
+1. **Utilisateur - Département**
+   - Un utilisateur peut être assigné à un seul département
+   - Un département peut avoir plusieurs utilisateurs
+   - L'assignation est gérée par les administrateurs
+
+2. **Utilisateur - Zone/Unité**
+   - Les permissions sont basées sur la zone et l'unité assignées
+   - Un utilisateur peut avoir accès à:
+     * Une zone spécifique (Employeur Zone)
+     * Une unité spécifique (Employeur Unité)
+     * Toutes les zones/unités (Admin, Employeur DG)
+
+3. **Département - Zone/Unité**
+   - Chaque département existe dans toutes les zones
+   - Les unités peuvent avoir des départements spécifiques
+   - La structure départementale est uniforme dans toutes les zones

@@ -1,5 +1,5 @@
 # Project Guidelines and Best Practices
-
+-You are an expert in Python, Flask, and scalable API development.
 ## 1. Project Structure and Organization
 
 ### 1.1 Context-Awareness (CRITICAL)
@@ -8,105 +8,90 @@
 - Review entire codebase before modifications
 - Preserve existing features; implement new ones without breaking old
 - Analyze potential impacts before changes
-- Use HOCs and React Hooks for new features
 - Edit code in a focused, context-aware manner
 
-### 1.2 Feature Isolation
-- Implement major features in dedicated `src/features/` directories
-- Use modular component structure
-- Import feature modules into main application as needed
+### Key Principles
+- Write concise, technical responses with accurate Python examples.
+- Use functional, declarative programming; avoid classes where possible except for Flask views.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission).
+- Use lowercase with underscores for directories and files (e.g., blueprints/user_routes.py).
+- Favor named exports for routes and utility functions.
+- Use the Receive an Object, Return an Object (RORO) pattern where applicable.
 
-### 1.3 File Placement
-- Route definitions in `src/app/` (Next.js App Router conventions)
-- Feature-specific directories (e.g., `src/features/water-quality/`)
-- Maintain clear, logical directory structure
+### Python/Flask
+- Use def for function definitions.
+- Use type hints for all function signatures where possible.
+- File structure: Flask app initialization, blueprints, models, utilities, config.
+- Avoid unnecessary curly braces in conditional statements.
+- For single-line statements in conditionals, omit curly braces.
+- Use concise, one-line syntax for simple conditional statements (e.g., if condition: do_something()).
 
-## 2. Coding Practices
+### Error Handling and Validation
+- Prioritize error handling and edge cases:
+- Handle errors and edge cases at the beginning of functions.
+- Use early returns for error conditions to avoid deeply nested if statements.
+- Place the happy path last in the function for improved readability.
+- Avoid unnecessary else statements; use the if-return pattern instead.
+- Use guard clauses to handle preconditions and invalid states early.
+- Implement proper error logging and user-friendly error messages.
+- Use custom error types or error factories for consistent error handling.
 
-### 2.1 Hard Coding Prohibition
-- Never hard-code values, configurations, or sensitive information
-- Use environment variables (`process.env`) for configurable values
-- Store sensitive information in `.env.local` files
-- Utilize Next.js built-in environment variable protection
+### ependencies
+- Flask
+- Flask-RESTful (for RESTful API development)
+- Flask-SQLAlchemy (for ORM)
+- Flask-Migrate (for database migrations)
+- Marshmallow (for serialization/deserialization)
+- Flask-JWT-Extended (for JWT authentication)
 
-## 3. Configuration and Environment
+### Flask-Specific Guidelines
+- Use Flask application factories for better modularity and testing.
+- Organize routes using Flask Blueprints for better code organization.
+- Use Flask-RESTful for building RESTful APIs with class-based views.
+- Implement custom error handlers for different types of exceptions.
+- Use Flask's before_request, after_request, and teardown_request decorators for request lifecycle management.
+- Utilize Flask extensions for common functionalities (e.g., Flask-SQLAlchemy, Flask-Migrate).
+- Use Flask's config object for managing different configurations (development, testing, production).
+- Implement proper logging using Flask's app.logger.
+- Use Flask-JWT-Extended for handling authentication and authorization.
 
-### 3.1 Dependency Management
-- Maintain up-to-date `package.json`
-- Use exact versions of dependencies
-- Regularly run `npm audit` and `npm outdated`
-- Implement Dependabot for automated updates
+### Performance Optimization
+- Use Flask-Caching for caching frequently accessed data.
+- Implement database query optimization techniques (e.g., eager loading, indexing).
+- Use connection pooling for database connections.
+- Implement proper database session management.
+- Use background tasks for time-consuming operations (e.g., Celery with Flask).
 
-## 4. Code Quality and Best Practices
+### Key Conventions
+1. Use Flask's application context and request context appropriately.
+2. Prioritize API performance metrics (response time, latency, throughput).
+3. Structure the application:
+- Use blueprints for modularizing the application.
+- Implement a clear separation of concerns (routes, business logic, data access).
+- Use environment variables for configuration management.
 
-### 4.1 Code Review Guidelines
-- Peer review all code changes
-- Follow ESLint and Prettier configurations
-- Use TypeScript with strict mode
-- Write clear, descriptive names
-- Provide comprehensive JSDoc comments
-- Implement unit and integration tests (Jest, React Testing Library)
+### atabase Interaction
+- Use Flask-SQLAlchemy for ORM operations.
+- Implement database migrations using Flask-Migrate.
+- Use SQLAlchemy's session management properly, ensuring sessions are closed after use.
 
-### 4.2 Error Handling
-- Implement robust React error boundaries
-- Use TypeScript for compile-time type checking
-- Centralize error logging (e.g., Sentry)
-- Create custom error classes
-- Provide user-friendly error messages
+### Serialization and Validation
+- Use Marshmallow for object serialization/deserialization and input validation.
+- Create schema classes for each model to handle serialization consistently.
 
-## 5. Security Considerations
+### Authentication and Authorization
+- Implement JWT-based authentication using Flask-JWT-Extended.
+- Use decorators for protecting routes that require authentication.
 
-### 5.1 Input Validation
-- Use Zod or TypeScript for runtime type validation
-- Implement server-side authentication checks
-- Use NextAuth.js for secure authentication
-- Implement role-based access control (RBAC)
+### API Documentation
+- Use Flask-RESTX or Flasgger for Swagger/OpenAPI documentation.
+- Ensure all endpoints are properly documented with request/response schemas.
 
-### 5.2 Sensitive Data Protection
-- Never expose sensitive information client-side
-- Use server-side rendering for sensitive data
-- Implement secure password hashing (bcrypt)
-- Use HTTPS and secure cookies
-- Implement CSRF protection (Next.js built-in)
+### Deployment
+- Use Gunicorn or uWSGI as WSGI HTTP Server.
+- Implement proper logging and monitoring in production.
+- Use environment variables for sensitive information and configuration.
 
-## 6. Performance and Optimization
-
-### 6.1 Database Interactions
-- Use Prisma ORM for type-safe queries
-- Implement database indexing
-- Use server-side caching strategies
-- Minimize database round trips
-- Implement pagination and lazy loading
-
-### 6.2 Code Efficiency
-- Utilize React Server Components
-- Implement code splitting and lazy loading
-- Use memoization (React.memo, useMemo)
-- Profile and optimize critical paths
-- Minimize re-renders with efficient state management
-
-## 7. State Management
-- Prefer React Context and Hooks for simple state
-- Use Zustand or Redux for complex global state
-- Implement efficient state update strategies
-- Use immutable state updates
-
-## 8. Documentation
-
-### 8.1 Code Documentation
-- Maintain comprehensive README.md
-- Document project setup and instructions
-- Keep inline comments clear and concise
-- Generate API documentation (TypeDoc)
-- Update documentation with each significant change
-
-## 9. UX/UI Design Principles
-
-### 9.1 Consistent Design
-- Use consistent design system (e.g., Tailwind CSS)
-- Create reusable component libraries
-- Ensure responsive design across devices
-- Implement accessibility best practices (WCAG)
-- Use design tokens for consistent styling
-
-Note: These guidelines should be regularly reviewed and updated to reflect evolving project needs and industry best practices.
+-Refer to Flask documentation for detailed information on Views, Blueprints, and Extensions for best practices.
+    
