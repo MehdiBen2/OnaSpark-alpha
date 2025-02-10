@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="shortcut icon" href="static/favicon.ico" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3c72">
+    <title>ONA - Login</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .login-body {
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{{ url_for('static', filename='images/bglogin.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .login-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .left-side {
+            background: rgba(30, 60, 114, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .right-side {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 2rem;
+        }
+
+        .logo-img {
+            max-width: 300px;
+            margin: -1rem 0;
+            filter: brightness(1.1);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(30, 60, 114, 0.2);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 1);
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-return {
+            background: transparent;
+            border: 2px solid rgba(30, 60, 114, 0.5);
+            color: #1e3c72;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-return:hover {
+            background: rgba(30, 60, 114, 0.1);
+            border-color: #1e3c72;
+            color: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .water-phrase {
+            margin-top: 2rem;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .water-phrase span {
+            display: block;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .form-check-input:checked {
+            background-color: #1e3c72;
+            border-color: #1e3c72;
+        }
+
+        .alert {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .spark-heading {
+            color: white;
+            font-weight: bold;
+            margin-top: -1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .left-side h1, .left-side p {
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-title {
+            color: #1e3c72;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-control.error {
+            border-color: #ff4444;
+            box-shadow: 0 0 0 0.2rem rgba(255, 68, 68, 0.25);
+        }
+
+        /* Login Animation Styles */
+        .login-animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #10153d 0%, #2181c3 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .login-animation-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .welcome-message {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+        }
+
+        .welcome-message.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .login-animation-overlay .ona-logo {
+            width: 120px;
+            height: auto;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s ease 0.6s, transform 0.5s ease 0.6s;
+        }
+
+        .login-animation-overlay .ona-logo.active {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(2); }
+            50% { transform: scale(2.5); }
+            100% { transform: scale(2); }
+        }
+
+        .login-animation-overlay .ona-logo.active:hover {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        /* Mobile Responsiveness Enhancements */
+        @media (max-width: 768px) {
+            .login-body {
+                background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("{{ url_for('static', filename='images/bglogin.png') }}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }
+
+            .login-container {
+                padding: 0 15px;
+            }
+
+            .login-card {
+                border-radius: 16px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            }
+
+            .left-side, .right-side {
+                padding: 1.5rem;
+            }
+
+            .left-side {
+                display: none; /* Hide left side on mobile */
+            }
+
+            .right-side {
+                width: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+            }
+
+            .logo-img {
+                max-width: 200px;
+                margin: 0 auto;
+                display: block;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.4rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-control {
+                font-size: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            .btn-primary, .btn-return {
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+
+            .login-animation-overlay .welcome-message {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            .login-animation-overlay .ona-logo {
+                width: 100px;
+            }
+
+            /* Ensure touch targets are large enough */
+            .btn-primary, .btn-return, .form-control, #togglePassword {
+                min-height: 48px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #togglePassword {
+                min-width: 48px;
+                padding: 0;
+            }
+        }
+
+        /* Very small screens additional adjustments */
+        @media (max-width: 375px) {
+            .form-title {
+                font-size: 1.2rem;
+            }
+
+            .form-control {
+                font-size: 0.85rem;
+            }
+
+            .login-animation-overlay .welcome-message {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Additional mobile touch interactions */
+        .touch-active {
+            transform: scale(0.95);
+            opacity: 0.8;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        /* Ensure proper spacing on mobile */
+        @media (max-width: 768px) {
+            .input-group {
+                flex-wrap: nowrap;
+            }
+
+            .input-group > .form-control {
+                flex-grow: 1;
+            }
+
+            .input-group > .btn {
+                flex-shrink: 0;
+            }
+
+            /* Improved error message styling */
+            .error-message {
+                font-size: 0.8rem;
+                margin-top: 5px;
+                color: #ff4444;
+                text-align: left;
+            }
+
+            .form-control.error {
+                border-color: #ff4444;
+                box-shadow: 0 0 0 0.2rem rgba(255, 68, 68, 0.25);
+            }
+        }
+
+        /* PC Screen Size Adjustments */
+        @media (max-width: 1366px) {
+            .login-container {
+                max-width: 900px;
+            }
+            .left-side, .right-side {
+                padding: 1.5rem;
+            }
+            .form-title {
+                margin-bottom: 1rem;
+            }
+            .mb-4 {
+                margin-bottom: 1rem !important;
+            }
+            .login-notice {
+                margin-bottom: 1rem !important;
+            }
+            .login-notice .alert {
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .login-container {
+                max-width: 800px;
+            }
+            .left-side, .right-side {
+                padding: 1.25rem;
+            }
+            .form-control {
+                padding: 0.5rem 1rem;
+            }
+            .btn {
+                padding: 0.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .spark-heading {
+                margin-top: -0.5rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .login-container {
+                max-width: 700px;
+            }
+            .left-side, .right-side {
+                padding: 1rem;
+            }
+            .p-4 {
+                padding: 1rem !important;
+            }
+        }
+
+        /* Login Notice Styles */
+        .login-notice .alert-info {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(30, 60, 114, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 0.5rem;
+        }
+
+        .login-notice .alert-info i {
+            color: #1e3c72;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .login-notice .alert-info strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+        }
+
+        .login-notice .alert-info .text-muted {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+
+        .login-notice .alert-info .me-3 {
+            margin-right: 0.5rem !important;
+        }
+
+        .login-notice {
+            margin-bottom: 1rem;
+        }
+
+        /* Mobile Warning Styles */
+        .mobile-warning {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #d4edda;
+            color: #155724;
+            text-align: center;
+            padding: 10px;
+            z-index: 1000;
+            font-size: 0.9rem;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-warning {
+                display: block;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="login-body">
+    <div class="mobile-warning">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Cette plateforme est optimisée pour les ordinateurs de bureau. Certaines fonctionnalités peuvent être limitées sur mobile.
+    </div>
+    <div class="login-animation-overlay">
+        <div class="welcome-message">Bienvenu, <span class="nickname"></span> !</div>
+        <img src="{{ url_for('static', filename='images/ona_logo.png') }}" alt="Logo de l'Office National de l'Assainissement (ONA)" title="Logo de l'Office National de l'Assainissement" class="ona-logo">
+    </div>
+    <div class="container login-container">
+        <div class="row justify-content-center min-vh-100 align-items-center">
+            <div class="col-12">
+                <div class="login-card">
+                    <div class="row g-0">
+                        <div class="col-md-6 left-side">
+                            <h1>Office National de l'Assainissement</h1>
+                            <br>
+                            <h2 class="spark-heading">SparK</h2>
+                            <img src="{{ url_for('static', filename='images/ona-logo.png') }}" alt="Logo de l'Office National de l'Assainissement (ONA)" title="Logo de l'Office National de l'Assainissement" class="logo-img">
+                            <small class="text-white d-block mt-2 text-center disclaimer">
+                                Ce logo est la propriété exclusive de l'Office National de l'Assainissement (ONA). 
+                                <br>
+                            </small>
+                            <br>
+                            <p>Système de Gestion Centralisée des Données</p>
+                        </div>
+                        <div class="col-md-6 right-side">
+                            <div class="p-4">
+                                <h2 class="form-title">Connexion à l'office</h2>
+                                <div class="login-notice mb-4">
+                                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                                        <div>
+                                            <strong>Authentification requise</strong>
+                                            <p class="mb-0 text-muted">Veuillez vous connecter avec vos identifiants pour accéder à la plateforme OnaSpark.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% with messages = get_flashed_messages() %}
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <div class="alert alert-danger">{{ message }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endwith %}
+                                <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+                                    <div class="mb-4">
+                                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                        <div id="usernameError" class="error-message"></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="password" class="form-label">Mot de passe</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="password" name="password" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div id="passwordError" class="error-message"></div>
+                                    </div>
+                                    <div id="loginError" class="alert alert-danger d-none" role="alert"></div>
+                                    <button type="submit" class="btn btn-primary w-100 mb-3">Se connecter</button>
+                                    <a href="{{ url_for('landing.index') }}" class="btn btn-return w-100">Retour à l'accueil</a>
+                                </form>
+                                <a href="{{ url_for('auth.login_v2') }}" class="btn btn-link w-100 text-center mt-3 text-muted" style="text-decoration: none; font-size: 0.9rem;">
+                                    <i class="bi bi-magic me-2"></i>Essayez notre nouvelle interface de connexion
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/login_js.js') }}"></script>
+</body>
+</html>
