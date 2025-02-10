@@ -80,11 +80,47 @@
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
         }
+        
+        /* Close button for intro video */
+        #introVideoCloseBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.3s ease;
+            z-index: 10000;
+            background: none;
+            border: none;
+            opacity: 0.7;
+        }
+        
+        #introVideoCloseBtn:hover {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        
+        #introVideoCloseBtn svg {
+            stroke: white;
+            stroke-width: 2;
+            width: 24px;
+            height: 24px;
+        }
     </style>
 </head>
 <body>
     <!-- Introduction Video Section -->
     <div id="introVideoSection">
+        <button id="introVideoCloseBtn" onclick="hideIntroVideo()">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
         <div id="introVideoContainer">
             <video id="introVideo" autoplay muted playsinline>
                 <source src="{{ url_for('static', filename='images/sparkvid/ona.mp4') }}" type="video/mp4">
@@ -127,74 +163,6 @@
             </div>
         </div>
     </div>
-    <button class="side-panel-toggle" onclick="toggleSidePanel()">
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-        <span class="side-panel-toggle-text">Ouvrir le panneau</span>
-    </button>
-    <div class="side-panel" id="sidePanelContainer">
-        <div class="side-panel-content" id="sidePanelContent">
-            <div class="side-panel-header">
-                <h2>Fonctionnalités Ona Spark</h2>
-            </div>
-            <ul class="side-panel-features">
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    <span>Création des différents bilans et génération de fichiers PDF et Excel</span>
-                </li>
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span>Reporting d'incident avec système SIG</span>
-                </li>
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span>Suivi en temps réel des incidents</span>
-                </li>
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                    </svg>
-                    <span>Gestion des différentes unités et zones de l'office</span>
-                </li>
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                    <span>Agent Ona Spark : Assistant intelligent pour la gestion des ressources en eau</span>
-                </li>
-                <li>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                        <path d="M12 15v4"></path>
-                    </svg>
-                    <span>Agent Spark : Analyse et explication détaillée des incidents et accidents</span>
-                </li>
-            </ul>
-            <div class="side-panel-footer" style="text-align: center; padding: 15px; font-size: 0.8em; color: #888;">
-                Et plus de fonctionnalités en développement
-            </div>
-        </div>
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const introVideoSection = document.getElementById('introVideoSection');
@@ -214,24 +182,11 @@
             introVideo.play().catch(function(error) {
                 console.log('Autoplay was prevented. Allowing user interaction.');
             });
-        });
 
-        function toggleSidePanel() {
-            const sidePanel = document.getElementById('sidePanelContainer');
-            const toggleButton = document.querySelector('.side-panel-toggle');
-            
-            // Toggle side panel
-            sidePanel.classList.toggle('open');
-            
-            // Toggle button state
-            toggleButton.classList.toggle('active');
-            
-            // Change button text based on panel state
-            const buttonText = toggleButton.querySelector('.side-panel-toggle-text');
-            buttonText.textContent = sidePanel.classList.contains('open') 
-                ? 'Fermer le panneau' 
-                : 'Ouvrir le panneau';
-        }
+            // Add close button functionality
+            const closeBtn = document.getElementById('introVideoCloseBtn');
+            closeBtn.addEventListener('click', hideIntroVideo);
+        });
 
         function showLoadingAndRedirect(url) {
             const loadingScreen = document.getElementById('loadingScreen');
