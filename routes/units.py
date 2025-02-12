@@ -6,18 +6,6 @@ from utils.permissions import PermissionManager, Permission, UserRole
 
 units = Blueprint('units', __name__)
 
-@units.route('/admin/units')
-@login_required
-def manage_units():
-    # Check permission to view all units
-    if not PermissionManager.has_permission(current_user.role, Permission.VIEW_ALL_UNITS):
-        flash('Vous n\'avez pas la permission de gérer les unités.', 'danger')
-        return redirect(url_for('main_dashboard.dashboard'))
-
-    units = Unit.query.all()
-    zones = Zone.query.all()
-    return render_template('admin/manage_units.html', units=units, zones=zones)
-
 @units.route('/admin/units/new', methods=['POST'])
 @login_required
 def new_unit():
