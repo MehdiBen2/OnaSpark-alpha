@@ -20,19 +20,12 @@
         background-color: transparent;
     }
 
-    /* Loading animation with optimized performance */
+    /* Simplified loading animation */
     .loading-dots {
         display: inline-flex;
         align-items: center;
         gap: 4px;
         height: 24px;
-        margin-top: 8px;
-        opacity: 1;
-        transition: opacity 0.3s ease-out;
-    }
-
-    .loading-dots.hide {
-        opacity: 0;
     }
 
     .loading-dots .dot {
@@ -40,39 +33,29 @@
         height: 8px;
         background-color: var(--primary-color, #4A90E2);
         border-radius: 50%;
-        transform: scale(0.8);
-        opacity: 0.6;
-        will-change: transform, opacity;
+        animation: pulse 1.2s infinite ease-in-out;
     }
 
-    .loading-dots .dot:nth-child(1) { animation: pulse 1.5s infinite; }
-    .loading-dots .dot:nth-child(2) { animation: pulse 1.5s infinite 0.5s; }
-    .loading-dots .dot:nth-child(3) { animation: pulse 1.5s infinite 1s; }
+    .loading-dots .dot:nth-child(2) { animation-delay: 0.4s; }
+    .loading-dots .dot:nth-child(3) { animation-delay: 0.8s; }
 
     @keyframes pulse {
-        0%, 100% {
-            transform: scale(0.8);
-            opacity: 0.6;
-        }
-        50% {
-            transform: scale(1.2);
-            opacity: 1;
-        }
+        0%, 100% { transform: scale(0.8); opacity: 0.6; }
+        50% { transform: scale(1.2); opacity: 1; }
     }
 
     .stat-number {
+        position: relative;
         min-height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
     }
 
     .number-value {
-        position: absolute;
+        transition: opacity 0.3s, transform 0.3s;
         opacity: 0;
         transform: translateY(10px);
-        transition: all 0.3s ease-out;
     }
 
     .number-value.show {
@@ -80,22 +63,17 @@
         transform: translateY(0);
     }
 
-    /* Logo slide-in animation */
-    @keyframes slideInLogo {
-        0% {
-            opacity: 0;
-            transform: translateX(-50px) scale(0.9);
-        }
-        100% {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-        }
+    .ona-logo {
+        max-width: 220px;
+        height: auto;
+        opacity: 0;
+        animation: fadeInSlide 1s ease-out forwards;
+        animation-delay: 0.3s;
     }
 
-    .ona-logo {
-        animation: slideInLogo 1.2s ease-out forwards;
-        opacity: 0;
-        animation-delay: 0.3s;
+    @keyframes fadeInSlide {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
     }
 </style>
 {% endblock %}
@@ -107,7 +85,7 @@
         <div class="dashboard-header">
             <div class="container">
                 <div class="header-content">
-                    <img src="{{ url_for('static', filename='images/sparkLogofull.png') }}" alt="Spark Logo" class="ona-logo" style="max-width: 220px; height: auto;">
+                    <img src="{{ url_for('static', filename='images/sparkLogofull.png') }}" alt="Spark Logo" class="ona-logo">
                     <h3>Office National de l'Assainissement</h3>
                     {% if current_user.assigned_unit %}
                         <h4>{{ current_user.assigned_unit.name }}</h4>
@@ -410,99 +388,42 @@
 
 <script>
 (function() {
-    // Constants for animation timing
-    const ANIMATION_DURATION = 1500;
-    const FADE_DURATION = 300;
-
-    // Logo slide-in initialization
-    function initLogoAnimation() {
-        const logo = document.querySelector('.ona-logo');
-        if (logo) {
-            logo.style.opacity = '0';
-            requestAnimationFrame(() => {
-                logo.style.animationPlayState = 'running';
+    // Simplified number animation
+    function animateNumbers() {
+        const loadingDots = document.querySelectorAll('.loading-dots');
+        const numberValues = document.querySelectorAll('.number-value');
+        
+        setTimeout(() => {
+            loadingDots.forEach(dots => dots.style.display = 'none');
+            numberValues.forEach(value => {
+                value.style.display = 'block';
+                value.classList.add('show');
             });
-        }
+        }, 1500);
     }
 
-    // Show numbers with optimized animation
-    function showNumbers() {
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
-            const loadingDots = document.querySelectorAll('.loading-dots');
-            const numberValues = document.querySelectorAll('.number-value');
+    // Simplified collapsible sections
+    function initCollapsibleSections() {
+        const container = document.querySelector('.dashboard-wrapper');
+        
+        container.addEventListener('click', function(e) {
+            const header = e.target.closest('.collapsible-header');
+            if (!header) return;
             
-            // Add hide class to trigger fade out
-            setTimeout(() => {
-                loadingDots.forEach(dots => dots.classList.add('hide'));
-            }, ANIMATION_DURATION - FADE_DURATION);
-
-            // Show numbers after loading dots fade out
-            setTimeout(() => {
-                loadingDots.forEach(dots => dots.style.display = 'none');
-                numberValues.forEach(value => {
-                    value.style.display = 'block';
-                    // Trigger reflow for animation
-                    void value.offsetWidth;
-                    value.classList.add('show');
-                });
-            }, ANIMATION_DURATION);
+            const content = header.nextElementSibling;
+            header.classList.toggle('active');
+            content.classList.toggle('active');
         });
     }
 
-    // Cache DOM queries
-    const container = document.querySelector('.dashboard-wrapper');
-    
-    // Event delegation for collapsible sections
-    container.addEventListener('click', function(e) {
-        const header = e.target.closest('.collapsible-header');
-        if (!header) return;
-        
-        const content = header.nextElementSibling;
-        const isActive = header.classList.contains('active');
-        
-        // Use more efficient querySelectorAll with specific parent
-        const allHeaders = container.querySelectorAll('.collapsible-header');
-        const allContents = container.querySelectorAll('.collapsible-content');
-        
-        // Remove active class efficiently
-        allHeaders.forEach(h => h.classList.remove('active'));
-        allContents.forEach(c => c.classList.remove('active'));
-        
-        if (!isActive) {
-            requestAnimationFrame(() => {
-                header.classList.add('active');
-                content.classList.add('active');
-            });
-        }
-    });
-
-    // Initialize first section
-    const firstHeader = container.querySelector('.collapsible-header');
-    const firstContent = container.querySelector('.collapsible-content');
-    if (firstHeader && firstContent) {
-        firstHeader.classList.add('active');
-        firstContent.classList.add('active');
-    }
-
-    // Initialization on DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', function() {
-        initLogoAnimation();
-        showNumbers();
-    });
-
-    // Format date in French
+    // Date formatting
     function formatDateInFrench(date) {
         const months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
         
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = months[date.getMonth()];
-        const year = date.getFullYear();
-        
-        return `${day} ${month} ${year}`;
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
     // Update date and time
@@ -516,15 +437,20 @@
         }
         
         if (timeElement) {
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            timeElement.textContent = `${hours}:${minutes}`;
+            timeElement.textContent = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
         }
     }
 
-    // Update immediately and then every minute
-    updateDateTime();
-    setInterval(updateDateTime, 60000);
+    // Initialization
+    document.addEventListener('DOMContentLoaded', function() {
+        animateNumbers();
+        initCollapsibleSections();
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+    });
 })();
 </script>
 {% endblock %}
