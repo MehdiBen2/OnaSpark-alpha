@@ -254,4 +254,68 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Make dismissWarning available globally
     window.dismissWarning = dismissWarning;
+
+    // Dynamic unit filtering based on selected zone
+    function updateUnitFilter() {
+        const zoneSelect = document.getElementById('zoneFilter');
+        const unitSelect = document.getElementById('unitFilter');
+        const selectedZoneId = zoneSelect.value;
+
+        // Reset unit options
+        unitSelect.innerHTML = '<option value="">Toutes les unités</option>';
+
+        // If no zone selected, return
+        if (!selectedZoneId) return;
+
+        // Filter units based on selected zone
+        const allUnits = document.querySelectorAll('#unitFilter option');
+        allUnits.forEach(unit => {
+            const zoneId = unit.getAttribute('data-zone-id');
+            if (zoneId === selectedZoneId) {
+                unitSelect.appendChild(unit.cloneNode(true));
+            }
+        });
+    }
+
+    // Apply filters to the incident list
+    function applyFilters() {
+        const zoneSelect = document.getElementById('zoneFilter');
+        const unitSelect = document.getElementById('unitFilter');
+        const searchForm = document.getElementById('searchSortForm');
+
+        // Create or update hidden inputs for zone and unit
+        let zoneInput = searchForm.querySelector('input[name="zone"]');
+        if (!zoneInput) {
+            zoneInput = document.createElement('input');
+            zoneInput.type = 'hidden';
+            zoneInput.name = 'zone';
+            searchForm.appendChild(zoneInput);
+        }
+        zoneInput.value = zoneSelect.value;
+
+        let unitInput = searchForm.querySelector('input[name="unit"]');
+        if (!unitInput) {
+            unitInput = document.createElement('input');
+            unitInput.type = 'hidden';
+            unitInput.name = 'unit';
+            searchForm.appendChild(unitInput);
+        }
+        unitInput.value = unitSelect.value;
+
+        // Submit the form
+        searchForm.submit();
+    }
+
+    // Add event listeners for dynamic filtering
+    const zoneFilter = document.getElementById('zoneFilter');
+    const unitFilter = document.getElementById('unitFilter');
+    const filterButton = document.getElementById('filterButton');
+
+    if (zoneFilter) {
+        zoneFilter.addEventListener('change', updateUnitFilter);
+    }
+
+    if (filterButton) {
+        filterButton.addEventListener('click', applyFilters);
+    }
 });

@@ -3,7 +3,7 @@ from flask import (
     flash, current_app, send_file, jsonify, session
 )
 from flask_login import login_required, current_user
-from models import db, Incident, Unit, UserRole
+from models import db, Incident, Unit, UserRole, Zone
 from datetime import datetime
 from functools import wraps
 from utils.decorators import admin_required
@@ -84,6 +84,10 @@ def list_incidents():
     search_term = request.args.get('search', '').strip()
     sort_option = request.args.get('sort', 'date_desc')
     
+    # New filtering parameters for admin
+    zone_filter = request.args.get('zone', None, type=int) if current_user.role == UserRole.ADMIN else None
+    unit_filter = request.args.get('unit', None, type=int) if current_user.role == UserRole.ADMIN else None
+    
     # Base query setup based on user role
     if current_user.role in [UserRole.ADMIN, UserRole.EMPLOYEUR_DG]:
         query = Incident.query
@@ -95,6 +99,17 @@ def list_incidents():
     else:
         # Filter by current user's unit
         query = Incident.query.filter_by(unit_id=current_user.unit_id)
+    
+    # Apply zone filter for admin
+    if zone_filter:
+        # Get all units in the selected zone
+        zone_units = Unit.query.filter_by(zone_id=zone_filter).all()
+        unit_ids = [unit.id for unit in zone_units]
+        query = query.filter(Incident.unit_id.in_(unit_ids))
+    
+    # Apply unit filter for admin
+    if unit_filter:
+        query = query.filter_by(unit_id=unit_filter)
     
     # Apply status filter if provided
     if status_filter:
@@ -136,6 +151,9 @@ def list_incidents():
                 else_=len(status_order)
             )
         )
+    elif sort_option == 'unit' and current_user.role == UserRole.ADMIN:
+        # Sort by unit name
+        query = query.join(Unit).order_by(Unit.name)
     
     # Paginate results
     pagination = query.paginate(
@@ -159,6 +177,11 @@ def list_incidents():
         'can_delete_incident': context_permission_check(Permission.DELETE_INCIDENT),
         'can_export_pdf': context_permission_check(Permission.EXPORT_INCIDENT_PDF),
         'can_ai_analysis': context_permission_check(Permission.GET_AI_EXPLANATION),
+        # Add zones and units for filtering dropdowns
+        'zones': Zone.query.all() if current_user.role == UserRole.ADMIN else [],
+        'units': Unit.query.all() if current_user.role == UserRole.ADMIN else [],
+        'selected_zone': zone_filter,
+        'selected_unit': unit_filter,
     }
     
     return render_template('incidents/incident_list.html', **context)
