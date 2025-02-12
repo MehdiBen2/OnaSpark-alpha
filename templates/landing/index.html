@@ -245,6 +245,114 @@
             }
         }
 
+        /* Enhanced Services Card Styles */
+        .services .service-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            border: 1px solid rgba(0, 123, 255, 0.1);
+        }
+
+        .services .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #007bff, #00c6ff);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .services .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .services .service-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card .icon-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .icon-box {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .service-card .icon-box i {
+            font-size: 3rem;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+
+        .services .service-card:hover .icon-box i {
+            color: #00c6ff;
+        }
+
+        .service-card h3 {
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #2c3e50;
+            transition: color 0.3s ease;
+        }
+
+        .services .service-card:hover h3 {
+            color: #007bff;
+        }
+
+        .service-card p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+        .services .service-card:hover p {
+            color: #495057;
+        }
+
+        /* Subtle Hover Effect */
+        .services .service-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.05), rgba(0, 198, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .services .service-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .services .service-card {
+                margin-bottom: 20px;
+            }
+
+            .service-card .icon-box i {
+                font-size: 2.5rem;
+            }
+        }
+
         /* Ensure uniform card sizes */
         .service-card {
             display: flex;
@@ -375,57 +483,57 @@
             </p>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-database-check"></i>
                         </div>
                         <h3>Gestion des Données</h3>
-                        <p>Centralisez et gérez efficacement toutes vos données d'entreprise</p>
+                        <p>Centralisez et gérez efficacement toutes vos données d'entreprise avec une approche intégrée et sécurisée.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-graph-up"></i>
                         </div>
                         <h3>Analyses et Rapports</h3>
-                        <p>Générez des rapports détaillés et des analyses approfondies</p>
+                        <p>Générez des rapports détaillés et des analyses approfondies avec des visualisations intuitives et des insights précis.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-map"></i>
                         </div>
                         <h3>Vue des Incidents sur Carte</h3>
-                        <p>Visualisez et localisez les incidents signalés sur une carte interactive</p>
+                        <p>Visualisez et localisez les incidents signalés sur une carte interactive, offrant une compréhension géographique immédiate.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-lightning-charge"></i>
                         </div>
                         <h3>Agent Ona Spark</h3>
-                        <p>Assistant intelligent pour la gestion et l'analyse des ressources en eau</p>
+                        <p>Assistant intelligent pour la gestion et l'analyse des ressources en eau, fournissant des recommandations proactives.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-shield-exclamation"></i>
                         </div>
                         <h3>Analyse Détaillée des Incidents</h3>
-                        <p>Explication approfondie et contextuelle des incidents et accidents</p>
+                        <p>Explication approfondie et contextuelle des incidents et accidents, avec des recommandations de prévention et de résolution.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="service-card">
+                    <div class="service-card h-100 p-4">
                         <div class="icon-box">
                             <i class="bi bi-droplet-half"></i>
                         </div>
                         <h3>Analyse Qualité d'Eau Épurée</h3>
-                        <p>Évaluation détaillée et en temps réel de la qualité des eaux traitées</p>
+                        <p>Évaluation détaillée et en temps réel de la qualité des eaux traitées, avec des indicateurs de performance précis.</p>
                     </div>
                 </div>
             </div>
