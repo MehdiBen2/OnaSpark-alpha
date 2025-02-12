@@ -41,44 +41,72 @@
                         <div class="input-group">
                             <input type="text" class="form-control" name="search" placeholder="Rechercher..." value="{{ request.args.get('search', '') }}">
                             <input type="hidden" name="sort" id="sortInput" value="{{ request.args.get('sort', 'date_desc') }}">
-                            <button class="btn btn-light" type="submit">
-                                <i class="fas fa-search"></i>
+                            {% if current_user.role == 'Admin' %}
+                            <button class="btn btn-light" type="button" id="sortFilterToggle">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search me-2"></i>Rechercher
                             </button>
                         </div>
-                    </form>
-                    <select class="form-select sort-select" id="sortIncidents">
-                        <option value="date_desc" {{ 'selected' if request.args.get('sort') == 'date_desc' }}>Plus récent</option>
-                        <option value="date_asc" {{ 'selected' if request.args.get('sort') == 'date_asc' }}>Plus ancien</option>
-                        <option value="gravite" {{ 'selected' if request.args.get('sort') == 'gravite' }}>Gravité</option>
-                        <option value="status" {{ 'selected' if request.args.get('sort') == 'status' }}>Status</option>
-                        {% if current_user.role == 'Admin' %}
-                        <option value="unit" {{ 'selected' if request.args.get('sort') == 'unit' }}>Unité</option>
-                        {% endif %}
-                    </select>
 
-                    {% if current_user.role == 'Admin' %}
-                    <div class="d-flex gap-2 mt-2">
-                        <select class="form-select" name="zone" id="zoneFilter" onchange="updateUnitFilter()">
-                            <option value="">Toutes les zones</option>
-                            {% for zone in zones %}
-                            <option value="{{ zone.id }}" {{ 'selected' if selected_zone == zone.id }}>
-                                {{ zone.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <select class="form-select" name="unit" id="unitFilter">
-                            <option value="">Toutes les unités</option>
-                            {% for unit in units %}
-                            {% if not selected_zone or unit.zone_id == selected_zone %}
-                            <option value="{{ unit.id }}" data-zone-id="{{ unit.zone_id }}" {{ 'selected' if selected_unit == unit.id }}>
-                                {{ unit.name }}
-                            </option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                        <button class="btn btn-primary" id="filterButton">Filtrer</button>
-                    </div>
-                    {% endif %}
+                        <div id="sortFilterPanel" class="sort-filter-panel mt-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-3 position-relative">
+                                            <h5 class="form-section-title mb-2">
+                                                <i class="fas fa-sort me-2"></i>Trier
+                                            </h5>
+                                            <select class="form-select sort-select" id="sortIncidents">
+                                                <option value="date_desc" {{ 'selected' if request.args.get('sort') == 'date_desc' }}>Plus récent</option>
+                                                <option value="date_asc" {{ 'selected' if request.args.get('sort') == 'date_asc' }}>Plus ancien</option>
+                                                <option value="gravite" {{ 'selected' if request.args.get('sort') == 'gravite' }}>Gravité</option>
+                                                <option value="status" {{ 'selected' if request.args.get('sort') == 'status' }}>Status</option>
+                                                {% if current_user.role == 'Admin' %}
+                                                <option value="unit" {{ 'selected' if request.args.get('sort') == 'unit' }}>Unité</option>
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 position-relative">
+                                            <h5 class="form-section-title mb-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>Zone
+                                            </h5>
+                                            <select class="form-select" name="zone" id="zoneFilter" onchange="updateUnitFilter()">
+                                                <option value="">Toutes les zones</option>
+                                                {% for zone in zones %}
+                                                <option value="{{ zone.id }}" {{ 'selected' if selected_zone == zone.id }}>
+                                                    {{ zone.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 position-relative">
+                                            <h5 class="form-section-title mb-2">
+                                                <i class="fas fa-building me-2"></i>Unité
+                                            </h5>
+                                            <select class="form-select" name="unit" id="unitFilter">
+                                                <option value="">Toutes les unités</option>
+                                                {% for unit in units %}
+                                                {% if not selected_zone or unit.zone_id == selected_zone %}
+                                                <option value="{{ unit.id }}" data-zone-id="{{ unit.zone_id }}" {{ 'selected' if selected_unit == unit.id }}>
+                                                    {{ unit.name }}
+                                                </option>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-end h-100">
+                                            <button class="btn btn-primary w-100" id="filterButton">
+                                                <i class="fas fa-filter me-2"></i>Filtrer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <button id="toggleView" class="btn btn-light me-2">
                     <i class="fas fa-list me-2"></i>Vue Liste

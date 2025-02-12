@@ -318,4 +318,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterButton) {
         filterButton.addEventListener('click', applyFilters);
     }
+
+    // Toggle sort and filter panel
+    function toggleSortFilterPanel() {
+        const sortFilterPanel = document.getElementById('sortFilterPanel');
+        const sortFilterToggle = document.getElementById('sortFilterToggle');
+
+        if (sortFilterPanel.classList.contains('show')) {
+            sortFilterPanel.classList.remove('show');
+            sortFilterToggle.classList.remove('active');
+        } else {
+            sortFilterPanel.classList.add('show');
+            sortFilterToggle.classList.add('active');
+        }
+    }
+
+    // Add event listeners when the document is ready
+    const sortFilterToggle = document.getElementById('sortFilterToggle');
+    
+    if (sortFilterToggle) {
+        sortFilterToggle.addEventListener('click', toggleSortFilterPanel);
+    }
 });
