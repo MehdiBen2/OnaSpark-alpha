@@ -19,19 +19,19 @@ def index():
     
     # Check if user has visited before using session
     if session.get('has_visited'):
-        return render_template('dashboard/landing.html')
+        return render_template('landing/index.html')
     
     # First time visitor
     session['has_visited'] = True
     session.permanent = True  # Make the session last longer
-    return render_template('landing/hero.html')
+    return render_template('landing/index.html')
 
 @landing.route('/landing')
 def main_landing():
     """Direct route to the main landing page"""
     if current_user.is_authenticated:
         return redirect(url_for(MAIN_DASHBOARD))
-    return render_template('dashboard/landing.html')
+    return render_template('landing/index.html')
 
 @landing.route('/welcome')
 def hero():
