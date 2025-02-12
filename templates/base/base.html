@@ -19,7 +19,6 @@
         :root {
             --ona-primary: #356ee7;     /* Modern bright blue */
             --ona-secondary: #173aaa;    /* Deep blue */
-            --ona-accent: #95C11F;       /* ONA Green */
             --ona-dark: #2b2d42;
             --ona-light: #f8f9fa;
             --transition: all 0.3s ease-in-out;
@@ -170,25 +169,7 @@
             border-color: rgba(255, 255, 255, 0.3);
         }
 
-        @media (max-width: 991.98px) {
-            .navbar-collapse {
-                background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
-                padding: 1rem;
-                border-radius: 12px;
-                margin-top: 1rem;
-            }
-
-            .user-info,
-            .logout-btn {
-                margin: 0.5rem 0;
-            }
-
-            .language-switcher {
-                margin: 0.5rem 0;
-                justify-content: center;
-            }
-        }
-
+        /* Media Queries - Ordered from largest to smallest */
         @media (max-width: 1366px) {
             .navbar {
                 padding: 0.5rem 0;
@@ -210,10 +191,6 @@
 
             .logout-btn {
                 padding: 0.4rem 0.8rem;
-            }
-
-            .language-switcher {
-                margin-left: 0.5rem;
             }
         }
 
@@ -238,13 +215,21 @@
             }
         }
 
-        /* Ensure content starts immediately after navbar */
-        .container-fluid {
-            padding-top: 0;
-            margin-top: 0;
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: linear-gradient(135deg, var(--ona-primary) 0%, var(--ona-secondary) 100%);
+                padding: 1rem;
+                border-radius: 12px;
+                margin-top: 1rem;
+            }
+
+            .user-info,
+            .logout-btn {
+                margin: 0.5rem 0;
+            }
         }
 
-        /* Adjust row to remove any gaps */
+        /* Remove redundant container styles */
         .row.min-vh-100 {
             margin-top: 0 !important;
             padding-top: 0 !important;
@@ -300,18 +285,7 @@
             background-color: #17a2b8;
         }
 
-        body {
-            background-color: #f4f7fa;
-            background-image: 
-                linear-gradient(
-                    to bottom right, 
-                    rgba(135, 206, 235, 0.05), 
-                    rgba(30, 144, 255, 0.03)
-                );
-            min-height: 100vh;
-        }
-
-        /* Card Styles to match the departement page design */
+        /* Card Styles */
         .card {
             background-color: #ffffff;
             background-image: 
@@ -333,12 +307,6 @@
             box-shadow: 
                 0 15px 30px rgba(0, 0, 0, 0.08), 
                 0 7px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Ensure content areas have consistent background */
-        .container-fluid, 
-        .container {
-            background-color: transparent;
         }
 
         /* Soft shadow for elevated elements */
