@@ -299,6 +299,54 @@
         #notification-container > div.info {
             background-color: #17a2b8;
         }
+
+        body {
+            background-color: #f4f7fa;
+            background-image: 
+                linear-gradient(
+                    to bottom right, 
+                    rgba(135, 206, 235, 0.05), 
+                    rgba(30, 144, 255, 0.03)
+                );
+            min-height: 100vh;
+        }
+
+        /* Card Styles to match the departement page design */
+        .card {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(
+                    to bottom right, 
+                    rgba(135, 206, 235, 0.02), 
+                    rgba(30, 144, 255, 0.01)
+                );
+            border-radius: 16px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.06), 
+                0 5px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.08), 
+                0 7px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Ensure content areas have consistent background */
+        .container-fluid, 
+        .container {
+            background-color: transparent;
+        }
+
+        /* Soft shadow for elevated elements */
+        .shadow-soft {
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.06), 
+                0 5px 10px rgba(0, 0, 0, 0.03) !important;
+        }
     </style>
 </head>
 <body>
