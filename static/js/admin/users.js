@@ -144,12 +144,30 @@
             this.currentUserToDelete = null;
             this.deleteModal = new bootstrap.Modal(document.querySelector(CONFIG.SELECTORS.deleteModal));
             this.searchTimeout = null;
+            this.panel = document.querySelector(CONFIG.SELECTORS.panel);
             this.initializeEventListeners();
         }
 
         initializeEventListeners() {
             // Create user button
-            document.querySelector(CONFIG.SELECTORS.createUserBtn).addEventListener('click', () => this.resetForm());
+            document.querySelector(CONFIG.SELECTORS.createUserBtn).addEventListener('click', () => {
+                this.resetForm();
+                this.openPanel();
+            });
+
+            // Close panel buttons
+            document.querySelector(CONFIG.SELECTORS.closeBtn).addEventListener('click', () => {
+                this.resetForm();
+                this.closePanel();
+            });
+
+            // Click outside panel
+            this.panel.addEventListener('click', (e) => {
+                if (e.target === this.panel) {
+                    this.resetForm();
+                    this.closePanel();
+                }
+            });
 
             // Form submission
             document.querySelector(CONFIG.SELECTORS.form).addEventListener('submit', (e) => this.handleFormSubmission(e));
@@ -185,8 +203,6 @@
 
         resetForm() {
             const form = document.querySelector(CONFIG.SELECTORS.form);
-            const panel = document.querySelector(CONFIG.SELECTORS.panel);
-            
             form.reset();
             form.classList.remove('was-validated');
             
@@ -199,7 +215,14 @@
             document.querySelector('.role-description').textContent = '';
             
             this.updatePanelForEditing(false);
-            panel.classList.add('open');
+        }
+
+        openPanel() {
+            this.panel.classList.add('open');
+        }
+
+        closePanel() {
+            this.panel.classList.remove('open');
         }
 
         async handleFormSubmission(e) {
@@ -230,7 +253,7 @@
                         data.message || (this.isEditing ? 'Utilisateur modifié avec succès' : 'Utilisateur créé avec succès'), 
                         'success'
                     );
-                    document.querySelector(CONFIG.SELECTORS.panel).classList.remove('open');
+                    this.closePanel();
                     location.reload();
                 } else {
                     utils.showToast(
@@ -288,7 +311,7 @@
             }
             
             this.updatePanelForEditing(true);
-            panel.classList.add('open');
+            this.openPanel();
         }
 
         updatePanelForEditing(editing) {
