@@ -30,10 +30,16 @@ def manage_users():
     if current_user.role == UserRole.ADMIN:
         available_roles = [UserRole.ADMIN] + available_roles
     
+    # Fetch all units for the new user modal
+    units = Unit.query.order_by(Unit.name).all()
+    units_data = [{'id': unit.id, 'name': unit.name, 'zone_id': unit.zone_id} for unit in units]
+    
     return render_template('admin/users.html', 
                          users=users, 
                          zones=zones, 
                          zones_data=zones_data,
+                         units=units,
+                         units_data=units_data,
                          UserRole=UserRole,
                          available_roles=available_roles,
                          current_user=current_user)  # Pass current_user and available_roles to template

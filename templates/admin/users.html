@@ -343,6 +343,35 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteModal.show();
         });
     });
+
+    const zoneSelect = document.getElementById('zone_id');
+    const unitSelect = document.getElementById('unit_id');
+    const unitsData = {{ units_data | tojson | safe }};
+
+    // Populate units dynamically based on zone selection
+    zoneSelect.addEventListener('change', function() {
+        const selectedZoneId = this.value;
+        
+        // Clear existing unit options
+        unitSelect.innerHTML = '<option value="">Sélectionnez une unité</option>';
+        
+        // Filter and add units for the selected zone
+        const filteredUnits = unitsData.filter(unit => 
+            unit.zone_id === parseInt(selectedZoneId) || selectedZoneId === ''
+        );
+        
+        filteredUnits.forEach(unit => {
+            const option = document.createElement('option');
+            option.value = unit.id;
+            option.textContent = unit.name;
+            unitSelect.appendChild(option);
+        });
+    });
+
+    // Trigger initial population if a zone is pre-selected
+    if (zoneSelect.value) {
+        zoneSelect.dispatchEvent(new Event('change'));
+    }
 });
 </script>
 {% endblock %}
