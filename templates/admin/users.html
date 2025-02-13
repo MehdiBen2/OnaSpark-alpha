@@ -3,48 +3,89 @@
 {% block title %}ONA - Gestion des Utilisateurs{% endblock %}
 
 {% block content %}
-
-<div class="container-fluid mt-4">
-    <!-- En-tête -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                <h2 class="mb-0">
-                    <i class="fas fa-users me-2 text-primary"></i>
-                    <span class="gradient-text">Gestion des Utilisateurs</span>
-                </h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ url_for('main_dashboard.dashboard') }}">Tableau de Bord</a></li>
-                        <li class="breadcrumb-item active">Utilisateurs</li>
-                    </ol>
-                </nav>
+<div class="page-wrapper">
+    <!-- Full Height Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-wrapper">
+            <div class="sidebar-header">
+                <h4 class="sidebar-title">
+                    <i class="fas fa-users-cog me-2"></i>
+                    Rôles Utilisateurs
+                </h4>
             </div>
+            
+            <div class="sidebar-search">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="userRoleSearch" placeholder="Rechercher un rôle...">
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-label">ROLES</div>
+                <div class="menu-items">
+                    <a href="#" class="menu-item active" data-role="all">
+                        <i class="fas fa-globe"></i>
+                        <span class="menu-text">Tous les Utilisateurs</span>
+                        <span class="menu-badge">{{ users|length }}</span>
+                    </a>
+                    
+                    <a href="#" class="menu-item" data-role="{{ UserRole.ADMIN }}">
+                        <i class="fas fa-user-shield text-danger"></i>
+                        <span class="menu-text">Administrateur</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.ADMIN)|list|length }}</span>
+                    </a>
+                    
+                    <a href="#" class="menu-item" data-role="{{ UserRole.EMPLOYEUR_DG }}">
+                        <i class="fas fa-briefcase text-warning"></i>
+                        <span class="menu-text">Employeur DG</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.EMPLOYEUR_DG)|list|length }}</span>
+                    </a>
+                    
+                    <a href="#" class="menu-item" data-role="{{ UserRole.EMPLOYEUR_ZONE }}">
+                        <i class="fas fa-map-marker-alt text-primary"></i>
+                        <span class="menu-text">Employeur Zone</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.EMPLOYEUR_ZONE)|list|length }}</span>
+                    </a>
+                    
+                    <a href="#" class="menu-item" data-role="{{ UserRole.EMPLOYEUR_UNITE }}">
+                        <i class="fas fa-building text-success"></i>
+                        <span class="menu-text">Employeur Unité</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.EMPLOYEUR_UNITE)|list|length }}</span>
+                    </a>
+                    
+                    <a href="#" class="menu-item" data-role="{{ UserRole.USER }}">
+                        <i class="fas fa-user text-secondary"></i>
+                        <span class="menu-text">Utilisateur</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.USER)|list|length }}</span>
+                    </a>
+                </div>
+            </div>
+            
+            {% if current_user.role in ['Admin', 'Employeur DG'] %}
+            <div class="sidebar-footer">
+                <button type="button" class="btn btn-primary btn-lg w-100" id="createUserBtn">
+                    <i class="fas fa-user-plus me-2"></i>Nouvel Utilisateur
+                </button>
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Liste des Utilisateurs -->
-    <div class="row">
-        <div class="col-12">
-            <div class="glass-card">
-                <div class="card-body">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch gap-3 mb-4">
-                        <div class="flex-grow-1">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                                <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un utilisateur...">
-                            </div>
-                        </div>
-                        <div>
-                            <button id="createUserBtn" class="btn btn-primary w-100">
-                                <i class="fas fa-user-plus me-2"></i>
-                                Créer un Utilisateur
-                            </button>
-                        </div>
-                    </div>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="content-header">
+            <h2 class="content-title">
+                <i class="fas fa-users me-2"></i>
+                Gestion des Utilisateurs
+            </h2>
+        </div>
 
+        <div class="content-body">
+            <div class="card">
+                <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover" id="usersTable">
                             <thead>
@@ -78,35 +119,22 @@
                                     <td class="text-break">{{ user.assigned_zone.name if user.assigned_zone else '-' }}</td>
                                     <td class="text-break">{{ user.assigned_unit.name if user.assigned_unit else '-' }}</td>
                                     <td>
-                                        <div class="actions-wrapper">
-                                            <div class="actions-cell">
-                                                <div class="actions-dropdown">
-                                                    <button class="action-btn actions-toggle" type="button">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <div class="actions-menu">
-                                                        <button class="action-btn btn-primary edit-user me-2" 
-                                                                data-user-id="{{ user.id }}" 
-                                                                data-username="{{ user.username }}"
-                                                                data-nickname="{{ user.nickname }}"
-                                                                data-role="{{ user.role }}"
-                                                                data-zone="{{ user.assigned_zone.id if user.assigned_zone else '' }}"
-                                                                data-unit="{{ user.assigned_unit.id if user.assigned_unit else '' }}"
-                                                                data-bs-toggle="tooltip" 
-                                                                title="Modifier l'utilisateur">
-                                                            <i class="fas fa-edit"></i>
-                                                            <span class="btn-text">Modifier</span>
-                                                        </button>
-                                                        <button class="action-btn btn-danger delete-user" 
-                                                                data-user-id="{{ user.id }}" 
-                                                                data-bs-toggle="tooltip" 
-                                                                title="Supprimer l'utilisateur">
-                                                            <i class="fas fa-trash"></i>
-                                                            <span class="btn-text">Supprimer</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="btn-group">
+                                            <button class="btn btn-light btn-sm edit-user" 
+                                                    data-user-id="{{ user.id }}" 
+                                                    data-username="{{ user.username }}"
+                                                    data-nickname="{{ user.nickname }}"
+                                                    data-role="{{ user.role }}"
+                                                    data-zone="{{ user.assigned_zone.id if user.assigned_zone else '' }}"
+                                                    data-unit="{{ user.assigned_unit.id if user.assigned_unit else '' }}"
+                                                    title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-light btn-sm delete-user" 
+                                                    data-user-id="{{ user.id }}" 
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash text-danger"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -114,169 +142,64 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Pagination -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
-                        <div class="text-muted order-2 order-md-1">
-                            Affichage de <span id="startRange">1</span> à <span id="endRange">10</span> sur <span id="totalItems">{{ users|length }}</span> utilisateurs
-                        </div>
-                        <nav aria-label="Page navigation" class="order-1 order-md-2">
-                            <ul class="pagination mb-0">
-                                <li class="page-item">
-                                    <button class="page-link" id="prevPage">Précédent</button>
-                                </li>
-                                <li class="page-item">
-                                    <button class="page-link" id="nextPage">Suivant</button>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- User Panel -->
-<div id="userPanel" class="sliding-panel">
-    <div class="panel-content">
-        <div class="panel-header d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-user-plus me-2 text-primary"></i>
-                <h3 class="mb-0" id="panelTitle">Créer un Utilisateur</h3>
+<!-- User Panel Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Créer un Utilisateur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <button id="closePanelBtn" class="btn-close"></button>
-        </div>
-        <div class="panel-body">
-            <form id="createUserForm" class="needs-validation" novalidate>
-                <!-- Username field -->
-                <div class="mb-4">
-                    <label for="username" class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-user"></i>
-                        </span>
-                        <input type="text" class="form-control" id="username" name="username" required 
-                               minlength="3" pattern="[a-zA-Z0-9_-]+" 
-                               placeholder="Entrez le nom d'utilisateur">
+            <form id="userForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur *</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
                     </div>
-                    <div class="invalid-feedback">
-                        Le nom d'utilisateur doit contenir au moins 3 caractères (lettres, chiffres, - ou _)
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">Nom d'affichage *</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname" required>
                     </div>
-                    <small class="form-text text-muted">
-                        Utilisé pour la connexion. Doit être unique.
-                    </small>
-                </div>
-
-                <!-- Display name field -->
-                <div class="mb-4">
-                    <label for="nickname" class="form-label">Nom d'affichage <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-id-card"></i>
-                        </span>
-                        <input type="text" class="form-control" id="nickname" name="nickname" required 
-                               minlength="2" placeholder="Entrez le nom d'affichage">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe *</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
                     </div>
-                    <div class="invalid-feedback">
-                        Le nom d'affichage doit contenir au moins 2 caractères
-                    </div>
-                    <small class="form-text text-muted">
-                        Nom affiché dans l'interface
-                    </small>
-                </div>
-
-                <!-- Password field -->
-                <div class="mb-4" id="passwordContainer">
-                    <label for="password" class="form-label">Mot de passe <span class="text-danger password-required">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                        <input type="password" class="form-control" id="password" name="password" required 
-                               minlength="6" placeholder="Entrez le mot de passe">
-                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div class="invalid-feedback">
-                        Le mot de passe doit contenir au moins 6 caractères
-                    </div>
-                    <small class="form-text text-muted">
-                        Minimum 6 caractères. Laissez vide pour conserver l'ancien mot de passe lors d'une modification.
-                    </small>
-                </div>
-
-                <!-- Role field -->
-                <div class="mb-4">
-                    <label for="role" class="form-label">Rôle <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-user-tag"></i>
-                        </span>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle *</label>
                         <select class="form-select" id="role" name="role" required>
                             <option value="">Sélectionner un rôle</option>
-                            <option value="Admin">Admin</option>
-                            <option value="Employeur DG">Employeur DG</option>
-                            <option value="Employeur Zone">Employeur Zone</option>
-                            <option value="Employeur Unité">Employeur Unité</option>
-                            <option value="Utilisateur">Utilisateur</option>
+                            <option value="{{ UserRole.ADMIN }}">Administrateur</option>
+                            <option value="{{ UserRole.EMPLOYEUR_DG }}">Employeur DG</option>
+                            <option value="{{ UserRole.EMPLOYEUR_ZONE }}">Employeur Zone</option>
+                            <option value="{{ UserRole.EMPLOYEUR_UNITE }}">Employeur Unité</option>
+                            <option value="{{ UserRole.USER }}">Utilisateur</option>
                         </select>
                     </div>
-                    <div class="invalid-feedback">
-                        Veuillez sélectionner un rôle
-                    </div>
-                    <div class="form-text role-description"></div>
-                </div>
-
-                <!-- Zone selection -->
-                <div class="mb-4" id="zoneContainer" style="display: none;">
-                    <label for="zone_id" class="form-label">Zone <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </span>
+                    <div class="mb-3">
+                        <label for="zone_id" class="form-label">Zone</label>
                         <select class="form-select" id="zone_id" name="zone_id">
-                            <option value="">Sélectionnez une zone</option>
+                            <option value="">Sélectionner une zone</option>
                             {% for zone in zones %}
-                                <option value="{{ zone.id }}">{{ zone.name }}</option>
+                            <option value="{{ zone.id }}">{{ zone.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="invalid-feedback">
-                        Veuillez sélectionner une zone
-                    </div>
-                    <small class="form-text text-muted">
-                        La zone détermine le périmètre d'accès
-                    </small>
-                </div>
-
-                <!-- Unit selection -->
-                <div class="mb-4" id="unitContainer" style="display: none;">
-                    <label for="unit_id" class="form-label">Unité <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-building"></i>
-                        </span>
+                    <div class="mb-3">
+                        <label for="unit_id" class="form-label">Unité</label>
                         <select class="form-select" id="unit_id" name="unit_id">
-                            <option value="">Sélectionnez d'abord une zone</option>
+                            <option value="">Sélectionner une unité</option>
                         </select>
                     </div>
-                    <div class="invalid-feedback">
-                        Veuillez sélectionner une unité
-                    </div>
-                    <small class="form-text text-muted">
-                        L'unité détermine le périmètre d'accès spécifique
-                    </small>
                 </div>
-
-                <!-- Submit button -->
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
-                        <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
-                        <i class="fas fa-save me-2"></i>
-                        <span class="button-text">Créer l'utilisateur</span>
-                    </button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -303,10 +226,430 @@
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/users.css') }}">
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarLinks = document.querySelectorAll('.menu-item');
+    const userTable = document.getElementById('usersTable');
+    const userRoleSearch = document.getElementById('userRoleSearch');
+
+    function showUsersByRole(role) {
+        const userRows = userTable.querySelectorAll('tbody tr');
+        
+        // Reset active state for all links
+        sidebarLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Set active state for the clicked link
+        const activeLink = document.querySelector(`.menu-item[data-role="${role}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+
+        // Filter users
+        userRows.forEach(row => {
+            const userRole = row.querySelector('td:nth-child(3) .badge').textContent.trim();
+            
+            if (role === 'all' || userRole === role) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Role filtering
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const role = this.getAttribute('data-role');
+            showUsersByRole(role);
+        });
+    });
+
+    // Role search functionality
+    userRoleSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const roleLinks = document.querySelectorAll('.menu-item[data-role]:not([data-role="all"])');
+        
+        roleLinks.forEach(link => {
+            const roleName = link.querySelector('.menu-text').textContent.toLowerCase();
+            link.style.display = roleName.includes(searchTerm) ? 'flex' : 'none';
+        });
+    });
+
+    // Edit user button
+    document.querySelectorAll('.edit-user').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const username = this.getAttribute('data-username');
+            const nickname = this.getAttribute('data-nickname');
+            const role = this.getAttribute('data-role');
+            const zoneId = this.getAttribute('data-zone');
+            const unitId = this.getAttribute('data-unit');
+
+            const modal = new bootstrap.Modal(document.getElementById('userModal'));
+            const form = document.getElementById('userForm');
+            const modalTitle = document.querySelector('#userModal .modal-title');
+
+            form.action = `/admin/users/${userId}/edit`;
+            modalTitle.textContent = 'Modifier un Utilisateur';
+
+            document.getElementById('username').value = username;
+            document.getElementById('nickname').value = nickname;
+            document.getElementById('role').value = role;
+            document.getElementById('zone_id').value = zoneId || '';
+            document.getElementById('unit_id').value = unitId || '';
+
+            // Optional: Add password field handling for edit
+            const passwordField = document.getElementById('password');
+            passwordField.removeAttribute('required');
+            passwordField.placeholder = 'Laisser vide pour conserver le mot de passe actuel';
+
+            modal.show();
+        });
+    });
+
+    // Create user button
+    document.getElementById('createUserBtn').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('userModal'));
+        const form = document.getElementById('userForm');
+        const modalTitle = document.querySelector('#userModal .modal-title');
+
+        form.action = '/admin/users/create';
+        modalTitle.textContent = 'Créer un Utilisateur';
+
+        // Reset form
+        form.reset();
+        const passwordField = document.getElementById('password');
+        passwordField.setAttribute('required', 'required');
+        passwordField.placeholder = 'Entrez un mot de passe';
+
+        modal.show();
+    });
+
+    // Delete user button
+    document.querySelectorAll('.delete-user').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const confirmDeleteBtn = document.getElementById('confirmDelete');
+
+            confirmDeleteBtn.onclick = function() {
+                window.location.href = `/admin/users/${userId}/delete`;
+            };
+
+            deleteModal.show();
+        });
+    });
+});
+</script>
 {% endblock %}
 
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/admin/users.js') }}"></script>
+{% block extra_css %}
+<style>
+:root {
+    --sidebar-width: 280px;
+    --header-height: 60px;
+    --primary-color: #2563eb;
+    --secondary-color: #3b82f6;
+    --background-color: #f1f5f9;
+    --sidebar-background: #ffffff;
+    --text-color: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --border-radius-sm: 0.375rem;
+    --border-radius: 0.5rem;
+    --border-radius-lg: 0.75rem;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+.page-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-background);
+    border-right: 1px solid var(--border-color);
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+}
+
+.sidebar-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-title {
+    color: var(--text-color);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.sidebar-search {
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-search .input-group {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.sidebar-search .input-group-text {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    border-right: none;
+}
+
+.sidebar-search .form-control {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    border-left: none;
+}
+
+.menu-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    padding-left: 0.5rem;
+}
+
+.menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+}
+
+.menu-item i {
+    width: 1.5rem;
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.menu-text {
+    flex: 1;
+    margin-left: 0.75rem;
+}
+
+.menu-badge {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.menu-item:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+}
+
+.menu-item:hover i {
+    color: var(--primary-color);
+}
+
+.menu-item:hover .menu-badge {
+    background: rgba(37, 99, 235, 0.2);
+}
+
+.menu-item.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.menu-item.active i,
+.menu-item.active .menu-badge {
+    color: white;
+}
+
+.menu-item.active .menu-badge {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+}
+
+.sidebar-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: 1.5rem;
+}
+
+.sidebar-footer .btn {
+    border-radius: var(--border-radius);
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.content-header {
+    margin-bottom: 2rem;
+}
+
+.content-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* Card Styles */
+.card {
+    background: white;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.card-header {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem;
+}
+
+.card-title {
+    color: var(--text-color);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+/* Table Styles */
+.table-responsive {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+}
+
+.table {
+    margin: 0;
+}
+
+.table th {
+    background: var(--background-color);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    border-top: none;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: var(--border-radius);
+}
+
+.btn-group {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+.btn-light {
+    background: var(--background-color);
+    border: none;
+}
+
+.btn-light:hover {
+    background: #e2e8f0;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+}
+
+.modal-header {
+    border-top-left-radius: var(--border-radius-lg);
+    border-top-right-radius: var(--border-radius-lg);
+}
+
+.modal-footer {
+    border-bottom-left-radius: var(--border-radius-lg);
+    border-bottom-right-radius: var(--border-radius-lg);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
 {% endblock %}
