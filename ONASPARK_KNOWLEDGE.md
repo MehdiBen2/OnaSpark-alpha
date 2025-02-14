@@ -45,14 +45,31 @@ OnaSpark est une application web complète dédiée à la gestion de l'eau et au
 
 ### Rôles Utilisateurs
 - **Administrateur**: Accès complet au système
-- **Employeur de Zone**: Gestion régionale
-- **Gestionnaire d'Unité**: Contrôle opérationnel
-- **Utilisateur Standard**: Accès limité
+- **Employeur DG**: Accès global à toutes les zones et unités
+- **Employeur de Zone**: Gestion régionale, accès aux unités de sa zone
+- **Gestionnaire d'Unité**: Contrôle opérationnel, accès aux incidents de son unité
+- **Utilisateur Standard**: Accès limité, principalement vue des incidents
+
+### Gestion des Utilisateurs
+- Validation dynamique des champs selon le rôle
+- Contraintes de sélection de zone et d'unité pour certains rôles
+- Vérification de l'appartenance des unités aux zones
+- Politique de mot de passe sécurisée
+- Gestion granulaire des permissions
 
 ### Contrôle d'Accès
 - Permissions basées sur les rôles
-- Gestion granulaire des accès
+- Hiérarchie des rôles : 
+  Admin > Employeur DG > Employeur Zone > Employeur Unité > Utilisateur
 - Mécanismes d'authentification sécurisés
+- Validation côté serveur et client
+- Notifications contextuelles pour les actions utilisateur
+
+### Bonnes Pratiques d'Authentification
+- Validation des champs requis en temps réel
+- Gestion des erreurs avec des messages clairs
+- Protection contre la création de doublons d'utilisateurs
+- Journalisation des tentatives de création d'utilisateur
 
 ## 📊 Fonctionnalités Clés
 
