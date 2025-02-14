@@ -207,30 +207,50 @@ def update_user(user_id):
 @admin_required
 def create_user():
     try:
-        # Debug: Print all form data
+        # Debug: Print all form data with more details
         print("DEBUG: Incoming form data:")
         for key, value in request.form.items():
             print(f"{key}: {value}")
-
+        
         # Get form data
         username = request.form.get('username')
         password = request.form.get('password')
         role = request.form.get('role')
-        nickname = request.form.get('nickname')
+        nickname = request.form.get('nickname', '')
         unit_id = request.form.get('unit_id')
         zone_id = request.form.get('zone_id')
 
-        # Validate required fields
-        if not username or not password or not role:
-            print("DEBUG: Missing required fields")
-            print(f"Username: {username}, Password: {'*' if password else 'None'}, Role: {role}")
-            message = "Missing required fields"
+        # Validate required fields with more specific logging
+        missing_fields = []
+        if not username:
+            missing_fields.append('username')
+        if not password:
+            missing_fields.append('password')
+        if not role:
+            missing_fields.append('role')
+        
+        # Role-specific validation
+        if role == UserRole.UTILISATEUR:
+            if not zone_id:
+                missing_fields.append('zone_id')
+            if not unit_id:
+                missing_fields.append('unit_id')
+
+        if missing_fields:
+            print(f"DEBUG: Missing fields for {role} role: {missing_fields}")
+            message = f"Champs requis manquants: {', '.join(missing_fields)}"
             return jsonify({'success': False, 'message': message}), 400
 
-        # Check if username exists
-        if User.query.filter_by(username=username).first():
-            message = 'Un utilisateur avec ce nom existe déjà.'
-            return jsonify({'success': False, 'message': message}), 400
+        # Verify username uniqueness
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            return jsonify({'success': False, 'message': 'Un utilisateur avec ce nom existe déjà.'}), 400
+
+        # If unit is selected, verify it belongs to the selected zone
+        if unit_id and zone_id:
+            unit = Unit.query.get(unit_id)
+            if not unit or str(unit.zone_id) != str(zone_id):
+                return jsonify({'success': False, 'message': 'L\'unité sélectionnée n\'appartient pas à la zone sélectionnée.'}), 400
 
         # Create new user
         new_user = User(

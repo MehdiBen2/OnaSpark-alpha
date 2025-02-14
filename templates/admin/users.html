@@ -378,6 +378,30 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const form = e.target;
+        const role = document.getElementById('role').value;
+        const zoneSelect = document.getElementById('zone_id');
+        const unitSelect = document.getElementById('unit_id');
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        // Validate required fields
+        const missingFields = [];
+        
+        if (!username) missingFields.push('Nom d\'utilisateur');
+        if (!password) missingFields.push('Mot de passe');
+        
+        // Role-specific validation
+        if (role === 'UTILISATEUR') {
+            if (!zoneSelect.value) missingFields.push('Zone');
+            if (!unitSelect.value) missingFields.push('Unité');
+        }
+        
+        // Check for missing fields
+        if (missingFields.length > 0) {
+            Notifications.error(`Veuillez remplir les champs suivants : ${missingFields.join(', ')}`);
+            return;
+        }
+        
         const formData = new FormData(form);
         
         fetch(form.action, {
