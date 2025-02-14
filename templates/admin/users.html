@@ -56,10 +56,10 @@
                         <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.EMPLOYEUR_UNITE)|list|length }}</span>
                     </a>
                     
-                    <a href="#" class="menu-item" data-role="{{ UserRole.USER }}">
+                    <a href="#" class="menu-item" data-role="{{ UserRole.UTILISATEUR }}">
                         <i class="fas fa-user text-secondary"></i>
                         <span class="menu-text">Utilisateur</span>
-                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.USER)|list|length }}</span>
+                        <span class="menu-badge">{{ users|selectattr('role', 'equalto', UserRole.UTILISATEUR)|list|length }}</span>
                     </a>
                 </div>
             </div>
@@ -178,7 +178,7 @@
                             <option value="{{ UserRole.EMPLOYEUR_DG }}">Employeur DG</option>
                             <option value="{{ UserRole.EMPLOYEUR_ZONE }}">Employeur Zone</option>
                             <option value="{{ UserRole.EMPLOYEUR_UNITE }}">Employeur Unité</option>
-                            <option value="{{ UserRole.USER }}">Utilisateur</option>
+                            <option value="{{ UserRole.UTILISATEUR }}">Utilisateur</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!password) missingFields.push('Mot de passe');
         
         // Role-specific validation
-        if (role === 'UTILISATEUR') {
+        if (role === '{{ UserRole.UTILISATEUR }}') {
             if (!zoneSelect.value) missingFields.push('Zone');
             if (!unitSelect.value) missingFields.push('Unité');
         }
