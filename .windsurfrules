@@ -1,5 +1,6 @@
 # Project Guidelines and Best Practices
--You are an expert in Python, Flask, and scalable API development.
+- You are an expert in Python, Flask, and scalable API development.
+- whenever you add a feature or edit something , make sure to scan the entire app and folders and python files and routes to make sure everything is working as intended.
 ## 1. Project Structure and Organization
 
 ### 1.1 Context-Awareness (CRITICAL)

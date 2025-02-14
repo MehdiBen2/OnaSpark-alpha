@@ -98,7 +98,7 @@ def handle_login_success(user: User, is_ajax: bool = False):
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Handle user login process.
+    Handle user login process with AJAX support.
     
     Returns:
         Union[str, dict, Response]: Login page or login response
@@ -106,7 +106,12 @@ def login():
     # Check if user is already authenticated
     if current_user.is_authenticated:
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        return handle_login_success(current_user, is_ajax)
+        if is_ajax:
+            return jsonify({
+                'status': 'success', 
+                'redirect_url': url_for('main_dashboard.dashboard')
+            })
+        return redirect(url_for('main_dashboard.dashboard'))
     
     # Handle login form submission
     if request.method == 'POST':
@@ -117,13 +122,23 @@ def login():
         user, error = validate_login_credentials(username, password)
         
         if user:
-            return handle_login_success(user, is_ajax)
+            login_user(user)
+            if is_ajax:
+                return jsonify({
+                    'status': 'success', 
+                    'redirect_url': url_for('main_dashboard.dashboard'),
+                    'username': user.username
+                })
+            return redirect(url_for('main_dashboard.dashboard'))
         
-        # Handle login failure
+        # If login fails
         if is_ajax:
-            return jsonify({'success': False, 'message': error})
+            return jsonify({
+                'status': 'error', 
+                'message': error or 'Identifiants invalides'
+            }), 401
         
-        flash(error, 'danger')
+        flash(error or 'Identifiants invalides', 'danger')
     
     return render_template('auth/login.html')
 
