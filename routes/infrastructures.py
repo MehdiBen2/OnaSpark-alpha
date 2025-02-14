@@ -7,6 +7,7 @@ import os
 from PIL import Image
 import io
 import re
+from utils.permissions import Permission, permission_required
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -67,6 +68,7 @@ def compress_image(input_path, output_path, max_size=(1920, 1080), quality=85, m
 
 @infrastructures.route('/infrastructures', methods=['GET'])
 @login_required
+@permission_required(Permission.VIEW_HYDRAULIC_INFRASTRUCTURE)
 def list_infrastructures():
     try:
         infrastructures = Infrastructure.query.all()
@@ -79,6 +81,7 @@ def list_infrastructures():
 
 @infrastructures.route('/infrastructure/create', methods=['POST'])
 @login_required
+@permission_required(Permission.CREATE_HYDRAULIC_INFRASTRUCTURE)
 def create_infrastructure():
     try:
         # Log the incoming request data for debugging
@@ -130,6 +133,7 @@ def create_infrastructure():
 
 @infrastructures.route('/infrastructures/delete/<int:id>', methods=['DELETE'])
 @login_required
+@permission_required(Permission.DELETE_HYDRAULIC_INFRASTRUCTURE)
 def delete_infrastructure(id):
     """
     Delete an infrastructure by its ID and remove all associated files.
@@ -181,6 +185,7 @@ def delete_infrastructure(id):
 
 @infrastructures.route('/infrastructure/<int:id>/details', methods=['GET'])
 @login_required
+@permission_required(Permission.VIEW_HYDRAULIC_INFRASTRUCTURE)
 def get_infrastructure_details(id):
     try:
         infrastructure = Infrastructure.query.get_or_404(id)
@@ -202,6 +207,7 @@ def get_infrastructure_details(id):
 
 @infrastructures.route('/infrastructure/<int:id>/upload-files', methods=['POST'])
 @login_required
+@permission_required(Permission.EDIT_HYDRAULIC_INFRASTRUCTURE)
 def upload_infrastructure_files(id):
     # Import necessary modules at the top of the function for comprehensive error tracking
     import os
@@ -364,6 +370,7 @@ def upload_infrastructure_files(id):
 
 @infrastructures.route('/infrastructure/<int:id>/files', methods=['GET'])
 @login_required
+@permission_required(Permission.VIEW_HYDRAULIC_INFRASTRUCTURE)
 def get_infrastructure_files(id):
     try:
         # Get the infrastructure to ensure we have location information
@@ -416,6 +423,7 @@ def get_infrastructure_files(id):
 
 @infrastructures.route('/infrastructure/<int:infrastructure_id>/delete-file', methods=['POST'])
 @login_required
+@permission_required(Permission.EDIT_HYDRAULIC_INFRASTRUCTURE)
 def delete_infrastructure_file(infrastructure_id):
     try:
         # Get filename from request data
