@@ -372,6 +372,47 @@ document.addEventListener('DOMContentLoaded', function() {
     if (zoneSelect.value) {
         zoneSelect.dispatchEvent(new Event('change'));
     }
+
+    // Create user form submission
+    document.getElementById('userForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Use Notifications system for success
+                Notifications.success(data.message);
+                
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+                if (modal) modal.hide();
+                
+                // Optional: Redirect or refresh the page
+                if (data.redirect) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                }
+            } else {
+                // Use Notifications system for error
+                Notifications.error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Notifications.error('Une erreur est survenue lors de la création de l\'utilisateur.');
+        });
+    });
 });
 </script>
 {% endblock %}

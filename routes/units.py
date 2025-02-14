@@ -12,7 +12,7 @@ def new_unit():
     # Check permission to create units
     if not PermissionManager.has_permission(current_user.role, Permission.CREATE_UNITS):
         flash('Vous n\'avez pas la permission de créer des unités.', 'danger')
-        return redirect(url_for('units.manage_units'))
+        return redirect(url_for('units.units_list'))
 
     name = request.form.get('name')
     location = request.form.get('location')
@@ -21,7 +21,7 @@ def new_unit():
 
     if not name or not zone_id:
         flash('Le nom et la zone sont requis.', 'danger')
-        return redirect(url_for('units.manage_units'))
+        return redirect(url_for('units.units_list'))
 
     try:
         unit = Unit(
@@ -37,7 +37,7 @@ def new_unit():
         db.session.rollback()
         flash(f'Erreur lors de la création de l\'unité: {str(e)}', 'danger')
 
-    return redirect(url_for('units.manage_units'))
+    return redirect(url_for('units.units_list'))
 
 @units.route('/admin/units/<int:unit_id>/delete', methods=['GET', 'POST'])
 @login_required
@@ -45,14 +45,14 @@ def delete_unit(unit_id):
     # Check permission to delete units
     if not PermissionManager.has_permission(current_user.role, Permission.DELETE_UNITS):
         flash('Vous n\'avez pas la permission de supprimer des unités.', 'danger')
-        return redirect(url_for('units.manage_units'))
+        return redirect(url_for('units.units_list'))
 
     unit = Unit.query.get_or_404(unit_id)
     
     # Check if unit has associated users or incidents
     if unit.users or unit.incidents:
         flash('Impossible de supprimer cette unité car elle a des utilisateurs ou des incidents associés.', 'danger')
-        return redirect(url_for('units.manage_units'))
+        return redirect(url_for('units.units_list'))
 
     try:
         db.session.delete(unit)
@@ -62,7 +62,7 @@ def delete_unit(unit_id):
         db.session.rollback()
         flash(f'Erreur lors de la suppression de l\'unité: {str(e)}', 'danger')
     
-    return redirect(url_for('units.manage_units'))
+    return redirect(url_for('units.units_list'))
 
 @units.route('/api/units/<int:zone_id>')
 @login_required

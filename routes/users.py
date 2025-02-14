@@ -207,6 +207,11 @@ def update_user(user_id):
 @admin_required
 def create_user():
     try:
+        # Debug: Print all form data
+        print("DEBUG: Incoming form data:")
+        for key, value in request.form.items():
+            print(f"{key}: {value}")
+
         # Get form data
         username = request.form.get('username')
         password = request.form.get('password')
@@ -217,6 +222,8 @@ def create_user():
 
         # Validate required fields
         if not username or not password or not role:
+            print("DEBUG: Missing required fields")
+            print(f"Username: {username}, Password: {'*' if password else 'None'}, Role: {role}")
             message = "Missing required fields"
             return jsonify({'success': False, 'message': message}), 400
 
@@ -238,14 +245,24 @@ def create_user():
         try:
             db.session.add(new_user)
             db.session.commit()
+            
+            # Use flash for server-side notification
+            flash('Utilisateur créé avec succès.', 'success')
+            
+            # Return JSON response for potential AJAX requests
             return jsonify({
                 'success': True,
                 'message': 'Utilisateur créé avec succès.',
-                'user_id': new_user.id
-            })
+                'user_id': new_user.id,
+                'redirect': url_for('users.manage_users')
+            }), 201
                 
         except Exception as e:
             db.session.rollback()
+            
+            # Use flash for server-side error notification
+            flash(f'Erreur lors de la création de l\'utilisateur: {str(e)}', 'error')
+            
             return jsonify({
                 'success': False,
                 'message': f'Erreur lors de la création de l\'utilisateur: {str(e)}'
