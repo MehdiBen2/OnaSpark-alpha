@@ -170,7 +170,7 @@ def save_infrastructure_file(file, infrastructure_id):
         current_app.logger.error(f"Error saving infrastructure file: {str(e)}")
         return None
 
-@infrastructures_bp.route('/infrastructures')
+@infrastructures_bp.route('/')
 @login_required
 @permission_required(Permission.VIEW_INFRASTRUCTURES)
 def liste_infrastructures():
@@ -365,6 +365,7 @@ def edit_infrastructure(infrastructure_id):
         
         # Validate and process form data
         data = request.form
+        files = request.files
         
         # Validate required fields
         required_fields = ['nom', 'type', 'localisation', 'capacite', 'etat']
@@ -383,29 +384,60 @@ def edit_infrastructure(infrastructure_id):
         infrastructure.etat = data['etat']
         infrastructure.epuration_type = data.get('epuration_type')
         
-        # Handle file deletions (optional and explicit)
-        deleted_files = json.loads(data.get('deleted_files', '[]'))
+        # Handle file deletions
+        deleted_files = []
+        try:
+            # Try parsing from JSON input
+            deleted_files_input = data.get('deleted_files', '[]')
+            if deleted_files_input:
+                deleted_files = json.loads(deleted_files_input)
+                current_app.logger.info(f"Received deleted files for infrastructure {infrastructure_id}: {deleted_files}")
+        except (json.JSONDecodeError, TypeError) as e:
+            current_app.logger.error(f"Error parsing deleted_files: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Format invalide pour les fichiers supprimés'
+            }), 400
+        
+        # Validate and process file deletions
+        deleted_file_records = []
         if deleted_files:
-            # Find and delete specified files
-            files_to_delete = InfrastructureFile.query.filter(
-                InfrastructureFile.id.in_(deleted_files),
-                InfrastructureFile.infrastructure_id == infrastructure_id
-            ).all()
-            
-            for file_record in files_to_delete:
-                # Remove physical file
+            # Ensure files are integers and belong to this infrastructure
+            for file_id in deleted_files:
                 try:
-                    os.remove(os.path.join(current_app.root_path, file_record.filepath.lstrip('/')))
-                except FileNotFoundError:
-                    pass  # File already deleted or doesn't exist
-                
-                # Remove database record
-                db.session.delete(file_record)
+                    file_id = int(file_id)
+                    file_record = InfrastructureFile.query.filter_by(
+                        id=file_id, 
+                        infrastructure_id=infrastructure_id
+                    ).first()
+                    
+                    if file_record:
+                        deleted_file_records.append(file_record)
+                        current_app.logger.info(f"Preparing to delete file: {file_record.filename}")
+                    else:
+                        current_app.logger.warning(f"File {file_id} not found or does not belong to infrastructure {infrastructure_id}")
+                except (ValueError, TypeError):
+                    current_app.logger.warning(f"Invalid file ID: {file_id}")
+            
+            # Delete valid files
+            for file_record in deleted_file_records:
+                try:
+                    # Remove physical file
+                    file_path = os.path.join(current_app.root_path, file_record.filepath.lstrip('/'))
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        current_app.logger.info(f"Deleted physical file: {file_path}")
+                    
+                    # Remove database record
+                    db.session.delete(file_record)
+                    current_app.logger.info(f"Deleted file record: {file_record.filename}")
+                except Exception as e:
+                    current_app.logger.error(f"Error deleting file {file_record.filepath}: {e}")
         
         # Handle new file uploads
-        associated_files = []
-        if 'files' in request.files:
-            for file in request.files.getlist('files'):
+        new_files = []
+        if 'files' in files:
+            for file in files.getlist('files'):
                 if file and allowed_file(file.filename):
                     # Check file size
                     file.seek(0, os.SEEK_END)
@@ -413,6 +445,7 @@ def edit_infrastructure(infrastructure_id):
                     file.seek(0)
                     
                     if file_size > MAX_FILE_SIZE:
+                        current_app.logger.warning(f"File {file.filename} exceeds size limit")
                         return jsonify({
                             'success': False,
                             'message': f'Fichier {file.filename} trop volumineux. Limite de 10 Mo.'
@@ -421,46 +454,43 @@ def edit_infrastructure(infrastructure_id):
                     # Save file and create record
                     infrastructure_file = save_infrastructure_file(file, infrastructure.id)
                     if infrastructure_file:
-                        # Add new file to existing files
                         db.session.add(infrastructure_file)
-                        associated_files.append(infrastructure_file)
+                        new_files.append(infrastructure_file)
+                        current_app.logger.info(f"Added new file: {infrastructure_file.filename}")
         
-        # Fetch existing files to return
-        existing_files = InfrastructureFile.query.filter_by(infrastructure_id=infrastructure.id).all()
-        
-        # Commit changes
+        # Commit all changes
         db.session.commit()
+        
+        # Fetch all current files after changes
+        current_files = InfrastructureFile.query.filter_by(infrastructure_id=infrastructure_id).all()
         
         return jsonify({
             'success': True, 
             'message': 'Infrastructure mise à jour avec succès',
             'infrastructure_id': infrastructure.id,
-            'files_uploaded': len(associated_files),
             'files_deleted': len(deleted_files),
+            'files_uploaded': len(new_files),
             'files': [
                 {
                     'id': f.id, 
                     'filename': f.filename, 
                     'filepath': f.filepath, 
                     'file_type': f.file_type
-                } for f in existing_files
+                } for f in current_files
             ]
         }), 200
-    
+        
     except SQLAlchemyError as e:
         db.session.rollback()
+        current_app.logger.error(f"Database error: {str(e)}")
         return jsonify({
             'success': False, 
             'message': 'Erreur lors de la mise à jour de l\'infrastructure',
             'error': str(e)
         }), 500
-    except ValueError:
-        return jsonify({
-            'success': False, 
-            'message': 'Capacité invalide'
-        }), 400
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Unexpected error: {str(e)}")
         return jsonify({
             'success': False, 
             'message': 'Une erreur inattendue est survenue',
