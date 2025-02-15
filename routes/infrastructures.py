@@ -254,12 +254,12 @@ def get_infrastructure_details(infrastructure_id):
 @permission_required(Permission.EDIT_INFRASTRUCTURE)
 def edit_infrastructure(infrastructure_id):
     """
-    Edit an existing infrastructure entry with optional file uploads and deletions
+    Edit an existing infrastructure entry with optional file uploads
     
     Expected multipart form data:
     - infrastructure details (nom, type, localisation, etc.)
     - files: new files to upload
-    - deleted_files: JSON list of file IDs to delete
+    - deleted_files: JSON list of file IDs to delete (optional)
     """
     try:
         # Find the existing infrastructure
@@ -285,7 +285,7 @@ def edit_infrastructure(infrastructure_id):
         infrastructure.etat = data['etat']
         infrastructure.epuration_type = data.get('epuration_type')
         
-        # Handle file deletions
+        # Handle file deletions (optional and explicit)
         deleted_files = json.loads(data.get('deleted_files', '[]'))
         if deleted_files:
             # Find and delete specified files
