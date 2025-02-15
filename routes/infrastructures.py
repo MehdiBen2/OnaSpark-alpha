@@ -6,6 +6,8 @@ import os
 from werkzeug.utils import secure_filename
 import json
 import uuid
+from PIL import Image
+import io
 
 infrastructures_bp = Blueprint('infrastructures', __name__)
 
@@ -17,7 +19,16 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_file(file, infrastructure_id):
-    """Simple file save function that handles both images and PDFs"""
+    """
+    Save file with image conversion and compression for images
+    
+    Args:
+        file (FileStorage): Uploaded file
+        infrastructure_id (int): ID of associated infrastructure
+    
+    Returns:
+        InfrastructureFile or None
+    """
     if not file or not allowed_file(file.filename):
         current_app.logger.warning(f"File not allowed or empty: {file.filename if file else 'No file'}")
         return None
@@ -27,18 +38,61 @@ def save_file(file, infrastructure_id):
         upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'infrastructures', str(infrastructure_id))
         os.makedirs(upload_dir, exist_ok=True)
         
-        # Generate unique filename
+        # Get file extension
         ext = file.filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex[:8]}_{secure_filename(file.filename)}"
-        file_path = os.path.join(upload_dir, unique_filename)
         
-        # Save file
-        file.save(file_path)
-        file_size = os.path.getsize(file_path)
+        # Generate unique filename
+        unique_base = f"{uuid.uuid4().hex[:8]}"
         
-        # Determine file type
-        file_type = 'image' if ext in {'png', 'jpg', 'jpeg', 'gif'} else 'pdf'
-        mime_type = 'image/' + ext if file_type == 'image' else 'application/pdf'
+        # Check if it's an image file
+        is_image = ext in {'png', 'jpg', 'jpeg', 'gif'}
+        
+        if is_image:
+            # Open the image
+            img = Image.open(file.stream)
+            
+            # Convert to RGB if necessary (handle transparency)
+            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1])
+                img = background
+            
+            # Resize image if too large
+            max_dimension = 1920  # Maximum dimension
+            width, height = img.size
+            if width > max_dimension or height > max_dimension:
+                # Calculate aspect ratio
+                ratio = min(max_dimension / width, max_dimension / height)
+                new_size = (int(width * ratio), int(height * ratio))
+                img = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            # Unique WebP filename
+            unique_filename = f"{unique_base}.webp"
+            file_path = os.path.join(upload_dir, unique_filename)
+            
+            # Compress and save as WebP
+            img.save(file_path, 'WEBP', quality=85, method=6, lossless=False)
+            
+            # Get file size
+            file_size = os.path.getsize(file_path)
+            
+            # Set mime type
+            mime_type = 'image/webp'
+            file_type = 'image'
+        else:
+            # For PDFs and other files, save as-is
+            unique_filename = f"{unique_base}_{secure_filename(file.filename)}"
+            file_path = os.path.join(upload_dir, unique_filename)
+            
+            # Save file
+            file.save(file_path)
+            file_size = os.path.getsize(file_path)
+            
+            # Set mime type
+            mime_type = 'application/pdf' if ext == 'pdf' else 'application/octet-stream'
+            file_type = 'pdf' if ext == 'pdf' else 'other'
         
         # Convert to relative path for storage
         relative_path = file_path.replace(current_app.root_path, '').replace('\\', '/')
