@@ -125,13 +125,17 @@ def save_infrastructure_file(file, infrastructure_id):
         original_ext = file.filename.rsplit('.', 1)[1].lower()
         is_image = original_ext in {'png', 'jpg', 'jpeg', 'gif'}
         
+        # Generate a unique filename to prevent overwriting
+        import uuid
+        unique_suffix = str(uuid.uuid4())[:8]
+        
         if is_image:
             # Process image file
             filename, filepath, file_size = process_image(
                 file, 
                 upload_dir, 
                 infrastructure_id, 
-                infrastructure.nom
+                f"{infrastructure.nom}_{unique_suffix}"
             )
             if not filename:
                 return None
@@ -139,8 +143,9 @@ def save_infrastructure_file(file, infrastructure_id):
             mime_type = 'image/webp'
             file_type = 'image'
         else:
-            # Handle PDF files as before
-            filename = secure_filename(file.filename)
+            # Handle PDF files with unique naming
+            base_filename = secure_filename(file.filename)
+            filename = f"{os.path.splitext(base_filename)[0]}_{unique_suffix}{os.path.splitext(base_filename)[1]}"
             filepath = os.path.join(upload_dir, filename)
             file.save(filepath)
             file_size = os.path.getsize(filepath)
@@ -416,8 +421,12 @@ def edit_infrastructure(infrastructure_id):
                     # Save file and create record
                     infrastructure_file = save_infrastructure_file(file, infrastructure.id)
                     if infrastructure_file:
+                        # Add new file to existing files
                         db.session.add(infrastructure_file)
                         associated_files.append(infrastructure_file)
+        
+        # Fetch existing files to return
+        existing_files = InfrastructureFile.query.filter_by(infrastructure_id=infrastructure.id).all()
         
         # Commit changes
         db.session.commit()
@@ -427,7 +436,15 @@ def edit_infrastructure(infrastructure_id):
             'message': 'Infrastructure mise à jour avec succès',
             'infrastructure_id': infrastructure.id,
             'files_uploaded': len(associated_files),
-            'files_deleted': len(deleted_files)
+            'files_deleted': len(deleted_files),
+            'files': [
+                {
+                    'id': f.id, 
+                    'filename': f.filename, 
+                    'filepath': f.filepath, 
+                    'file_type': f.file_type
+                } for f in existing_files
+            ]
         }), 200
     
     except SQLAlchemyError as e:
