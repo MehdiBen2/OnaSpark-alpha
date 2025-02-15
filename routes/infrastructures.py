@@ -7,6 +7,9 @@ import os
 from werkzeug.utils import secure_filename
 from flask import current_app
 import json
+from PIL import Image
+import io
+import re
 
 infrastructures_bp = Blueprint('infrastructures', __name__)
 
@@ -27,6 +30,75 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def sanitize_filename(name):
+    """
+    Sanitize infrastructure name for use in filenames
+    
+    Args:
+        name (str): Infrastructure name
+    
+    Returns:
+        str: Sanitized name
+    """
+    # Replace spaces and special characters with underscores
+    name = re.sub(r'[^\w\s-]', '', name)
+    name = re.sub(r'[-\s]+', '_', name).strip('-_')
+    return name.lower()
+
+def process_image(file_storage, output_path, infra_id, infra_name):
+    """
+    Process uploaded image: compress and convert to WebP format
+    
+    Args:
+        file_storage (FileStorage): Uploaded file
+        output_path (str): Path to save the processed image
+        infra_id (int): Infrastructure ID
+        infra_name (str): Infrastructure name
+    
+    Returns:
+        tuple: (filename, filepath, file_size)
+    """
+    try:
+        # Open image using Pillow
+        img = Image.open(file_storage.stream)
+        
+        # Convert to RGB if necessary (for PNG with transparency)
+        if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1])
+            img = background
+        
+        # Generate new filename
+        sanitized_name = sanitize_filename(infra_name)
+        new_filename = f"infra{infra_id}_{sanitized_name}.webp"
+        new_filepath = os.path.join(output_path, new_filename)
+        
+        # Calculate target size based on original dimensions
+        max_dimension = 1920  # Maximum dimension for either width or height
+        width, height = img.size
+        
+        if width > max_dimension or height > max_dimension:
+            # Calculate aspect ratio
+            ratio = min(max_dimension / width, max_dimension / height)
+            new_size = (int(width * ratio), int(height * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+        
+        # Compress and save as WebP with quality optimization
+        img.save(new_filepath, 'WEBP', quality=85, method=6, lossless=False)
+        
+        # Get file size
+        file_size = os.path.getsize(new_filepath)
+        
+        # Convert filepath to relative path for storage
+        relative_filepath = new_filepath.replace(current_app.root_path, '').replace('\\', '/')
+        
+        return new_filename, relative_filepath, file_size
+    except Exception as e:
+        current_app.logger.error(f"Error processing image: {str(e)}")
+        return None, None, None
+
 def save_infrastructure_file(file, infrastructure_id):
     """
     Save an uploaded file for an infrastructure
@@ -41,36 +113,57 @@ def save_infrastructure_file(file, infrastructure_id):
     if not file or not allowed_file(file.filename):
         return None
     
-    # Ensure upload directory exists
-    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'infrastructures', str(infrastructure_id))
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    # Secure filename and save
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(upload_dir, filename)
-    file.save(filepath)
-    
-    # Determine file type and mime type
-    file_type = 'image' if filename.lower().split('.')[-1] in {'png', 'jpg', 'jpeg', 'gif'} else 'pdf'
-    mime_type = {
-        'png': 'image/png',
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'gif': 'image/gif',
-        'pdf': 'application/pdf'
-    }[filename.lower().split('.')[-1]]
-    
-    # Create file record
-    new_file = InfrastructureFile(
-        infrastructure_id=infrastructure_id,
-        filename=filename,
-        filepath=filepath.replace(current_app.root_path, ''),
-        file_type=file_type,
-        mime_type=mime_type,
-        file_size=os.path.getsize(filepath)
-    )
-    
-    return new_file
+    try:
+        infrastructure = Infrastructure.query.get(infrastructure_id)
+        if not infrastructure:
+            return None
+            
+        # Ensure upload directory exists
+        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'infrastructures', str(infrastructure_id))
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        original_ext = file.filename.rsplit('.', 1)[1].lower()
+        is_image = original_ext in {'png', 'jpg', 'jpeg', 'gif'}
+        
+        if is_image:
+            # Process image file
+            filename, filepath, file_size = process_image(
+                file, 
+                upload_dir, 
+                infrastructure_id, 
+                infrastructure.nom
+            )
+            if not filename:
+                return None
+                
+            mime_type = 'image/webp'
+            file_type = 'image'
+        else:
+            # Handle PDF files as before
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(upload_dir, filename)
+            file.save(filepath)
+            file_size = os.path.getsize(filepath)
+            mime_type = 'application/pdf'
+            file_type = 'pdf'
+            # Convert filepath to relative path for storage
+            filepath = filepath.replace(current_app.root_path, '').replace('\\', '/')
+        
+        # Create file record
+        new_file = InfrastructureFile(
+            infrastructure_id=infrastructure_id,
+            filename=filename,
+            filepath=filepath,
+            file_type=file_type,
+            mime_type=mime_type,
+            file_size=file_size
+        )
+        
+        return new_file
+        
+    except Exception as e:
+        current_app.logger.error(f"Error saving infrastructure file: {str(e)}")
+        return None
 
 @infrastructures_bp.route('/infrastructures')
 @login_required
