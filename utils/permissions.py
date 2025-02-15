@@ -87,12 +87,6 @@ class Permission:
     VIEW_ALL_CENTERS = 'view_all_centers'
     VIEW_ALL_INCIDENTS = 'view_all_incidents'
 
-    # Hydraulic Infrastructure permissions
-    CREATE_HYDRAULIC_INFRASTRUCTURE = 'create_hydraulic_infrastructure'
-    VIEW_HYDRAULIC_INFRASTRUCTURE = 'view_hydraulic_infrastructure'
-    EDIT_HYDRAULIC_INFRASTRUCTURE = 'edit_hydraulic_infrastructure'
-    DELETE_HYDRAULIC_INFRASTRUCTURE = 'delete_hydraulic_infrastructure'
-
 class PermissionManager:
     """Manages role-based access control for the entire system."""
     
@@ -124,12 +118,7 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS,
-            
-            Permission.CREATE_HYDRAULIC_INFRASTRUCTURE,
-            Permission.VIEW_HYDRAULIC_INFRASTRUCTURE,
-            Permission.EDIT_HYDRAULIC_INFRASTRUCTURE,
-            Permission.DELETE_HYDRAULIC_INFRASTRUCTURE
+            Permission.VIEW_ALL_INCIDENTS
         },
         UserRole.EMPLOYEUR_DG: {
             # Global management with limited destructive actions
@@ -151,9 +140,7 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS,
-            
-            Permission.VIEW_HYDRAULIC_INFRASTRUCTURE
+            Permission.VIEW_ALL_INCIDENTS
         },
         UserRole.EMPLOYEUR_ZONE: {
             # Zone-level access
@@ -170,9 +157,7 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS,
-            
-            Permission.VIEW_HYDRAULIC_INFRASTRUCTURE
+            Permission.VIEW_ALL_INCIDENTS
         },
         UserRole.EMPLOYEUR_UNITE: {
             # Unit-level access
@@ -180,9 +165,7 @@ class PermissionManager:
             Permission.CREATE_INCIDENT,
             Permission.EDIT_INCIDENT,
             Permission.RESOLVE_INCIDENT,
-            Permission.EXPORT_INCIDENT_PDF,
-            
-            Permission.VIEW_HYDRAULIC_INFRASTRUCTURE
+            Permission.EXPORT_INCIDENT_PDF
         },
         UserRole.UTILISATEUR: {
             # Basic access
@@ -192,11 +175,7 @@ class PermissionManager:
             Permission.DEEP_ANALYSIS,
             Permission.EXPORT_INCIDENT_PDF,
             Permission.EXPORT_ALL_INCIDENTS_PDF,
-            Permission.DEEP_ANALYSIS,
-            Permission.CREATE_HYDRAULIC_INFRASTRUCTURE,
-            Permission.VIEW_HYDRAULIC_INFRASTRUCTURE,
-            Permission.EDIT_HYDRAULIC_INFRASTRUCTURE,
-            Permission.DELETE_HYDRAULIC_INFRASTRUCTURE
+            Permission.DEEP_ANALYSIS
         }
     }
 

@@ -8,11 +8,10 @@ import os
 from dotenv import load_dotenv
 import random
 from functools import wraps
-from models import db, User, Unit, Incident, Zone, Center, Infrastructure
+from models import db, User, Unit, Incident, Zone, Center
 from routes.auth import auth
 from routes.profiles import profiles
 from routes.incidents import incidents
-from routes.infrastructures import infrastructures
 from routes.units import units
 from routes.users import users
 from routes.database_admin import database_admin
@@ -65,7 +64,6 @@ login_manager.login_message_category = 'warning'
 app.register_blueprint(spark_agent, url_prefix='/spark-agent')
 app.register_blueprint(auth)
 app.register_blueprint(incidents)
-app.register_blueprint(infrastructures)
 app.register_blueprint(main_dashboard)
 app.register_blueprint(departement)
 app.register_blueprint(landing)
@@ -459,43 +457,6 @@ def serve_docs():
 @login_required
 def spark_agent():
     return render_template('sparkagent/spark_agent.html')
-
-# Utility function to convert enum-style strings to human-readable labels
-def format_epuration_type(epuration_type):
-    if not epuration_type:
-        return None
-    
-    epuration_type_mapping = {
-        'BOUES_ACTIVEES': 'Boues activées',
-        'LAGUNAGE_NATUREL': 'Lagunage naturel',
-        'FILTRES_PLANTES': 'Filtres plantés',
-        'DISQUES_BIOLOGIQUES': 'Disques biologiques',
-        'MEMBRANES': 'Traitement membranaire',
-        'AUTRE': 'Autre type de traitement'
-    }
-    
-    return epuration_type_mapping.get(epuration_type, epuration_type)
-
-@app.route('/departements/infrastructure/<int:infrastructure_id>', methods=['GET'])
-def get_infrastructure_details(infrastructure_id):
-    try:
-        # Get infrastructure details from database
-        infrastructure = Infrastructure.query.get_or_404(infrastructure_id)
-        
-        return jsonify({
-            'success': True,
-            'infrastructure': {
-                'id': infrastructure.id,
-                'nom': infrastructure.nom,
-                'type': infrastructure.type,
-                'localisation': infrastructure.localisation,
-                'capacite': infrastructure.capacite,
-                'etat': infrastructure.etat,
-                'epuration_type': format_epuration_type(infrastructure.epuration_type)
-            }
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 # Add error handling for common HTTP errors and exceptions
 @app.errorhandler(404)

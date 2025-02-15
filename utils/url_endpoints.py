@@ -27,10 +27,6 @@ DEPARTEMENT_EXPLOITATION = 'departement.exploitation'
 DEPARTEMENT_REUSE = 'departement.reuse'
 DEPARTEMENT_RAPPORTS = 'departement.rapports'
 
-# Infrastructure routes
-INFRASTRUCTURES = 'departement.infrastructures'
-GET_INFRASTRUCTURE_DETAILS = 'infrastructure.details'
-
 # Reuse routes
 REUSE = 'reuse'
 REUSE_INTRODUCTION = 'reuse.introduction'
