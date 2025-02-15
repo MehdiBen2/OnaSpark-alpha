@@ -264,9 +264,78 @@ class Infrastructure(db.Model):
     etat = db.Column(db.String(50), nullable=False, default='Opérationnel', index=True)
     epuration_type = db.Column(db.String(100), nullable=True, index=True)
     
+    # Relationship with files
+    infrastructure_files = db.relationship('InfrastructureFile', back_populates='infrastructure', lazy='dynamic', cascade='all, delete-orphan')
+
+    def get_associated_files(self):
+        """
+        Retrieve all files associated with this infrastructure.
+        
+        Returns:
+            list: List of associated infrastructure files
+        """
+        return self.infrastructure_files.all()
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     def __repr__(self):
         return f'<Infrastructure {self.nom}>'
+
+class InfrastructureFile(db.Model):
+    """
+    Model representing files associated with infrastructures.
+    Reflects an existing database table.
+    """
+    __tablename__ = 'infrastructures_files'
+    
+    # Primary Key
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Foreign Key
+    infrastructure_id = db.Column(db.Integer, db.ForeignKey('infrastructures.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # File metadata columns
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(500), nullable=False)
+    file_type = db.Column(db.String(50), nullable=False)
+    mime_type = db.Column(db.String(100), nullable=False)
+    file_size = db.Column(db.Integer, nullable=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
+    
+    # Relationship
+    infrastructure = db.relationship('Infrastructure', back_populates='infrastructure_files')
+    
+    def __repr__(self):
+        return f'<InfrastructureFile {self.filename}>'
+    
+    def get_file_size_human_readable(self):
+        """
+        Convert file size to human-readable format.
+        
+        Returns:
+            str: Formatted file size (e.g., '2.5 MB')
+        """
+        size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024.0:
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"
+    
+    @classmethod
+    def get_files_for_infrastructure(cls, infrastructure_id):
+        """
+        Retrieve all files associated with a specific infrastructure.
+        
+        Args:
+            infrastructure_id (int): ID of the infrastructure
+        
+        Returns:
+            list: List of associated infrastructure files
+        """
+        return cls.query.filter_by(infrastructure_id=infrastructure_id).all()
