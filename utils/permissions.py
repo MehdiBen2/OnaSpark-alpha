@@ -87,6 +87,13 @@ class Permission:
     VIEW_ALL_CENTERS = 'view_all_centers'
     VIEW_ALL_INCIDENTS = 'view_all_incidents'
 
+    # Infrastructure-related permissions
+    VIEW_INFRASTRUCTURES = 'view_infrastructures'
+    CREATE_INFRASTRUCTURE = 'create_infrastructure'
+    EDIT_INFRASTRUCTURE = 'edit_infrastructure'
+    DELETE_INFRASTRUCTURE = 'delete_infrastructure'
+    EXPORT_INFRASTRUCTURES = 'export_infrastructures'
+
 class PermissionManager:
     """Manages role-based access control for the entire system."""
     
@@ -118,7 +125,12 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS
+            Permission.VIEW_ALL_INCIDENTS,
+            Permission.VIEW_INFRASTRUCTURES,
+            Permission.CREATE_INFRASTRUCTURE,
+            Permission.EDIT_INFRASTRUCTURE,
+            Permission.DELETE_INFRASTRUCTURE,
+            Permission.EXPORT_INFRASTRUCTURES
         },
         UserRole.EMPLOYEUR_DG: {
             # Global management with limited destructive actions
@@ -140,7 +152,8 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS
+            Permission.VIEW_ALL_INCIDENTS,
+            Permission.VIEW_INFRASTRUCTURES
         },
         UserRole.EMPLOYEUR_ZONE: {
             # Zone-level access
@@ -157,7 +170,8 @@ class PermissionManager:
             Permission.VIEW_ALL_ZONES,
             Permission.VIEW_ALL_UNITS,
             Permission.VIEW_ALL_CENTERS,
-            Permission.VIEW_ALL_INCIDENTS
+            Permission.VIEW_ALL_INCIDENTS,
+            Permission.VIEW_INFRASTRUCTURES
         },
         UserRole.EMPLOYEUR_UNITE: {
             # Unit-level access
@@ -165,7 +179,8 @@ class PermissionManager:
             Permission.CREATE_INCIDENT,
             Permission.EDIT_INCIDENT,
             Permission.RESOLVE_INCIDENT,
-            Permission.EXPORT_INCIDENT_PDF
+            Permission.EXPORT_INCIDENT_PDF,
+            Permission.VIEW_INFRASTRUCTURES
         },
         UserRole.UTILISATEUR: {
             # Basic access
@@ -175,7 +190,8 @@ class PermissionManager:
             Permission.DEEP_ANALYSIS,
             Permission.EXPORT_INCIDENT_PDF,
             Permission.EXPORT_ALL_INCIDENTS_PDF,
-            Permission.DEEP_ANALYSIS
+            Permission.DEEP_ANALYSIS,
+            Permission.VIEW_INFRASTRUCTURES
         }
     }
 
