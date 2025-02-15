@@ -20,7 +20,7 @@ def liste_infrastructures():
     infrastructure_types = sorted(set(infra.type for infra in infrastructures))
     
     return render_template(
-        'departement/liste_infrastructures.html', 
+        'departement/exploitation/infrastructures/liste_infrastructures.html', 
         infrastructures=infrastructures,
         infrastructure_types=infrastructure_types
     )
