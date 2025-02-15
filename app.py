@@ -75,8 +75,8 @@ app.register_blueprint(units)
 app.register_blueprint(documentation)
 app.register_blueprint(database_admin)
 app.register_blueprint(centers)
+app.register_blueprint(infrastructures_bp, url_prefix='/departement/exploitation/infrastructures')
 app.register_blueprint(bilan_bp, url_prefix='/departement/exploitation')
-app.register_blueprint(infrastructures_bp, url_prefix='/departement')
 
 # Remove the old route definition for statistiques
 # This is now handled by the departement Blueprint

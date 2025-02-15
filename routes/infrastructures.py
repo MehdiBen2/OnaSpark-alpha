@@ -32,7 +32,7 @@ def liste_infrastructures():
         infrastructure_types=infrastructure_types
     )
 
-@infrastructures_bp.route('/infrastructures/create', methods=['POST'])
+@infrastructures_bp.route('/create', methods=['POST'])
 @login_required
 @permission_required(Permission.CREATE_INFRASTRUCTURE)
 def create_infrastructure():
@@ -49,6 +49,13 @@ def create_infrastructure():
         'epuration_type': str (optional)
     }
     """
+    # Ensure JSON data is received
+    if not request.is_json:
+        return jsonify({
+            'success': False, 
+            'message': 'Requête invalide. Données JSON requises.'
+        }), 400
+    
     data = request.get_json()
     
     # Validate required fields
