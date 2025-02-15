@@ -257,70 +257,54 @@ def edit_infrastructure(infrastructure_id):
     Edit an existing infrastructure entry with optional file uploads and deletions
     
     Expected multipart form data:
-    {
-        'nom': str,
-        'type': str,
-        'localisation': str,
-        'capacite': float,
-        'etat': str,
-        'epuration_type': str (optional),
-        'deleted_files': JSON list of file IDs to delete,
-        'files': Optional new files to upload
-    }
-    
-    Returns:
-        JSON response with edit status and details
+    - infrastructure details (nom, type, localisation, etc.)
+    - files: new files to upload
+    - deleted_files: JSON list of file IDs to delete
     """
-    # Find the existing infrastructure
-    infrastructure = Infrastructure.query.get_or_404(infrastructure_id)
-    
-    # Ensure data is received
-    if not request.form:
-        return jsonify({
-            'success': False, 
-            'message': 'Requête invalide. Données de formulaire requises.'
-        }), 400
-    
-    # Validate required fields
-    required_fields = ['nom', 'type', 'localisation', 'capacite', 'etat']
-    for field in required_fields:
-        if not request.form.get(field):
-            return jsonify({
-                'success': False, 
-                'message': f'Le champ {field} est requis'
-            }), 400
-    
     try:
-        # Update infrastructure details
-        infrastructure.nom = request.form['nom']
-        infrastructure.type = request.form['type']
-        infrastructure.localisation = request.form['localisation']
-        infrastructure.capacite = float(request.form['capacite'])
-        infrastructure.etat = request.form['etat']
-        infrastructure.epuration_type = request.form.get('epuration_type')
+        # Find the existing infrastructure
+        infrastructure = Infrastructure.query.get_or_404(infrastructure_id)
         
-        # Handle file deletions
-        deleted_files = []
-        if request.form.get('deleted_files'):
-            try:
-                deleted_file_ids = json.loads(request.form['deleted_files'])
-                for file_id in deleted_file_ids:
-                    file_to_delete = InfrastructureFile.query.get(file_id)
-                    if file_to_delete and file_to_delete.infrastructure_id == infrastructure_id:
-                        # Remove physical file
-                        if os.path.exists(os.path.join(current_app.root_path, file_to_delete.filepath.lstrip('/'))):
-                            os.remove(os.path.join(current_app.root_path, file_to_delete.filepath.lstrip('/')))
-                        
-                        # Remove database record
-                        db.session.delete(file_to_delete)
-                        deleted_files.append(file_id)
-            except (json.JSONDecodeError, ValueError):
+        # Validate and process form data
+        data = request.form
+        
+        # Validate required fields
+        required_fields = ['nom', 'type', 'localisation', 'capacite', 'etat']
+        for field in required_fields:
+            if not data.get(field):
                 return jsonify({
                     'success': False, 
-                    'message': 'Format de fichiers supprimés invalide'
+                    'message': f'Le champ {field} est requis'
                 }), 400
         
-        # Handle file uploads
+        # Update infrastructure details
+        infrastructure.nom = data['nom']
+        infrastructure.type = data['type']
+        infrastructure.localisation = data['localisation']
+        infrastructure.capacite = float(data['capacite'])
+        infrastructure.etat = data['etat']
+        infrastructure.epuration_type = data.get('epuration_type')
+        
+        # Handle file deletions
+        deleted_files = json.loads(data.get('deleted_files', '[]'))
+        if deleted_files:
+            # Find and delete specified files
+            files_to_delete = InfrastructureFile.query.filter(
+                InfrastructureFile.id.in_(deleted_files),
+                InfrastructureFile.infrastructure_id == infrastructure_id
+            ).all()
+            
+            for file_record in files_to_delete:
+                # Remove physical file
+                try:
+                    os.remove(os.path.join(current_app.root_path, file_record.filepath.lstrip('/')))
+                except FileNotFoundError:
+                    pass  # File already deleted or doesn't exist
+                
+                # Remove database record
+                db.session.delete(file_record)
+        
+        # Handle new file uploads
         associated_files = []
         if 'files' in request.files:
             for file in request.files.getlist('files'):
@@ -337,17 +321,18 @@ def edit_infrastructure(infrastructure_id):
                         }), 400
                     
                     # Save file and create record
-                    infrastructure_file = save_infrastructure_file(file, infrastructure_id)
+                    infrastructure_file = save_infrastructure_file(file, infrastructure.id)
                     if infrastructure_file:
                         db.session.add(infrastructure_file)
                         associated_files.append(infrastructure_file)
         
-        # Commit all changes
+        # Commit changes
         db.session.commit()
         
         return jsonify({
             'success': True, 
             'message': 'Infrastructure mise à jour avec succès',
+            'infrastructure_id': infrastructure.id,
             'files_uploaded': len(associated_files),
             'files_deleted': len(deleted_files)
         }), 200
@@ -364,3 +349,10 @@ def edit_infrastructure(infrastructure_id):
             'success': False, 
             'message': 'Capacité invalide'
         }), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False, 
+            'message': 'Une erreur inattendue est survenue',
+            'error': str(e)
+        }), 500
