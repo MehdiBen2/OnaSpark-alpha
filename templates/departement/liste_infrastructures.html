@@ -1,0 +1,198 @@
+{% extends "base/base.html" %}
+
+{% block title %}Liste des Infrastructures{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <div class="sidebar-heading p-3 border-bottom">
+                    <h5 class="mb-0">Infrastructures</h5>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-filter="all">
+                            <i class="fas fa-list me-2"></i>Toutes les Infrastructures
+                        </a>
+                    </li>
+                    <li class="nav-item border-top mt-2 pt-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">
+                            <span>Types d'Infrastructures</span>
+                        </h6>
+                    </li>
+                    {% for type in infrastructure_types %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-filter="{{ type }}">
+                            <i class="fas fa-building me-2"></i>{{ type }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Liste des Infrastructures</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-download me-1"></i>Exporter
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i>Ajouter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infrastructures Table -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="infrastructuresTable">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type</th>
+                            <th>Localisation</th>
+                            <th>Capacité</th>
+                            <th>État</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for infrastructure in infrastructures %}
+                        <tr data-type="{{ infrastructure.type }}">
+                            <td>{{ infrastructure.nom }}</td>
+                            <td>{{ infrastructure.type }}</td>
+                            <td>{{ infrastructure.localisation }}</td>
+                            <td>{{ infrastructure.capacite }}</td>
+                            <td>
+                                <span class="badge {% if infrastructure.etat == 'Opérationnel' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ infrastructure.etat }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-info" title="Détails">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f4f6f9;
+    }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+        padding: 48px 0 0;
+        background-color: #2c3e50 !important; /* Dark background */
+        color: #ecf0f1; /* Light text color */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        width: 250px; /* Increased width for better readability */
+    }
+    .sidebar-heading {
+        color: #bdc3c7 !important; /* Muted heading color */
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    .sidebar .nav {
+        padding: 0 1rem; /* Add horizontal padding to nav */
+    }
+    .sidebar .nav-link {
+        color: #ecf0f1 !important; /* Light text */
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    .sidebar .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: #3498db !important; /* Bright highlight on hover */
+    }
+    .sidebar .nav-link.active {
+        background-color: rgba(52, 152, 219, 0.2);
+        color: #3498db !important;
+        font-weight: 600;
+    }
+    .sidebar .nav-item {
+        margin-bottom: 0.5rem;
+    }
+    .sidebar .nav-item i {
+        margin-right: 0.75rem;
+        color: #bdc3c7;
+        font-size: 1rem;
+        width: 1.5rem; /* Consistent icon width */
+        text-align: center;
+    }
+    .sidebar .nav-item:last-child {
+        margin-bottom: 1rem;
+    }
+    .sidebar-heading + .nav-item {
+        margin-top: 1rem;
+    }
+    .table-responsive {
+        margin-top: 20px;
+    }
+    #infrastructuresTable {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-toolbar .btn {
+        display: inline-flex;
+        align-items: center;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarLinks = document.querySelectorAll('#sidebar .nav-link');
+        const infrastructureRows = document.querySelectorAll('#infrastructuresTable tbody tr');
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active from all links
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+
+                infrastructureRows.forEach(row => {
+                    if (filter === 'all' || row.getAttribute('data-type') === filter) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

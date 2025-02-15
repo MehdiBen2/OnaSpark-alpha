@@ -29,6 +29,7 @@ from routes.main_dashboard import main_dashboard
 from routes.departement import departement  # Add this import
 from routes.centers import centers
 from routes.bilan_routes import bilan_bp
+from routes.infrastructures import infrastructures_bp
 
 # Load environment variables
 load_dotenv()
@@ -75,6 +76,7 @@ app.register_blueprint(documentation)
 app.register_blueprint(database_admin)
 app.register_blueprint(centers)
 app.register_blueprint(bilan_bp, url_prefix='/departement/exploitation')
+app.register_blueprint(infrastructures_bp, url_prefix='/departement')
 
 # Remove the old route definition for statistiques
 # This is now handled by the departement Blueprint
