@@ -73,13 +73,6 @@ AUTH_LOGIN = 'auth.login'  # Keeping for backward compatibility
 LOGOUT = 'auth.logout'
 REGISTER = 'auth.register'
 
-# Profile routes
-PROFILE_VIEW = 'profiles.view_profile'
-PROFILE_CREATE = 'profiles.create_profile'
-PROFILE_EDIT = 'profiles.edit_profile'
-PROFILE_ADMIN = 'profiles.admin_profiles'
-PROFILE_USER_VIEW = 'profiles.view_user_profile'
-
 # Incidents routes
 INCIDENT_LIST = 'incidents.incident_list'
 NEW_INCIDENT = 'incidents.new'

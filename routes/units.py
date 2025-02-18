@@ -9,31 +9,91 @@ units = Blueprint('units', __name__)
 @units.route('/admin/units/new', methods=['POST'])
 @login_required
 def new_unit():
+    # Debugging print statements
+    print("DEBUG: new_unit route called")
+    print(f"DEBUG: Form data: {request.form}")
+    print(f"DEBUG: Current user: {current_user.username}")
+    print(f"DEBUG: Current user role: {current_user.role}")
+
+    # Check if this is a POST request
+    if request.method != 'POST':
+        print("DEBUG: Not a POST request")
+        flash('Méthode de requête invalide.', 'danger')
+        return redirect(url_for('units.units_list'))
+
+    # Debug logging
+    current_app.logger.debug(f"new_unit route called")
+    current_app.logger.debug(f"Current User: {current_user.username}")
+    current_app.logger.debug(f"Current User Role: {current_user.role}")
+    current_app.logger.debug(f"Form Data: {request.form}")
+
     # Check permission to create units
     if not PermissionManager.has_permission(current_user.role, Permission.CREATE_UNITS):
+        current_app.logger.warning(f"User {current_user.username} lacks permission to create units")
         flash('Vous n\'avez pas la permission de créer des unités.', 'danger')
         return redirect(url_for('units.units_list'))
 
     name = request.form.get('name')
-    location = request.form.get('location')
+    address = request.form.get('location')
     description = request.form.get('description')
     zone_id = request.form.get('zone_id')
 
+    current_app.logger.debug(f"Received data - Name: {name}, Address: {address}, Zone ID: {zone_id}")
+
     if not name or not zone_id:
+        current_app.logger.error("Missing required fields for unit creation")
         flash('Le nom et la zone sont requis.', 'danger')
         return redirect(url_for('units.units_list'))
+
+    # Generate unique unit code
+    zone = Zone.query.get(zone_id)
+    if not zone:
+        current_app.logger.error(f"Invalid zone ID: {zone_id}")
+        flash('Zone invalide.', 'danger')
+        return redirect(url_for('units.units_list'))
+
+    # Count existing units in the zone to generate sequential code
+    existing_units_count = Unit.query.filter_by(zone_id=zone_id).count()
+    unit_code = f"{zone.code}-U{existing_units_count + 1:03d}"
+
+    # Check if the generated code already exists
+    existing_unit = Unit.query.filter_by(code=unit_code).first()
+    if existing_unit:
+        # If code exists, increment until a unique code is found
+        counter = 1
+        while Unit.query.filter_by(code=unit_code).first():
+            unit_code = f"{zone.code}-U{existing_units_count + counter:03d}"
+            counter += 1
 
     try:
         unit = Unit(
             name=name,
-            location=location,
+            code=unit_code,  # Add generated code
+            address=address,
             description=description,
             zone_id=zone_id
         )
+        
+        # Log detailed unit information before committing
+        current_app.logger.debug(f"Attempting to create Unit: {unit}")
+        current_app.logger.debug(f"Unit Details - Name: {unit.name}, Code: {unit.code}, Zone ID: {unit.zone_id}")
+
         db.session.add(unit)
+        
+        # Validate the unit before committing
+        try:
+            db.session.flush()  # This will raise an exception if there are validation errors
+        except Exception as validation_error:
+            current_app.logger.error(f"Validation Error: {str(validation_error)}")
+            db.session.rollback()
+            flash(f'Erreur de validation lors de la création de l\'unité: {str(validation_error)}', 'danger')
+            return redirect(url_for('units.units_list'))
+
         db.session.commit()
-        flash('Unité créée avec succès!', 'success')
+        current_app.logger.info(f"Unit created successfully - Name: {name}, Code: {unit_code}")
+        flash(f'Unité créée avec succès! Code: {unit_code}', 'success')
     except Exception as e:
+        current_app.logger.error(f"Error creating unit: {str(e)}")
         db.session.rollback()
         flash(f'Erreur lors de la création de l\'unité: {str(e)}', 'danger')
 

@@ -341,12 +341,6 @@
                         </a>
                     </li>
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('profiles.view_profile') }}">
-                            <i class="fas fa-id-card"></i>
-                            <span>Mon Profil</span>
-                        </a>
-                    </li>
                     {% if current_user.role == 'Admin' %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
@@ -368,16 +362,6 @@
                 <div class="user-section">
                     <div class="d-flex align-items-center">
                         {% if current_user.is_authenticated %}
-                            <div class="user-info">
-                                <i class="fas fa-user me-2"></i>
-                                <span>
-                                    {% if current_user.nickname %}
-                                        {{ current_user.nickname }}
-                                    {% else %}
-                                        {{ current_user.username }}
-                                    {% endif %}
-                                </span>
-                            </div>
                             {% if current_user.assigned_unit %}
                             <div class="user-info">
                                 <i class="fas fa-building me-2"></i>

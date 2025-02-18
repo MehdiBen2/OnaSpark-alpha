@@ -76,40 +76,6 @@ class Center(db.Model):
     def __repr__(self):
         return f'<Center {self.name}>'
 
-class UserProfile(db.Model):
-    __tablename__ = 'user_profiles'
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(100), nullable=False, index=True)
-    last_name = db.Column(db.String(100), nullable=False, index=True)
-    date_of_birth = db.Column(db.Date, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    professional_number = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    job_function = db.Column(db.String(100), nullable=False, index=True)
-    recruitment_date = db.Column(db.DateTime, nullable=False, index=True)
-    phone = db.Column(db.String(20))
-    address = db.Column(db.String(200))
-    
-    # Foreign Keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    
-    # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
-
-    def calculate_years_of_work(self):
-        today = datetime.now()
-        years = today.year - self.recruitment_date.year
-        if today.month < self.recruitment_date.month or (today.month == self.recruitment_date.month and today.day < self.recruitment_date.day):
-            years -= 1
-        return years
-
-    def calculate_age(self):
-        today = datetime.now()
-        years = today.year - self.date_of_birth.year
-        if today.month < self.date_of_birth.month or (today.month == self.date_of_birth.month and today.day < self.date_of_birth.day):
-            years -= 1
-        return years
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -126,7 +92,6 @@ class User(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, index=True)
 
     # Relationships
-    profile = db.relationship('UserProfile', backref='user', uselist=False, lazy=True, cascade='all, delete-orphan')
     incidents = db.relationship('Incident', backref='author', lazy=True)
 
     def set_password(self, password):

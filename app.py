@@ -10,17 +10,12 @@ import random
 from functools import wraps
 from models import db, User, Unit, Incident, Zone, Center
 from routes.auth import auth
-from routes.profiles import profiles
 from routes.incidents import incidents
 from routes.units import units
 from routes.users import users
 from routes.database_admin import database_admin
 from routes.water_quality import water_quality
 from routes.documentation import documentation
-from flask.cli import with_appcontext
-import click
-from utils.url_endpoints import *  # Import all URL endpoints
-from utils.permissions import PermissionManager, Permission, UserRole
 from routes.landing import landing
 from extensions import cache  # Import cache from extensions
 from utils.incident_utils import get_user_incident_counts  # Import from new utils module
@@ -30,6 +25,10 @@ from routes.departement import departement  # Add this import
 from routes.centers import centers
 from routes.bilan_routes import bilan_bp
 from routes.infrastructures import infrastructures_bp
+from flask.cli import with_appcontext
+import click
+from utils.url_endpoints import *  # Import all URL endpoints
+from utils.permissions import PermissionManager, Permission, UserRole
 
 # Load environment variables
 load_dotenv()
@@ -57,37 +56,46 @@ db.init_app(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = AUTH_LOGIN
+login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
 login_manager.login_message_category = 'warning'
 
 # Register blueprints
-app.register_blueprint(spark_agent, url_prefix='/spark-agent')
 app.register_blueprint(auth)
 app.register_blueprint(incidents)
+app.register_blueprint(units)
+app.register_blueprint(users)
+app.register_blueprint(database_admin)
+app.register_blueprint(water_quality)
+app.register_blueprint(documentation)
+app.register_blueprint(landing)
+app.register_blueprint(spark_agent)
 app.register_blueprint(main_dashboard)
 app.register_blueprint(departement)
-app.register_blueprint(landing)
-app.register_blueprint(users)
-app.register_blueprint(water_quality)
-app.register_blueprint(profiles)
-app.register_blueprint(units)
-app.register_blueprint(documentation)
-app.register_blueprint(database_admin)
 app.register_blueprint(centers)
-app.register_blueprint(infrastructures_bp, url_prefix='/departement/exploitation/infrastructures')
-app.register_blueprint(bilan_bp, url_prefix='/departement/exploitation')
-
-# Remove the old route definition for statistiques
-# This is now handled by the departement Blueprint
+app.register_blueprint(bilan_bp)
+app.register_blueprint(infrastructures_bp)
 
 @app.cli.command("init-db")
 @with_appcontext
 def init_db_command():
-    """Initialize the database."""
-    from scripts.init_db import init_database
-    init_database()
-    click.echo('Initialized the database.')
+    """Initialize the database.
+    
+    This method provides two initialization strategies:
+    1. Standard SQLAlchemy table creation
+    2. Optional custom initialization script
+    """
+    # Standard table creation
+    db.create_all()
+    click.echo('Created database tables.')
+    
+    # Optional: Run custom initialization script if available
+    try:
+        from scripts.init_db import init_database
+        init_database()
+        click.echo('Ran custom database initialization script.')
+    except ImportError:
+        click.echo('No custom initialization script found.')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -98,7 +106,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not UserRole.has_permission(current_user.role, 'can_view_all_incidents'):
             flash('Vous devez être administrateur pour accéder à cette page.', 'danger')
-            return redirect(url_for(INCIDENT_LIST))
+            return redirect(url_for('incidents.list'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -227,7 +235,7 @@ def create_zone():
         db.session.rollback()
         flash(f'Erreur lors de la création de la zone: {str(e)}', 'danger')
     
-    return redirect(url_for('main_dashboard.dashboard'))
+    return redirect(url_for('list_zones'))
 
 @app.route('/zones/edit/<int:id>', methods=['POST'])
 @login_required
